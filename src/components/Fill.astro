@@ -1,0 +1,12 @@
+---
+// The render policy for an unresolved `[FILL]` marker (docs/progress.md), decided for
+// step 04: render it visibly, as a drafting annotation, rather than hide it or guess a
+// value. One component, one place to change if that policy ever changes.
+interface Props {
+  value: string
+}
+const { value } = Astro.props
+const isFill = value.includes('[FILL')
+---
+
+{isFill ? <span class="fill">{value}</span> : value}

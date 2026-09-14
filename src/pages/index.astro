@@ -1,7 +1,20 @@
 ---
 import Base from '../layouts/Base.astro'
+import Rule from '../components/Rule.astro'
+import Hero from '../components/Hero.astro'
+import Spine from '../components/Spine.astro'
+import Archive from '../components/Archive.astro'
+import Changelog from '../components/Changelog.astro'
+import Contact from '../components/Contact.astro'
 ---
 
 <Base title="Arthur Gabriel Pellegrini Heberle">
-  <h1>Arthur Gabriel Pellegrini Heberle</h1>
+  <main id="main" class="page-main">
+    <Rule />
+    <Hero />
+    <Spine />
+    <Archive />
+    <Changelog />
+    <Contact />
+  </main>
 </Base>

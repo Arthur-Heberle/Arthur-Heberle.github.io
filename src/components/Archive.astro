@@ -1,0 +1,44 @@
+---
+// Archive — six entries visible, "show all" for the rest (design-spec.md §6). `<details>`
+// is the no-JS mechanism; step 05 progressively enhances it with a tag filter rather
+// than replacing it, so this fallback keeps working with JS disabled.
+import { getCollection } from 'astro:content'
+import ArchiveRow from './ArchiveRow.astro'
+
+const entries = await getCollection('archive')
+
+// Sort: pinned first, then by date descending, then entries with an unresolved [FILL]
+// date last (in their existing collection order — Array#sort is stable, and glob()
+// yields entries in filename order, so this needs no explicit tiebreak of its own).
+const sorted = entries.slice().sort((a, b) => {
+  if (a.data.pinned !== b.data.pinned) return a.data.pinned ? -1 : 1
+  const aFill = a.data.date.includes('[FILL')
+  const bFill = b.data.date.includes('[FILL')
+  if (aFill !== bFill) return aFill ? 1 : -1
+  if (aFill && bFill) return 0
+  return b.data.date.localeCompare(a.data.date)
+})
+
+const VISIBLE = 6
+const visible = sorted.slice(0, VISIBLE)
+const rest = sorted.slice(VISIBLE)
+---
+
+<section class="flex flex-col gap-8 py-16" aria-labelledby="archive-heading">
+  <h2 id="archive-heading" class="text-h2 font-sans font-medium">Archive</h2>
+  <ul class="flex flex-col" role="list">
+    {visible.map((entry) => <ArchiveRow entry={entry} />)}
+  </ul>
+  {
+    rest.length > 0 && (
+      <details>
+        <summary class="control">show all</summary>
+        <ul class="mt-4 flex flex-col" role="list">
+          {rest.map((entry) => (
+            <ArchiveRow entry={entry} />
+          ))}
+        </ul>
+      </details>
+    )
+  }
+</section>

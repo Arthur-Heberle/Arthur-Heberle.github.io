@@ -10,7 +10,7 @@ Status values: `todo`, `in progress`, `done`, `blocked`.
 | 01 | Scaffold and deploy an empty site | done | pnpm required a global install first; Astro scaffolded to a scratch dir and copied in to avoid clobbering `tokens.css`/`README.md` |
 | 02 | Tokens, type and layout primitives | done | fonts self-hosted, not `<link>`-loaded; `@theme` reset lines added to `tokens.css`; TypeScript pinned to 5.9.3, not `latest`, for `@astrojs/check` compatibility |
 | 03 | Content collections | done | English-only schema (no `lang` field); repo links normalised to `https://`; changelog is one YAML file via `file()` |
-| 04 | Static home page | todo | |
+| 04 | Static home page | done | drawing layer (rule + leader lines) built now, ahead of steps 09–10; notes `order` renumbered to the spine's marker order; `<details>` is the no-JS "show all" |
 | 05 | Archive filter, without GSAP | todo | |
 | 06 | Accessibility and performance gate | todo | |
 | 07 | Motion infrastructure only | todo | |
@@ -29,11 +29,17 @@ Status values: `todo`, `in progress`, `done`, `blocked`.
 
 Blocking or near-blocking. Add to this list rather than guessing.
 
-- [ ] Opening line: A, B or C, rewritten in his words.
-- [ ] All `[FILL]` markers, now seeded verbatim into `src/content/` (12 total — 9 in
-      archive entries, 1 in the chess note, 2 in the changelog) and still greppable with
-      `grep -rn "\[FILL" src/content/`. Two archive entries (Agente H, Brasilore) have no
-      date at all; step 04 has to decide what to render for them meanwhile.
+- [x] Opening line: rewritten in his words as "I make technical things make sense to
+      people who didn't build them." Supporting line, mono identity line, the three spine
+      paragraphs and all five margin notes are also final now — see `docs/content.md`.
+- [ ] All `[FILL]` markers, now seeded verbatim into `src/content/` (11 total — 9 in
+      archive entries, 2 in the changelog) and still greppable with
+      `grep -rn "\[FILL" src/content/`. The chess note is resolved and no longer one of
+      them. Two archive entries (Agente H, Brasilore) have no date at all; step 04 has to
+      decide what to render for them meanwhile. **Render policy, decided:** an unresolved
+      marker renders visibly on the page as a drafting annotation — mono, `--graphite-2`,
+      marker text intact — rather than a silent placeholder or an omitted field. Step 14
+      gates on the count reaching zero.
 - [ ] The word the EduBra Braille set-piece spells.
 - [ ] Contact section: publish WhatsApp number or email only?
 - [ ] `--graphite-2` on `--ground` measures 4.21:1, under the 4.5 AA floor for normal
@@ -109,6 +115,26 @@ staying greppable. One exception: EduBra's date has a real value (`2025-12`) wit
 trailing YAML comment `# [FILL: confirm]`, since the value exists but wants confirming
 rather than supplying.
 
+Step 04 — `src/content/notes/*.md` `order` renumbered from step 03's alphabetical
+`reading:1, languages:2, chess:3, guitar:4, working-on:5` to `reading:1, working-on:2,
+languages:3, chess:4, guitar:5`, matching the sequence Arthur specified for the spine's
+annotation markers. One source of truth for note order instead of two documents
+disagreeing; an ordering decision, not a fact, so logged here rather than treated as a
+content change.
+
+Step 04 — The static drawing layer (the page rule and all five leader lines) was built
+now as final-state SVG, rather than deferred to steps 09–10 as `design-spec.md`'s build
+order implies. Reason: `motion-spec.md`'s initial-state pattern requires markup to ship
+every SVG already in its final, fully-drawn state before any JS runs; building it in
+step 04 means steps 09–10 add only a `drawSVG` scrub on top of markup that already
+exists, rather than building markup and motion in the same step.
+
+Step 04 — Both "show all" controls (archive, changelog) are native
+`<details>`/`<summary>` rather than a `hidden`-attribute or checkbox mechanism. Fully
+operable with JS disabled, which is what design-spec.md §6's "six visible, then show
+all" needs to work with zero JavaScript; step 05 should progressively enhance this
+element with the tag filter rather than replace it.
+
 ---
 
 ## Notes for future sessions
@@ -165,3 +191,32 @@ gotchas, things that looked right and weren't.
   Counting seed files directly, or parsing `changelog.yaml` with `js-yaml` (resolve it via
   `node_modules/.pnpm/js-yaml@<version>/node_modules/js-yaml`, since it's Astro's nested
   dependency, not a top-level one), is simpler than either.
+- The render policy for an unresolved `[FILL]` value (visible drafting annotation) lives
+  in exactly one component, `src/components/Fill.astro`. Check there first if that policy
+  ever needs to change, rather than hunting across templates.
+- CSS Grid's `minmax(0, X)` track (a fixed-length `X`, no `fr`) grows to fill available
+  space up to `X` and shrinks to 0 below that, with no `fr` needed — this is what makes
+  `.rail`'s three-column formula (`minmax(0, var(--container-measure)) var(--spacing-gutter)
+  var(--container-margin)`) match `.rule-svg`'s `left` calc exactly at every width, without
+  a resize observer. Confirmed in-browser at 767/768/1280px via the iframe technique below,
+  not just reasoned about.
+- A bare `main` CSS selector applies to *every* `<main>` on the site, including
+  `/type-test`'s unrelated one — caught before it shipped. Page-specific structural CSS
+  (this step's `.page-main`, the rule's positioning) needs a scoped class, not an element
+  selector, the moment more than one page exists.
+- Tailwind v4's arbitrary-value bracket syntax can incidentally trigger unrelated bare
+  utilities: `rounded-[length:var(--radius-control)]` in `/type-test` (step 02) also
+  causes Tailwind's own default `.rounded` (`border-radius:.25rem`) to compile into
+  `dist`, because the class-candidate scanner is a broad text match, not a literal
+  identifier check — the same leakage class `--color-*`/`--font-*`/`--text-*: initial`
+  guards against in `tokens.css`, but for the `--radius-*` namespace, which isn't reset.
+  It's dead CSS (nothing carries a bare `rounded` class) rather than a visible bug, so not
+  fixed this step — touching `tokens.css`'s resets needs Arthur's go-ahead like any other
+  token change. Worth a namespace reset if noticed again.
+- `resize_window` did not change `window.innerWidth` in this sandbox across several
+  attempts (including after unmaximizing and reloading) — the window stayed pinned to the
+  display's full resolution. An `<iframe>` pointed at the dev/preview URL, with its
+  `width`/`height` attributes set directly, gets its own layout viewport independent of
+  the outer window and does trigger real `@media` breakpoints — used to verify the
+  767/768px boundary and the 375/768/1280px display-line wrap for this step when window
+  resizing wouldn't cooperate.

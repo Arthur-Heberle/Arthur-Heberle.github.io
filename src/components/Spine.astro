@@ -1,0 +1,76 @@
+---
+// Spine — the three paragraphs carrying the through-line. Copy is verbatim from
+// docs/content.md, final, not provisional. Page copy, not a collection (step 03 scoped
+// collections to archive/notes/changelog only); the five margin notes it points to are
+// the `notes` collection, keyed here by label rather than by file order, since the
+// spine's marker order (reading, working on, languages, chess, guitar) doesn't match
+// the notes directory's alphabetical listing.
+import { getCollection } from 'astro:content'
+import MarginNote from './MarginNote.astro'
+
+const notes = await getCollection('notes')
+const byLabel = Object.fromEntries(notes.map((note) => [note.data.label, note]))
+---
+
+<section class="flex flex-col gap-12 py-16" aria-label="About">
+  <div class="rail">
+    <p class="rail-prose text-body">
+      I build things that sit between software and the physical world. A device that
+      turns digital text into Braille. Research software that plans how a part gets
+      printed. Energy data somebody has to make a decision from. The part I'm best at is
+      the handover: getting the thing understood by the people who have to use it, sign
+      it off, or pay for it.<a
+        class="feedback marker"
+        id="marker-reading"
+        href="#note-reading"
+        aria-label="note 1, reading">1</a
+      >
+    </p>
+    <div class="rail-margin flex flex-col">
+      <MarginNote entry={byLabel['reading']} marker={1} />
+    </div>
+  </div>
+
+  <div class="rail">
+    <p class="rail-prose text-body">
+      Most of what I've done has had an audience. I was a monitor twice at UTFPR, for
+      Calculus II and later for Programming Techniques, which mostly meant explaining
+      pointers to people who were close to giving up. I spent six months at an energy
+      efficiency firm, in the field with meters and inverters and then in the report the
+      client actually reads. Now I'm on RP3 at UTFPR's NUFER lab, in C++ and Qt, and I
+      build my own projects when nobody asked me to.<a
+        class="feedback marker"
+        id="marker-working-on"
+        href="#note-working-on"
+        aria-label="note 2, working on">2</a
+      >
+    </p>
+    <div class="rail-margin flex flex-col">
+      <MarginNote entry={byLabel['working on']} marker={2} />
+    </div>
+  </div>
+
+  <div class="rail">
+    <p class="rail-prose text-body">
+      Outside all of that I keep a few things going that lead nowhere in particular.
+      Languages I don't strictly need.<a
+        class="feedback marker"
+        id="marker-languages"
+        href="#note-languages"
+        aria-label="note 3, languages">3</a
+      > Chess.<a class="feedback marker" id="marker-chess" href="#note-chess" aria-label="note 4, chess"
+        >4</a
+      > A guitar I've played for years and still sing badly over.<a
+        class="feedback marker"
+        id="marker-guitar"
+        href="#note-guitar"
+        aria-label="note 5, guitar">5</a
+      > I'm not planning to get good at that one.
+    </p>
+    <div class="rail-margin flex flex-col">
+      <MarginNote entry={byLabel['languages']} marker={3} />
+      <MarginNote entry={byLabel['chess']} marker={4} />
+      <MarginNote entry={byLabel['guitar']} marker={5} />
+    </div>
+  </div>
+</section>

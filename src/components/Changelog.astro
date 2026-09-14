@@ -1,0 +1,43 @@
+---
+// Changelog — three most recent entries visible, then "show all" (design-spec.md §6).
+// Today there are only two entries, both unresolved [FILL] markers, so no "show all"
+// control renders at all — nothing to hide yet.
+import { getCollection } from 'astro:content'
+import Fill from './Fill.astro'
+
+const entries = await getCollection('changelog')
+const sorted = entries.slice().sort((a, b) => b.data.date.localeCompare(a.data.date))
+
+const VISIBLE = 3
+const visible = sorted.slice(0, VISIBLE)
+const rest = sorted.slice(VISIBLE)
+---
+
+<section class="flex flex-col gap-8 py-16" aria-labelledby="changelog-heading">
+  <h2 id="changelog-heading" class="text-h2 font-sans font-medium">Changelog</h2>
+  <ul class="flex flex-col gap-3" role="list">
+    {
+      visible.map((entry) => (
+        <li class="flex flex-wrap gap-x-gutter gap-y-1 text-small">
+          <span class="font-mono text-dimension text-graphite-2">{entry.data.date.replace(/-/g, '.')}</span>
+          <Fill value={entry.data.note} />
+        </li>
+      ))
+    }
+  </ul>
+  {
+    rest.length > 0 && (
+      <details>
+        <summary class="control">show all</summary>
+        <ul class="mt-4 flex flex-col gap-3" role="list">
+          {rest.map((entry) => (
+            <li class="flex flex-wrap gap-x-gutter gap-y-1 text-small">
+              <span class="font-mono text-dimension text-graphite-2">{entry.data.date.replace(/-/g, '.')}</span>
+              <Fill value={entry.data.note} />
+            </li>
+          ))}
+        </ul>
+      </details>
+    )
+  }
+</section>

@@ -27,6 +27,9 @@ const { title, noindex = false } = Astro.props
     />
   </head>
   <body>
+    <!-- Every page rendering this layout must give its main content element id="main":
+         this is what the skip link lands on. -->
+    <a class="skip" href="#main">Skip to main content</a>
     <slot />
   </body>
 </html>

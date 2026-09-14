@@ -1,0 +1,33 @@
+---
+// One margin note: its rendered body from the `notes` collection, a back-link to the
+// spine marker that points at it, and a leader-line SVG in its own final, drawn state
+// (step 10 animates it later; the markup doesn't change).
+import { render } from 'astro:content'
+import type { CollectionEntry } from 'astro:content'
+
+interface Props {
+  entry: CollectionEntry<'notes'>
+  marker: number
+}
+const { entry, marker } = Astro.props
+const { Content } = await render(entry)
+---
+
+<aside class="note" id={`note-${entry.id}`}>
+  <svg class="leader" viewBox="0 0 32 24" preserveAspectRatio="none" aria-hidden="true">
+    <path
+      d="M0 4 H18 L32 12"
+      fill="none"
+      stroke="var(--color-line)"
+      stroke-width="1"
+      vector-effect="non-scaling-stroke"
+    />
+  </svg>
+  <div class="note-text text-small text-graphite-2">
+    <a class="feedback marker" href={`#marker-${entry.id}`} aria-label={`back to reference ${marker}`}>
+      {marker}
+    </a>
+    <strong class="font-sans font-medium text-graphite">{entry.data.label}</strong> —
+    <Content />
+  </div>
+</aside>

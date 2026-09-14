@@ -1,7 +1,7 @@
 ---
-order: 2
+order: 3
 label: languages
 ---
 
-I keep learning languages I don't strictly need. Portuguese, English, Italian, and
-French badly, for now.
+Portuguese, English, Italian, and French badly, for now. I keep starting new ones
+without a real reason.

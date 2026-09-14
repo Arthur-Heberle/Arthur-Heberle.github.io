@@ -1,0 +1,52 @@
+---
+// One archive row. `.archive-row` is the exact selector step 11's Flip snippet targets
+// (docs/motion-spec.md) — defined once here, reused for both the visible rows and the
+// ones inside "show all".
+import type { CollectionEntry } from 'astro:content'
+import Fill from './Fill.astro'
+
+interface Props {
+  entry: CollectionEntry<'archive'>
+}
+const { entry } = Astro.props
+const { date, title, role, tags, links, blurb } = entry.data
+// "2026-07" displays as "2026.07" (design-spec.md §7); an unresolved [FILL] date is
+// left as-is for Fill to render as a drafting annotation.
+const displayDate = date.includes('[FILL') ? date : date.replace('-', '.')
+const hasLinks = Boolean(links.repo || links.live || links.pdf)
+---
+
+<li class="archive-row bg-sheet px-6">
+  <p class="text-dimension font-mono text-graphite-2">
+    <Fill value={displayDate} />
+  </p>
+  <div class="flex flex-col gap-2">
+    <h3 class="text-h3 font-sans font-medium">{title}</h3>
+    <p class="flex flex-wrap gap-x-gutter gap-y-1 text-small text-graphite-2">
+      <span><Fill value={role} /></span>
+      <span>{tags.join(', ')}</span>
+    </p>
+    <p class="measure text-body">{blurb}</p>
+    {
+      hasLinks && (
+        <p class="flex gap-gutter text-small">
+          {links.repo && (
+            <a class="feedback" href={links.repo}>
+              repo
+            </a>
+          )}
+          {links.live && (
+            <a class="feedback" href={links.live}>
+              live
+            </a>
+          )}
+          {links.pdf && (
+            <a class="feedback" href={links.pdf}>
+              pdf
+            </a>
+          )}
+        </p>
+      )
+    }
+  </div>
+</li>

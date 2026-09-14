@@ -1,0 +1,20 @@
+---
+// Contact — the last leader line of the drawing terminates here (design-spec.md §9).
+// The invitation line is still `[FILL]`; the email is real. WhatsApp is not rendered —
+// whether to publish it at all is still an open question in docs/progress.md.
+import Fill from './Fill.astro'
+
+const email = 'a.gp.heberle@gmail.com'
+const invitation = '[FILL]'
+---
+
+<section class="flex flex-col gap-4 py-16" aria-labelledby="contact-heading">
+  <h2 id="contact-heading" class="text-h2 font-sans font-medium">Contact</h2>
+  <p class="measure text-body">
+    <Fill value={invitation} />
+  </p>
+  <!-- The one thing the drawing points at (design-spec.md §9) — signal, not graphite. -->
+  <a class="feedback font-mono text-body text-signal no-underline" href={`mailto:${email}`}>
+    {email}
+  </a>
+</section>

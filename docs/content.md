@@ -53,7 +53,23 @@ I've spent two years explaining them to people who found them hard.
 
 **Recommended: B.** It states the through-line and proves it in the same breath.
 
-**Chosen:** `[FILL]`
+**Chosen:** Rewritten in his own words, not B verbatim.
+
+> I make technical things make sense to people who didn't build them.
+
+### Hero block, final
+
+Display line (the chosen opening line, above):
+
+> I make technical things make sense to people who didn't build them.
+
+Supporting line:
+
+> Computer engineering at UTFPR, in Curitiba. Embedded systems, C++, and AI automation.
+
+Mono line under the name (unchanged from the Identity block above):
+
+> Curitiba, Brasil      EU citizen      open to global remote
 
 ---
 
@@ -63,7 +79,35 @@ Two or three short paragraphs carrying the through-line: Arthur makes technical 
 usable by people who aren't technical. Each paragraph carries one or two annotation
 markers pointing into the margin.
 
-Draft, to be rewritten in his voice: `[FILL]`
+Final, in his own words. Superscripts mark where an annotation link lands; the linked
+margin note is named beside each one.
+
+> I build things that sit between software and the physical world. A device that turns
+> digital text into Braille. Research software that plans how a part gets printed. Energy
+> data somebody has to make a decision from. The part I'm best at is the handover: getting
+> the thing understood by the people who have to use it, sign it off, or pay for it.¹
+
+> Most of what I've done has had an audience. I was a monitor twice at UTFPR, for Calculus
+> II and later for Programming Techniques, which mostly meant explaining pointers to
+> people who were close to giving up. I spent six months at an energy efficiency firm, in
+> the field with meters and inverters and then in the report the client actually reads.
+> Now I'm on RP3 at UTFPR's NUFER lab, in C++ and Qt, and I build my own projects when
+> nobody asked me to.²
+
+> Outside all of that I keep a few things going that lead nowhere in particular. Languages
+> I don't strictly need.³ Chess.⁴ A guitar I've played for years and still sing badly
+> over.⁵ I'm not planning to get good at that one.
+
+Marker order — the order the notes appear in the margin, following the spine, not the
+order they were first drafted in:
+
+| Marker | Note |
+|---|---|
+| ¹ | reading |
+| ² | working on |
+| ³ | languages |
+| ⁴ | chess |
+| ⁵ | guitar |
 
 Constraints: 68ch measure, short sentences, no hedging words, no adjectives about
 himself. The archive proves the claims; the spine only has to state them.
@@ -80,18 +124,18 @@ maximum; a sixth dilutes the read.
 > people actually decide things. That turned out to be the useful part.
 
 **2. languages**
-> I keep learning languages I don't strictly need. Portuguese, English, Italian, and
-> French badly, for now.
+> Portuguese, English, Italian, and French badly, for now. I keep starting new ones
+> without a real reason.
 
 **3. chess**
-> `[FILL: his own line]`
+> Mostly fast games. I like that there is nobody else to blame.
 
 **4. guitar**
-> I play guitar and sing. I'm bad at both and I keep doing it.
+> I play guitar and sing. I am bad at both and I keep doing it.
 
 **5. working on**
-> I push my own ideas hard, because I'm usually convinced mine is the better one. Still
-> learning when that's leadership and when it's just volume.
+> I push my own ideas hard, because I am usually convinced mine is the better one. Still
+> learning when that is leadership and when it is just volume.
 
 **Note 5 is the most important line on the page.** It's the only one that isn't
 self-flattering, which is what makes the rest believable. Both sentences are required. If

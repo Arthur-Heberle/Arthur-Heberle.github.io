@@ -1,6 +1,6 @@
 ---
-order: 3
+order: 4
 label: chess
 ---
 
-[FILL: his own line]
+Mostly fast games. I like that there is nobody else to blame.

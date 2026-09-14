@@ -1,0 +1,28 @@
+---
+// Hero — page copy, not a collection (docs/plans/step-03.md scoped the collections to
+// archive/notes/changelog only). Verbatim from docs/content.md's Hero block: final, not
+// provisional.
+const identity = ['Curitiba, Brasil', 'EU citizen', 'open to global remote']
+const email = 'a.gp.heberle@gmail.com'
+---
+
+<header class="flex flex-col gap-6 pb-16 pt-12">
+  <div class="flex flex-wrap items-baseline justify-between gap-x-gutter gap-y-2">
+    <p class="text-h3 font-sans font-medium">Arthur Gabriel Pellegrini Heberle</p>
+    <!-- direct wins the tiebreak here: the real address on the first screen, not a jump
+         link to a "Contact" section further down (design-spec.md §2). -->
+    <a class="feedback font-mono text-small text-graphite-2 no-underline" href={`mailto:${email}`}>
+      {email}
+    </a>
+  </div>
+
+  <p class="flex flex-wrap gap-x-gutter gap-y-1 font-mono text-dimension text-graphite-2">
+    {identity.map((item) => <span>{item}</span>)}
+  </p>
+
+  <h1 class="display">I make technical things make sense to people who didn't build them.</h1>
+
+  <p class="measure text-body">
+    Computer engineering at UTFPR, in Curitiba. Embedded systems, C++, and AI automation.
+  </p>
+</header>

@@ -1,0 +1,17 @@
+---
+// The page rule — the vertical line descending the page, in its final drawn state.
+// motion-spec.md's initial-state pattern: markup ships every SVG finished; step 09 adds
+// a `drawSVG` scrub on `#rule path` on top of this, and must find the id and the path
+// unchanged. Purely decorative — the real relationships (marker <-> note) already exist
+// as real links in the markup, so this carries aria-hidden.
+---
+
+<svg id="rule" class="rule-svg" viewBox="0 0 1 100" preserveAspectRatio="none" aria-hidden="true">
+  <path
+    d="M0.5 0 V100"
+    fill="none"
+    stroke="var(--color-line)"
+    stroke-width="1"
+    vector-effect="non-scaling-stroke"
+  />
+</svg>

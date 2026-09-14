@@ -22,3 +22,194 @@
   border: 0;
   border-top: var(--hairline) solid var(--color-line);
 }
+
+/* Step 04 — static home page. Everything below is a thing no Tailwind utility already
+ * expresses: the three-column rail, the drawing layer's absolute positioning, and the
+ * handful of interactive elements that repeat across sections. */
+
+html,
+body {
+  overflow-x: hidden;
+}
+
+/* Skip link. Off-screen until focused, per design-spec.md §10. Uses :focus (not
+ * :focus-visible) — a skip link should appear for any way it receives focus, not only
+ * keyboard navigation. */
+.skip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 10;
+  transform: translateY(-100%);
+  background: var(--color-sheet);
+  color: var(--color-graphite);
+  padding: 0.6em 1em;
+  font-family: var(--font-sans);
+  font-size: var(--text-small);
+  text-decoration: none;
+}
+.skip:focus {
+  transform: translateY(0);
+}
+
+/* Interactive feedback: opacity only, at the one feedback duration and curve
+ * (docs/motion-spec.md). Shared by every quiet interactive element — the contact link,
+ * annotation markers, note back-links, "show all" controls. Never a color or shadow
+ * transition: motion-spec.md's hard rule is transform/opacity/stroke-dashoffset only. */
+.feedback {
+  transition: opacity var(--dur-feedback) var(--ease-out);
+}
+.feedback:hover,
+.feedback:focus-visible {
+  opacity: 0.7;
+}
+
+/* A resolved value renders as itself. An unresolved `[FILL]` marker renders as a
+ * drafting annotation — mono, small, secondary — so a gap in the content looks like an
+ * unresolved dimension on a technical drawing rather than a broken page. */
+.fill {
+  font-family: var(--font-mono);
+  font-size: var(--text-dimension);
+  letter-spacing: var(--text-dimension--letter-spacing);
+  color: var(--color-graphite-2);
+}
+
+/* Annotation markers linking spine prose to margin notes. Mono because a callout number
+ * is a count, not a label. --graphite-2, not --signal: the signal budget (design-spec.md
+ * §5, roughly eight appearances) is spent on leader terminations and links, not on every
+ * one of these. */
+.marker {
+  font-family: var(--font-mono);
+  font-size: var(--text-dimension);
+  color: var(--color-graphite-2);
+  text-decoration: none;
+}
+
+/* The three-column rail: prose, gutter, margin. The gutter column carries no content of
+ * its own — it's where leader lines are drawn — so it's named but never targeted by a
+ * grid-area. Below 768px the margin collapses under the prose, in source order, which is
+ * what makes each note land directly after its paragraph with no JS. */
+.rail {
+  display: grid;
+  grid-template-columns: minmax(0, var(--container-measure)) var(--spacing-gutter) var(--container-margin);
+  grid-template-areas: 'prose gutter margin';
+}
+.rail-prose {
+  grid-area: prose;
+}
+.rail-margin {
+  grid-area: margin;
+  align-self: start;
+}
+@media (max-width: 767px) {
+  .rail {
+    grid-template-columns: 1fr;
+    grid-template-areas: 'prose' 'margin';
+    row-gap: 1rem;
+  }
+}
+
+/* One margin note. The leader line is absolutely positioned into the rail's gutter
+ * column, so it never takes up layout space of its own — reserved by the rail's grid
+ * track instead, which is what design-spec.md §10's "no layout shift" box asks for here. */
+.note + .note {
+  margin-top: 1.5rem;
+}
+.note {
+  position: relative;
+}
+/* The rendered note body arrives as a <p> from the notes collection's markdown; folding
+ * it inline keeps "label — text" reading as one line instead of the label sitting above
+ * an orphaned paragraph. */
+.note-text p {
+  display: inline;
+  margin: 0;
+}
+
+.leader {
+  position: absolute;
+  top: 0.4em;
+  right: 100%;
+  width: var(--spacing-gutter);
+  aspect-ratio: 4 / 3;
+  overflow: visible;
+}
+@media (max-width: 767px) {
+  .leader {
+    display: none;
+  }
+}
+
+/* The page rule — the vertical line the whole drawing hangs off. Ships in its final,
+ * fully-drawn state now (motion-spec.md's initial-state pattern); step 09 adds a
+ * drawSVG scrub on `#rule path` and must not need to touch this positioning. Its `left`
+ * mirrors the rail's own column-sizing formula exactly, so the rule always lands right
+ * where the prose column ends and the gutter begins, at every width.
+ *
+ * `.page-main` on purpose, not a bare `main` selector — `/type-test` has its own
+ * unrelated `<main>` and must not inherit this page's width/centering. */
+.page-main {
+  position: relative;
+  width: min(calc(100% - 3rem), calc(var(--container-measure) + var(--spacing-gutter) + var(--container-margin)));
+  margin-inline: auto;
+}
+.rule-svg {
+  position: absolute;
+  inset-block: 0;
+  left: min(var(--container-measure), calc(100% - var(--spacing-gutter) - var(--container-margin)));
+  width: 1px;
+  overflow: visible;
+  pointer-events: none;
+}
+@media (max-width: 767px) {
+  .page-main {
+    width: 100%;
+    padding-inline: 1rem;
+  }
+  .rule-svg {
+    left: 0;
+  }
+}
+
+/* Archive rows. `.archive-row` is the exact selector motion-spec.md's Flip snippet
+ * (`Flip.getState('.archive-row')`) targets in step 11 — defined now so that step adds
+ * only script, no markup. */
+.archive-row {
+  display: grid;
+  grid-template-columns: 5.5rem 1fr;
+  column-gap: var(--spacing-gutter);
+  padding-block: 1.25rem;
+  border-top: var(--hairline) solid var(--color-line);
+}
+.archive-row:first-child {
+  border-top: 0;
+}
+@media (max-width: 767px) {
+  .archive-row {
+    grid-template-columns: 1fr;
+    row-gap: 0.5rem;
+  }
+}
+
+/* Shared chrome for an interactive control that isn't a plain link — "show all" today,
+ * whatever step 05's filter buttons need tomorrow. 2px radius per design-spec.md §5:
+ * structural elements stay square, controls read as controls. */
+.control {
+  display: inline-block;
+  width: fit-content;
+  cursor: pointer;
+  list-style: none;
+  border: var(--hairline) solid var(--color-line);
+  border-radius: var(--radius-control);
+  padding: 0.4em 0.9em;
+  background: var(--color-sheet);
+  color: var(--color-graphite);
+  font-family: var(--font-sans);
+  font-size: var(--text-small);
+}
+.control::-webkit-details-marker {
+  display: none;
+}
+.control::marker {
+  content: '';
+}
