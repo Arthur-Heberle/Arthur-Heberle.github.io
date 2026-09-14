@@ -16,7 +16,7 @@ const displayDate = date.includes('[FILL') ? date : date.replace('-', '.')
 const hasLinks = Boolean(links.repo || links.live || links.pdf)
 ---
 
-<li class="archive-row bg-sheet px-6">
+<li class="archive-row bg-sheet px-6" data-tags={tags.join(' ')}>
   <p class="text-dimension font-mono text-graphite-2">
     <Fill value={displayDate} />
   </p>

@@ -1,7 +1,9 @@
 ---
 // Archive — six entries visible, "show all" for the rest (design-spec.md §6). `<details>`
 // is the no-JS mechanism; step 05 progressively enhances it with a tag filter rather
-// than replacing it, so this fallback keeps working with JS disabled.
+// than replacing it, so this fallback keeps working with JS disabled — see the script
+// below, which unwraps <details> into a flat list only once JS has proven it can do
+// better.
 import { getCollection } from 'astro:content'
 import ArchiveRow from './ArchiveRow.astro'
 
@@ -22,13 +24,35 @@ const sorted = entries.slice().sort((a, b) => {
 const VISIBLE = 6
 const visible = sorted.slice(0, VISIBLE)
 const rest = sorted.slice(VISIBLE)
+
+// Tag order matches the `tag` enum in src/content.config.ts, not first-appearance order
+// in content — so the bar's order stays stable as entries are added or reordered. Derived
+// from the entries themselves (never hand-written) so a sixth tag can't reach content
+// without reaching the bar.
+const TAG_ORDER = ['code', 'hardware', 'teaching', 'ai', 'energy'] as const
+const presentTags = new Set(sorted.flatMap((e) => e.data.tags))
+const tags = TAG_ORDER.filter((t) => presentTags.has(t))
 ---
 
 <section class="flex flex-col gap-8 py-16" aria-labelledby="archive-heading">
   <h2 id="archive-heading" class="text-h2 font-sans font-medium">Archive</h2>
-  <ul class="flex flex-col" role="list">
+  <div class="filter-bar" role="group" aria-label="Filter archive by tag">
+    <button type="button" class="control feedback" data-filter="all" aria-pressed="true">All</button>
+    {
+      tags.map((t) => (
+        <button type="button" class="control feedback" data-filter={t} aria-pressed="false">
+          {t}
+        </button>
+      ))
+    }
+  </div>
+  <p class="filter-count" aria-live="polite" data-filter-count>
+    {sorted.length} / {sorted.length}
+  </p>
+  <ul class="flex flex-col" role="list" data-archive-list>
     {visible.map((entry) => <ArchiveRow entry={entry} />)}
   </ul>
+  <p data-empty hidden class="text-small text-graphite-2">No entries with this tag.</p>
   {
     rest.length > 0 && (
       <details>
@@ -42,3 +66,85 @@ const rest = sorted.slice(VISIBLE)
     )
   }
 </section>
+
+<script>
+  // Tag filter + "show all", plain JS (docs/implementation-plan.md step 05: "interaction
+  // works before animation exists"). All DOM mutation lives in one applyState() function
+  // so step 11 can wrap this exact call in Flip.getState(...)/mutate/Flip.from(...)
+  // without rewriting this module.
+  const section = document.querySelector('[data-archive-list]')?.closest('section')
+  if (section) {
+    const list = section.querySelector('[data-archive-list]') as HTMLUListElement
+    const buttons = Array.from(section.querySelectorAll<HTMLButtonElement>('[data-filter]'))
+    const countEl = section.querySelector('[data-filter-count]') as HTMLElement
+    const emptyEl = section.querySelector('[data-empty]') as HTMLElement
+    const detailsEl = section.querySelector('details')
+
+    const state = { tag: 'all', expanded: detailsEl?.open ?? false }
+
+    // Enhance the <details> "show all" into a real button once, before first render:
+    // step 11's Flip.getState('.archive-row') needs every row under one parent to travel
+    // between positions, and a row trapped in a <details> subtree can't flip into the
+    // main list. <details> stays the shipped no-JS fallback; this only replaces it once
+    // JS is confirmed present.
+    let showAllBtn: HTMLButtonElement | null = null
+    if (detailsEl) {
+      const overflowRows = Array.from(detailsEl.querySelectorAll('.archive-row'))
+      overflowRows.forEach((row) => list.appendChild(row))
+      showAllBtn = document.createElement('button')
+      showAllBtn.type = 'button'
+      showAllBtn.className = 'control feedback'
+      showAllBtn.dataset.showAll = ''
+      showAllBtn.setAttribute('aria-expanded', String(state.expanded))
+      showAllBtn.textContent = 'show all'
+      detailsEl.replaceWith(showAllBtn)
+      showAllBtn.addEventListener('click', () => {
+        const before = showAllBtn!.getBoundingClientRect().top
+        state.expanded = !state.expanded
+        applyState()
+        // step 07 must route this through Lenis, once Lenis owns scroll position —
+        // not window.scrollBy.
+        const after = showAllBtn!.getBoundingClientRect().top
+        if (after !== before) window.scrollBy(0, after - before)
+      })
+    }
+
+    const rows = () => Array.from(list.querySelectorAll<HTMLLIElement>('.archive-row'))
+
+    function applyState() {
+      const all = rows()
+      let shown = 0
+      all.forEach((row, i) => {
+        const tags = (row.dataset.tags ?? '').split(' ')
+        const matches = state.tag === 'all' || tags.includes(state.tag)
+        const withinCap = state.tag !== 'all' || state.expanded || i < 6
+        const visible = matches && withinCap
+        row.hidden = !visible
+        if (visible) shown += 1
+      })
+      countEl.textContent = `${shown} / ${all.length}`
+      emptyEl.hidden = shown > 0
+      if (showAllBtn) {
+        showAllBtn.hidden = state.tag !== 'all'
+        showAllBtn.setAttribute('aria-expanded', String(state.expanded))
+        showAllBtn.textContent = state.expanded ? 'show fewer' : 'show all'
+      }
+      buttons.forEach((btn) => {
+        btn.setAttribute('aria-pressed', String(btn.dataset.filter === state.tag))
+      })
+    }
+
+    buttons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        if (btn.dataset.filter === state.tag) return
+        const before = btn.getBoundingClientRect().top
+        state.tag = btn.dataset.filter ?? 'all'
+        applyState()
+        const after = btn.getBoundingClientRect().top
+        if (after !== before) window.scrollBy(0, after - before)
+      })
+    })
+
+    applyState()
+  }
+</script>

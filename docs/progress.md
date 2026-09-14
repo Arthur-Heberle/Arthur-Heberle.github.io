@@ -11,7 +11,7 @@ Status values: `todo`, `in progress`, `done`, `blocked`.
 | 02 | Tokens, type and layout primitives | done | fonts self-hosted, not `<link>`-loaded; `@theme` reset lines added to `tokens.css`; TypeScript pinned to 5.9.3, not `latest`, for `@astrojs/check` compatibility |
 | 03 | Content collections | done | English-only schema (no `lang` field); repo links normalised to `https://`; changelog is one YAML file via `file()` |
 | 04 | Static home page | done | drawing layer (rule + leader lines) built now, ahead of steps 09–10; notes `order` renumbered to the spine's marker order; `<details>` is the no-JS "show all" |
-| 05 | Archive filter, without GSAP | todo | |
+| 05 | Archive filter, without GSAP | done | single-select tag filter + `All`, one live mono count; cap of 6 lifts under any active filter; `<details>` unwrapped into a flat list by JS on init so step 11's Flip sees one parent |
 | 06 | Accessibility and performance gate | todo | |
 | 07 | Motion infrastructure only | todo | |
 | 08 | Tier 2 triggered reveals | todo | |
@@ -135,6 +135,28 @@ operable with JS disabled, which is what design-spec.md §6's "six visible, then
 all" needs to work with zero JavaScript; step 05 should progressively enhance this
 element with the tag filter rather than replace it.
 
+Step 05 — On init, JS unwraps the archive's `<details>` into a flat `<ul>` plus a real
+`<button data-show-all>`, moving `brasilore` (the one overflow row) into the main list.
+`<details>` stays the shipped no-JS fallback — nothing changes without JS — but once JS
+runs, step 11's `Flip.getState('.archive-row')` needs every row under one parent to
+travel between positions, and a row trapped inside a `<details>` subtree can't flip into
+the main list.
+
+Step 05 — The 6-row cap applies only in the `All` filter state, not implemented literally
+as design-spec.md §6's "six entries, then show all" for every state. Reason: a cap of six
+on a filtered set of at most four is meaningless, and here it actively breaks — filtering
+to `code` matches 4 rows, one of which (`brasilore`) sits behind "show all"; without
+lifting the cap the reader would see 3 of 4 matches with no signal a fourth exists. Any
+tag filter now shows every match and hides the show-all control; returning to `All`
+restores whatever expanded/collapsed state the reader had left.
+
+Step 05 — `src/styles/type.css`'s `.archive-row:first-child { border-top: 0 }` (from step
+04) was replaced with `.archive-row:not([hidden]) ~ .archive-row:not([hidden])`. The
+`:first-child` version keys off DOM position, which the filter breaks: filtering to
+`energy` leaves its one match (4th in the DOM) as the only visible row, and `:first-child`
+would still draw a top border above it since it isn't the first *child*, only the first
+*visible* one.
+
 ---
 
 ## Notes for future sessions
@@ -194,6 +216,23 @@ gotchas, things that looked right and weren't.
 - The render policy for an unresolved `[FILL]` value (visible drafting annotation) lives
   in exactly one component, `src/components/Fill.astro`. Check there first if that policy
   ever needs to change, rather than hunting across templates.
+- Step 04 already built `.control` (button/summary chrome) and `.feedback` (120ms opacity
+  hover/focus transition) in `src/styles/type.css` explicitly for step 05 to reuse — its
+  own comment says so. Confirmed before writing any CSS for the filter bar: no new control
+  class, no new transition, both classes just applied to the six filter buttons and the
+  show-all button as-is.
+- All archive-filter DOM mutation lives in one `applyState()` function inside
+  `Archive.astro`'s `<script>`. Step 11 wraps that one call in
+  `Flip.getState('.archive-row')` / mutate / `Flip.from(...)` — it does not rewrite the
+  module. The scroll-position guard (`window.scrollBy`) in the same script must be
+  rerouted through Lenis once step 07 gives it a scroll authority.
+- Tailwind v4's preflight already ships `[hidden]:where(:not([hidden=until-found])){
+  display:none!important}` (confirmed in the built `dist/_astro/*.css`) — toggling the
+  `hidden` attribute hides an element even against a component's own `display: grid`, with
+  no extra CSS needed. Don't add a redundant `[hidden] { display: none }` rule.
+- `grep -c` on a built `.astro` page undercounts repeated attributes/strings because Astro
+  emits `dist/*.html` as one line — `grep -c` counts matching *lines*, not occurrences.
+  Use `grep -o "pattern" file | wc -l` to count occurrences in built HTML.
 - CSS Grid's `minmax(0, X)` track (a fixed-length `X`, no `fr`) grows to fill available
   space up to `X` and shrinks to 0 below that, with no `fr` needed — this is what makes
   `.rail`'s three-column formula (`minmax(0, var(--container-measure)) var(--spacing-gutter)

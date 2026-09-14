@@ -173,16 +173,18 @@ body {
 
 /* Archive rows. `.archive-row` is the exact selector motion-spec.md's Flip snippet
  * (`Flip.getState('.archive-row')`) targets in step 11 — defined now so that step adds
- * only script, no markup. */
+ * only script, no markup. Border keys off which siblings are actually visible, not DOM
+ * position: step 05's filter can leave any row first, and a `:first-child` rule would
+ * draw a stray top border above a lone filtered match. */
 .archive-row {
   display: grid;
   grid-template-columns: 5.5rem 1fr;
   column-gap: var(--spacing-gutter);
   padding-block: 1.25rem;
-  border-top: var(--hairline) solid var(--color-line);
-}
-.archive-row:first-child {
   border-top: 0;
+}
+.archive-row:not([hidden]) ~ .archive-row:not([hidden]) {
+  border-top: var(--hairline) solid var(--color-line);
 }
 @media (max-width: 767px) {
   .archive-row {
@@ -212,4 +214,35 @@ body {
 }
 .control::marker {
   content: '';
+}
+/* An active filter is a stroke/text state, never a fill — design-spec.md §5: --signal
+ * never fills a background. --sheet from .control stays underneath. No transition here:
+ * .feedback already supplies the 120ms opacity feedback; motion-spec.md's hard property
+ * rule (transform/opacity/stroke-dashoffset only) rules out a `transition: color`. */
+.control[aria-pressed='true'] {
+  color: var(--color-signal);
+  border-color: var(--color-signal);
+}
+
+/* Step 05 — archive tag filter. Absent without JS rather than present-but-inert: a
+ * visible control that does nothing is worse than no control (implementation-plan.md's
+ * step 05 acceptance explicitly allows "absent or inert"). The `js` class is set by an
+ * inline script in Base.astro's <head>, before first paint, so there is no flash. */
+.filter-bar {
+  display: none;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.js .filter-bar {
+  display: flex;
+}
+
+/* The one place a count is licensed mono (design-spec.md §5: dimensions, dates, counts).
+ * Doubles as the aria-live announcement for a filter change — no separate visually-hidden
+ * live region needed. */
+.filter-count {
+  font-family: var(--font-mono);
+  font-size: var(--text-dimension);
+  letter-spacing: var(--text-dimension--letter-spacing);
+  color: var(--color-graphite-2);
 }

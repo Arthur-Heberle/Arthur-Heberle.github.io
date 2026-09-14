@@ -15,6 +15,12 @@ const { title, noindex = false } = Astro.props
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     {noindex && <meta name="robots" content="noindex" />}
+    <!-- Must run before first paint, or a CSS-revealed filter bar (step 05) would flash
+         and vanish for a no-JS visitor — that's exactly the layout shift step 06 gates
+         on. is:inline stops Astro from bundling/deferring it. Reused by steps 07-13. -->
+    <script is:inline>
+      document.documentElement.classList.add('js')
+    </script>
     <!-- Only the display face is preloaded: it's what paints the hero line, and it's
          the only one of the four self-hosted fonts on the critical path. crossorigin
          is mandatory even though the request is same-origin. -->
