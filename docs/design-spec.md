@@ -128,7 +128,7 @@ Six values. The two chromatic ones have specific jobs and never decorate.
 --ground:    #EAECEB;  /* page, cool pale gray, drafting stock — never cream */
 --sheet:     #F6F7F6;  /* raised areas: archive rows, drawing panels */
 --graphite:  #23262A;  /* all body text and drawing lines, cool near-black */
---graphite-2:#6B7075;  /* secondary text, annotations, metadata */
+--graphite-2:#666A6F;  /* secondary text, annotations, metadata */
 --line:      #C3C8C6;  /* hairlines and construction lines */
 --signal:    #B3261E;  /* annotation terminations, active states, links */
 --measure:   #2F6F8F;  /* data traces inside set-pieces only */

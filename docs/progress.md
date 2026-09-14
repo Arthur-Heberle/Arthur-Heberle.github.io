@@ -12,7 +12,7 @@ Status values: `todo`, `in progress`, `done`, `blocked`.
 | 03 | Content collections | done | English-only schema (no `lang` field); repo links normalised to `https://`; changelog is one YAML file via `file()` |
 | 04 | Static home page | done | drawing layer (rule + leader lines) built now, ahead of steps 09–10; notes `order` renumbered to the spine's marker order; `<details>` is the no-JS "show all" |
 | 05 | Archive filter, without GSAP | done | single-select tag filter + `All`, one live mono count; cap of 6 lifts under any active filter; `<details>` unwrapped into a flat list by JS on init so step 11's Flip sees one parent |
-| 06 | Accessibility and performance gate | todo | |
+| 06 | Accessibility and performance gate | done | `--graphite-2` darkened to clear AA on `--ground`; focus ring widened to 2px; `tabindex="-1"` added to both `<main>`s; a second font preload added after measuring CLS > 0 |
 | 07 | Motion infrastructure only | todo | |
 | 08 | Tier 2 triggered reveals | todo | |
 | 09 | Tier 1 drawing layer | todo | |
@@ -42,13 +42,12 @@ Blocking or near-blocking. Add to this list rather than guessing.
       gates on the count reaching zero.
 - [ ] The word the EduBra Braille set-piece spells.
 - [ ] Contact section: publish WhatsApp number or email only?
-- [ ] `--graphite-2` on `--ground` measures 4.21:1, under the 4.5 AA floor for normal
-      text (passes on `--sheet` at 4.66:1). It's the colour of margin notes and archive
-      metadata. Not changed — it's a token and `CLAUDE.md` forbids changing one unasked,
-      and design-spec §10 asks for margin notes "visible at low contrast by default" which
-      this may be deliberate. Step 06 gates on Lighthouse accessibility 95+, which will
-      flag it. Three ways out, Arthur's call: darken the token, move margin notes to
-      `--sheet`, or accept the finding.
+- [x] `--graphite-2` on `--ground` measured 4.21:1, under the 4.5 AA floor. Put to Arthur
+      at step 06: darkened the token to `#666a6f` (4.59:1 on `--ground`, 5.07:1 on
+      `--sheet`), the first authorised token-value change in the project.
+      `docs/design-spec.md` §5 updated to match. Rejected: moving margin notes to
+      `--sheet` (fixes only 1 of the 8 sites this color appears in on `--ground`) and
+      accepting the finding (ships the gate below its own floor).
 
 ---
 
@@ -157,6 +156,32 @@ Step 05 — `src/styles/type.css`'s `.archive-row:first-child { border-top: 0 }`
 would still draw a top border above it since it isn't the first *child*, only the first
 *visible* one.
 
+Step 06 — `--color-graphite-2` changed `#6b7075` → `#666a6f` to clear the 4.5:1 AA
+contrast floor on `--ground` (4.21 → 4.59; 4.66 → 5.07 on `--sheet`). The first
+authorised token-value change in the project — put to Arthur this session, not made
+unilaterally. `docs/design-spec.md` §5 updated to match so the spec doesn't silently
+drift from the code.
+
+Step 06 — `:focus-visible`'s outline widened from `var(--hairline)` (0.5px) to a literal
+2px. `--hairline` itself is untouched; every other hairline on the page stays 0.5px. Not
+a Lighthouse or WCAG AA requirement (thickness is a 2.2 AAA criterion) — done because
+"focus styles audited" is explicitly in step 06's Do list and a sub-pixel ring was a weak
+answer to it. Confirmed visible and unclipped by keyboard walk at both 1280px and 375px.
+
+Step 06 — `tabindex="-1"` added to both `<main id="main">` elements (`index.astro`,
+`type-test.astro`). A skip link's fragment jump moves the *sequential-navigation point*
+in Chromium/Firefox without it, but has historically not moved *focus* in Safari — the
+attribute makes the skip actually work everywhere. Invisible in normal use since the
+ring is `:focus-visible`-gated.
+
+Step 06 — A second font preload (`archivo-400-latin.woff2`) added in `Base.astro`,
+against `design-spec.md` §5's "preload the display face only" (written before step 02
+chose self-hosting). Reason: measured CLS was 0.006, not 0, with only the display face
+preloaded — Lighthouse's `layout-shifts` audit attributed it to the hero name line
+reflowing as Archivo finished loading. Preloading the body face brought CLS to exactly
+0. §10's "no layout shift" is the higher-priority rule and step 06 is its gate, so the
+divergence stands; Archivo 500 and IBM Plex Mono stay swap-only.
+
 ---
 
 ## Notes for future sessions
@@ -259,3 +284,27 @@ gotchas, things that looked right and weren't.
   the outer window and does trigger real `@media` breakpoints — used to verify the
   767/768px boundary and the 375/768/1280px display-line wrap for this step when window
   resizing wouldn't cooperate.
+- Step 06 confirmed the above still holds even with the `claude-in-chrome` MCP browser
+  controlling a real Chrome window: its `resize_window` tool also left
+  `window.innerWidth` unchanged. Its extension also refuses to navigate a tab to a
+  `file://` URL ("Can't interact with browser-internal or unparseable URLs"), so the
+  iframe host page can't be opened directly from disk — serve it instead
+  (`npx --yes serve -l <port> <scratchpad-dir>` in the background, then navigate to
+  `http://localhost:<port>/<file>.html`). Real keyboard events (Tab, Enter) inside that
+  iframe do trigger the page's own focus/tab-order behaviour correctly, so this is a
+  reliable way to audit tab order and focus visibility at a specific viewport width.
+- `pnpm preview`'s own process wrapper reports `[exited with code 0]` immediately in a
+  backgrounded shell — this is expected, not a crash: `astro preview` daemonizes itself
+  and the message is `Preview server already running at ...` on any later start attempt.
+  Confirm liveness with `curl -sI http://localhost:4321/`, not by whether the launching
+  command "completed". `pnpm exec astro preview stop` cleanly kills the daemon.
+- Lighthouse's own Windows temp-directory cleanup throws `EPERM` on exit
+  (`chrome-launcher`'s `rmSync` on its own tmp profile dir) even on a fully successful
+  run — the JSON/HTML reports are already written to disk before that error fires, so
+  check for the output files rather than treating a non-zero-looking failure message as
+  the run having failed.
+- Node's `require()`/`readFileSync` from this Bash tool cannot resolve paths through the
+  `ARTHUR~1` short-name segment of the Windows temp path (`AppData\Local\Temp\claude\...`)
+  even though the same path resolves fine for `cp`/`ls`. Copy the file into the project
+  directory (or use the long-name path, `Arthur Heberle` in full) before reading it from
+  Node.

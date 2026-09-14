@@ -29,7 +29,7 @@
   --color-ground: #eaeceb;      /* page: cool pale gray, drafting stock. NOT cream */
   --color-sheet: #f6f7f6;       /* raised: archive rows, drawing panels */
   --color-graphite: #23262a;    /* body text and drawing lines: cool near-black */
-  --color-graphite-2: #6b7075;  /* secondary text, annotations, metadata */
+  --color-graphite-2: #666a6f;  /* secondary text, annotations, metadata */
   --color-line: #c3c8c6;        /* hairlines and construction lines */
   --color-signal: #b3261e;      /* annotation terminations, active states, links */
   --color-measure: #2f6f8f;     /* data traces inside set-pieces only */
@@ -97,9 +97,12 @@ body {
   text-align: left;
 }
 
-/* Focus must always be visible. Do not remove this without a replacement. */
+/* Focus must always be visible. Do not remove this without a replacement.
+ * A literal 2px, not var(--hairline) (0.5px) — step 06: focus needs to read as a
+ * deliberate mark, not a construction line. --hairline itself is untouched; every
+ * other hairline on the page stays 0.5px. */
 :focus-visible {
-  outline: var(--hairline) solid var(--color-signal);
+  outline: 2px solid var(--color-signal);
   outline-offset: 3px;
 }
 
