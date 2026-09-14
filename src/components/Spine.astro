@@ -13,8 +13,8 @@ const byLabel = Object.fromEntries(notes.map((note) => [note.data.label, note]))
 ---
 
 <section class="flex flex-col gap-12 py-16" aria-label="About">
-  <div class="rail">
-    <p class="rail-prose text-body">
+  <div class="rail" data-anim-scope>
+    <p class="rail-prose text-body" data-anim>
       I build things that sit between software and the physical world. A device that
       turns digital text into Braille. Research software that plans how a part gets
       printed. Energy data somebody has to make a decision from. The part I'm best at is
@@ -31,8 +31,8 @@ const byLabel = Object.fromEntries(notes.map((note) => [note.data.label, note]))
     </div>
   </div>
 
-  <div class="rail">
-    <p class="rail-prose text-body">
+  <div class="rail" data-anim-scope>
+    <p class="rail-prose text-body" data-anim>
       Most of what I've done has had an audience. I was a monitor twice at UTFPR, for
       Calculus II and later for Programming Techniques, which mostly meant explaining
       pointers to people who were close to giving up. I spent six months at an energy
@@ -50,8 +50,8 @@ const byLabel = Object.fromEntries(notes.map((note) => [note.data.label, note]))
     </div>
   </div>
 
-  <div class="rail">
-    <p class="rail-prose text-body">
+  <div class="rail" data-anim-scope>
+    <p class="rail-prose text-body" data-anim>
       Outside all of that I keep a few things going that lead nowhere in particular.
       Languages I don't strictly need.<a
         class="feedback marker"
@@ -68,9 +68,9 @@ const byLabel = Object.fromEntries(notes.map((note) => [note.data.label, note]))
       > I'm not planning to get good at that one.
     </p>
     <div class="rail-margin flex flex-col">
-      <MarginNote entry={byLabel['languages']} marker={3} />
-      <MarginNote entry={byLabel['chess']} marker={4} />
-      <MarginNote entry={byLabel['guitar']} marker={5} />
+      <MarginNote entry={byLabel['languages']} marker={3} sibling={0} />
+      <MarginNote entry={byLabel['chess']} marker={4} sibling={1} />
+      <MarginNote entry={byLabel['guitar']} marker={5} sibling={2} />
     </div>
   </div>
 </section>

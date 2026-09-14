@@ -8,12 +8,19 @@ import type { CollectionEntry } from 'astro:content'
 interface Props {
   entry: CollectionEntry<'notes'>
   marker: number
+  /** Position among the notes sharing one rail margin (docs/motion-spec.md's 60ms sibling
+   *  stagger, on top of the 200ms lag behind the paragraph). Defaults to 0 — a rail with
+   *  only one note omits this prop entirely. */
+  sibling?: number
 }
-const { entry, marker } = Astro.props
+const { entry, marker, sibling = 0 } = Astro.props
 const { Content } = await render(entry)
+// 0.2 + 0.06 * sibling, but toFixed keeps the rendered attribute clean: 0.2 + 0.06 * 2 is
+// 0.32000000000000006 in binary floating point.
+const delay = (0.2 + 0.06 * sibling).toFixed(2)
 ---
 
-<aside class="note" id={`note-${entry.id}`}>
+<aside class="note" id={`note-${entry.id}`} data-anim data-delay={delay}>
   <svg class="leader" viewBox="0 0 32 24" preserveAspectRatio="none" aria-hidden="true">
     <path
       d="M0 4 H18 L32 12"

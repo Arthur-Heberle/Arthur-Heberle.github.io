@@ -14,7 +14,7 @@ Status values: `todo`, `in progress`, `done`, `blocked`.
 | 05 | Archive filter, without GSAP | done | single-select tag filter + `All`, one live mono count; cap of 6 lifts under any active filter; `<details>` unwrapped into a flat list by JS on init so step 11's Flip sees one parent |
 | 06 | Accessibility and performance gate | done | `--graphite-2` darkened to clear AA on `--ground`; focus ring widened to 2px; `tabindex="-1"` added to both `<main>`s; a second font preload added after measuring CLS > 0 |
 | 07 | Motion infrastructure only | done | `gsap`+`lenis` installed; all wiring lives in `src/scripts/motion.ts`; `Archive.astro`'s two `window.scrollBy` calls rerouted through it; zero visible change (Lighthouse mobile: perf 99, a11y 100, best-practices 100, CLS 0) |
-| 08 | Tier 2 triggered reveals | todo | |
+| 08 | Tier 2 triggered reveals | done | `CustomEase` registered as a 5th plugin — `motion-spec.md`'s `cubic-bezier(...)` ease string doesn't parse in GSAP and silently degrades to `power1.out`; `start: 'clamp(top 85%)'` on every trigger — a plain `'top 85%'` is unreachable for the Contact paragraph, the page's last content block (Lighthouse mobile: perf 99, a11y 100, best-practices 100, CLS 0; ~65KB JS gzip) |
 | 09 | Tier 1 drawing layer | todo | |
 | 10 | Leader lines to margin notes | todo | |
 | 11 | Archive filter with Flip | todo | |
@@ -199,6 +199,59 @@ option, with a fallback only if Tailwind's `@import` inliner refused the bare
 specifier) — it didn't; the import compiled cleanly on the first `pnpm build`, so the
 CSS is in the one existing stylesheet bundle rather than a second request.
 
+Step 08 — `CustomEase` registered as a fifth GSAP plugin, against `motion-spec.md`'s
+four-plugin registration line, and the triggered ease defined from `CustomEase.create('reveal',
+'M0,0 C0.22,1 0.36,1 1,1')` rather than the literal string `motion-spec.md:142` gives
+(`ease: 'cubic-bezier(0.22, 1, 0.36, 1)'`). Verified against the installed `gsap@3.15.0`,
+not assumed: `gsap.parseEase('cubic-bezier(0.22, 1, 0.36, 1)')` returns `undefined`, and a
+tween using that string silently falls back to GSAP's default `power1.out` — the wrong
+curve, with no warning. `CustomEase` cannot parse the CSS string form either; it needs the
+SVG-path form used here, with identical control points. Put to Arthur this session:
+registering `CustomEase` (free since GSAP 3.13, not a new library) cost ~2KB gzip against
+a measured `power4.out` alternative (max deviation 0.0118 progress at t=0.053 — visually
+indistinguishable, but not the named value, and `motion-spec.md:4` says "where a value is
+given, use that value"). Exported as `EASE_OUT` from `motion.ts` for steps 11–13 to reuse.
+
+Step 08 — Every `[data-anim]` trigger uses `start: 'clamp(top 85%)'`, not the plain
+`start: 'top 85%'` `motion-spec.md:144` gives. Found and verified in-browser, not
+assumed: the Contact paragraph — the page's last content block, with only the email link
+and bottom padding beneath it — never revealed even scrolled to the true bottom of the
+page, because the scroll position `'top 85%'` requires exceeded the page's actual max
+scroll by about 23px. Confirmed in `node_modules/gsap/ScrollTrigger.js` that a plain
+position isn't clamped to the scroller's bounds; `clamp()` is GSAP's own documented
+positional syntax for exactly this (the `_startClamp` path), and has no effect on any
+interior element, where the unclamped position was already reachable. Re-verified live
+after the fix: all 13 reveals, including Contact's, now fire correctly at real max scroll.
+
+Step 08 — `data-anim-scope` added to each `.rail` (three, in `Spine.astro`), not present
+in `motion-spec.md`'s per-element loop. Without it, "margin notes lag their paragraph by
+200ms" is only true if the paragraph and its notes share a trigger; scoping the reveal
+loop to look for the nearest `[data-anim-scope]` ancestor (falling back to the element
+itself where there is none) makes that literally true at ≥768px, where `.rail` is a
+two-column grid with a shared top edge. Below 768px `.rail` collapses to one column and
+notes stack under the prose (`type.css`), so scoping is skipped there — each element
+triggers on its own arrival instead, confirmed correct via the 375px iframe check.
+
+Step 08 — `data-anim-played`, a dataset flag beyond ScrollTrigger's own `once: true`.
+`gsap.matchMedia()` reverts and recreates a branch's triggers whenever its media query
+starts or stops matching (crossing 768px, or toggling reduced motion mid-session), and
+without this flag a reveal that had already played would replay when its trigger is
+rebuilt. `once: true` alone is scoped to one branch's lifetime, not to the page session.
+
+Step 08 — The reduced-motion path (`mm.add('(prefers-reduced-motion: reduce)', ...)`,
+unchanged in shape from step 07) could not be exercised live this session: the
+`claude-in-chrome` extension drives page content only, not native browser chrome — `F12`
+did nothing the extension's own screenshot tool could see, consistent with the
+`resize_window` limitation steps 04/06 already logged. Toggling the OS-level Windows
+accessibility setting that Chromium reads for this was judged too invasive for a
+verification step on a real machine and not attempted. What *was* confirmed: the static
+build has zero `opacity:0`/hiding CSS or inline style on any `[data-anim]` element
+(`grep`), so the page is fully visible independent of whether this branch runs at all;
+and the branch's own `gsap.set(anim, { clearProps: 'all' })` is unchanged from the
+already-shipped, already-guarded pattern step 07 put in place. Recommend a manual
+DevTools Rendering-panel check before step 14 ships, since this session's tooling
+couldn't do it.
+
 ---
 
 ## Notes for future sessions
@@ -355,3 +408,40 @@ gotchas, things that looked right and weren't.
   across two `localhost` ports. The iframe technique from step 04's notes still works
   for a purely visual check (screenshot), just not for script introspection into the
   framed page from the host page.
+- GSAP cannot parse a CSS `cubic-bezier(...)` string as an ease — `gsap.parseEase(...)`
+  returns `undefined` and the tween silently uses `power1.out` instead, with no warning
+  anywhere. Use `motion.ts`'s exported `EASE_OUT` (a `CustomEase` built from the same
+  control points in SVG-path form) for every triggered tween from here on; never restate
+  `motion-spec.md`'s literal ease string.
+- `start: 'top 85%'` (or any fixed-percentage `start`) on a `ScrollTrigger` can be
+  mathematically unreachable for an element close to the true end of the page, if the
+  remaining page height below it is less than that percentage of the viewport height —
+  confirmed in `node_modules/gsap/ScrollTrigger.js`, no automatic clamping happens for a
+  plain position. The element then sits at `opacity: 0` forever for any reader whose
+  viewport is tall enough to hit this. `start: 'clamp(top 85%)'` is GSAP's own fix — wrap
+  every tier-2 trigger's `start` in `clamp(...)` from here on, not just ones near a page
+  end, since which element ends up near the end can shift as content is added.
+- `gsap.matchMedia()` branches revert and rebuild their triggers on every change to the
+  media query's match state (crossing 768px, toggling reduced motion). `once: true` on a
+  `ScrollTrigger` is scoped to that trigger's lifetime, not the page session — a reveal
+  that already played will replay when its branch rebuilds unless the element's own
+  played-state is tracked outside the trigger (`motion.ts` uses a `data-anim-played`
+  dataset flag for this). Any future scroll-triggered "fires once" animation needs the
+  same guard, not just tier 2's reveals.
+- The `claude-in-chrome` extension cannot open or drive native browser chrome (DevTools,
+  its Rendering panel, `chrome://` pages) — only page content. `F12`/keyboard shortcuts
+  aimed at it produce nothing the extension's own screenshot tool can see. There is
+  currently no way from this sandbox to emulate `prefers-reduced-motion` live in the
+  extension-driven browser; verify that path by code review, or ask Arthur to run the
+  DevTools check by hand.
+- `npx lighthouse` in this environment needs `CHROME_PATH` set explicitly (no system
+  Chrome install was found by `chrome-launcher`) — the Playwright-installed Chromium at
+  `~/AppData/Local/ms-playwright/chromium-*/chrome-win64/chrome.exe` works. Also: a
+  single-format `--output=json --output-path=foo` writes the JSON to the literal path
+  `foo` with no `.report.json` suffix (the suffix only appears with multiple `--output`
+  formats) — `JSON.parse(fs.readFileSync(...))` reads it fine, but a bare
+  `require('foo')` fails since Node's loader needs the `.json` extension to parse it as
+  JSON rather than JS. A `--preset=perf`-only run scored performance 80 (TBT 580ms) on a
+  cold start; two subsequent full-category runs against the same unchanged build scored
+  99 both times — treat a single low score as environment noise and rerun before
+  concluding a regression.
