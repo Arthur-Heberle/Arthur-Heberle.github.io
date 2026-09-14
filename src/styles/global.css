@@ -3,3 +3,7 @@
 @import "./tokens.css";
 @import "./fonts.css";
 @import "./type.css";
+/* Lenis's required stylesheet, shipped by the package. Every rule in it is gated on the
+ * `lenis` class Lenis puts on <html> at runtime, so it is inert with JS disabled. Last,
+ * so Tailwind's preflight (pulled in by tokens.css) can't override it. */
+@import "lenis/dist/lenis.css";

@@ -50,5 +50,12 @@ const { title, noindex = false } = Astro.props
          this is what the skip link lands on. -->
     <a class="skip" href="#main">Skip to main content</a>
     <slot />
+    <!-- The single scroll authority (docs/motion-spec.md): one Lenis instance, one
+         gsap.ticker hook, registered plugins, and the matchMedia scaffold steps 08-13
+         fill in. A module script defers on its own, so no is:inline / defer needed here
+         — unlike the head script above, this one is allowed to be bundled and deferred. -->
+    <script>
+      import '../scripts/motion.ts'
+    </script>
   </body>
 </html>

@@ -13,7 +13,7 @@ Status values: `todo`, `in progress`, `done`, `blocked`.
 | 04 | Static home page | done | drawing layer (rule + leader lines) built now, ahead of steps 09–10; notes `order` renumbered to the spine's marker order; `<details>` is the no-JS "show all" |
 | 05 | Archive filter, without GSAP | done | single-select tag filter + `All`, one live mono count; cap of 6 lifts under any active filter; `<details>` unwrapped into a flat list by JS on init so step 11's Flip sees one parent |
 | 06 | Accessibility and performance gate | done | `--graphite-2` darkened to clear AA on `--ground`; focus ring widened to 2px; `tabindex="-1"` added to both `<main>`s; a second font preload added after measuring CLS > 0 |
-| 07 | Motion infrastructure only | todo | |
+| 07 | Motion infrastructure only | done | `gsap`+`lenis` installed; all wiring lives in `src/scripts/motion.ts`; `Archive.astro`'s two `window.scrollBy` calls rerouted through it; zero visible change (Lighthouse mobile: perf 99, a11y 100, best-practices 100, CLS 0) |
 | 08 | Tier 2 triggered reveals | todo | |
 | 09 | Tier 1 drawing layer | todo | |
 | 10 | Leader lines to margin notes | todo | |
@@ -182,6 +182,23 @@ reflowing as Archivo finished loading. Preloading the body face brought CLS to e
 0. §10's "no layout shift" is the higher-priority rule and step 06 is its gate, so the
 divergence stands; Archivo 500 and IBM Plex Mono stay swap-only.
 
+Step 07 — An interpretation call, not a divergence from the plan but worth logging as
+one: `implementation-plan.md`'s step 07 Do list says "JS sets initial states on load" in
+the same step whose acceptance demands the page stay "visually identical to step 06."
+Taken literally, `gsap.set('[data-anim]', { y: 16, opacity: 0 })` this step would hide
+content nothing yet reveals, failing that same acceptance line. Read instead as
+structural: this step verifies the markup half of the initial-state pattern already
+holds (it does — `Rule.astro` and `MarginNote.astro`'s SVGs already ship fully drawn,
+confirmed by grep) and creates `src/scripts/motion.ts` as the one place initial states
+get set; the actual `gsap.set(...)` calls land in step 08, paired with the reveals that
+undo them.
+
+Step 07 — `lenis/dist/lenis.css` imported from `global.css` rather than from
+`motion.ts`. Not a divergence from the plan (the plan named this as the preferred
+option, with a fallback only if Tailwind's `@import` inliner refused the bare
+specifier) — it didn't; the import compiled cleanly on the first `pnpm build`, so the
+CSS is in the one existing stylesheet bundle rather than a second request.
+
 ---
 
 ## Notes for future sessions
@@ -308,3 +325,33 @@ gotchas, things that looked right and weren't.
   even though the same path resolves fine for `cp`/`ls`. Copy the file into the project
   directory (or use the long-name path, `Arthur Heberle` in full) before reading it from
   Node.
+- All motion wiring (GSAP plugin registration, the one Lenis instance, the one
+  `gsap.ticker` hook, the `matchMedia` scaffold) lives in `src/scripts/motion.ts`, wired
+  in once via a `<script>` in `Base.astro` so every page gets it. Steps 08–13 fill the
+  three empty `mm.add(...)` branches there or `import { lenis } from '../scripts/motion.ts'`
+  — they never construct a second instance or a second ticker hook. `scrollByPx(delta)`,
+  also exported from there, replaces `window.scrollBy` everywhere a script needs to nudge
+  scroll position without animating (`Archive.astro`'s filter/show-all compensation is
+  the first caller).
+- Vite hoists a module imported by two different Astro component `<script>` entry points
+  (here, `Base.astro` and `Archive.astro` both importing `motion.ts`) into one shared
+  chunk — confirmed in the built output, both entries import the same
+  `_astro/motion.*.js`. This is what makes "exactly one Lenis instance" hold structurally
+  rather than by convention: ES modules are singletons per resolved URL.
+- Lenis's `respectReducedMotion` option defaults to `true` (confirmed against current
+  docs, not memory): under `prefers-reduced-motion: reduce` it forces `lerp` to 1 and
+  makes `scrollTo` calls jump instantly, with no guard needed in our own code.
+  `motion-spec.md`'s Lenis snippet, used verbatim, already gets this for free.
+- `html, body { overflow-x: hidden }` (`type.css`, step 04) did not need to become
+  `overflow-x: clip` for Lenis to work — smooth scroll, the reduced-motion fallback, and
+  all three viewport widths were clean with `hidden` left as-is. Worth rechecking if a
+  later step (pinning, in particular) behaves oddly with horizontal overflow.
+- gzip'd JS after this step: ~63KB total (`motion.js` ~62KB carrying all four GSAP
+  plugins + Lenis; the two page scripts are near-empty shells that just import it) —
+  comfortably under `CLAUDE.md`'s 90KB floor, confirmed by summing `gzip -c` per
+  `dist/_astro/*.js` file rather than gzipping the concatenation.
+- Cross-origin iframes (a page on one `localhost` port hosting an iframe pointed at
+  another port) throw on `contentDocument` access — same-origin-policy applies even
+  across two `localhost` ports. The iframe technique from step 04's notes still works
+  for a purely visual check (screenshot), just not for script introspection into the
+  framed page from the host page.

@@ -68,6 +68,8 @@ const tags = TAG_ORDER.filter((t) => presentTags.has(t))
 </section>
 
 <script>
+  import { scrollByPx } from '../scripts/motion.ts'
+
   // Tag filter + "show all", plain JS (docs/implementation-plan.md step 05: "interaction
   // works before animation exists"). All DOM mutation lives in one applyState() function
   // so step 11 can wrap this exact call in Flip.getState(...)/mutate/Flip.from(...)
@@ -102,10 +104,10 @@ const tags = TAG_ORDER.filter((t) => presentTags.has(t))
         const before = showAllBtn!.getBoundingClientRect().top
         state.expanded = !state.expanded
         applyState()
-        // step 07 must route this through Lenis, once Lenis owns scroll position —
-        // not window.scrollBy.
+        // Routed through Lenis (step 07): Lenis now owns scroll position, so
+        // window.scrollBy would fight it.
         const after = showAllBtn!.getBoundingClientRect().top
-        if (after !== before) window.scrollBy(0, after - before)
+        if (after !== before) scrollByPx(after - before)
       })
     }
 
@@ -141,7 +143,7 @@ const tags = TAG_ORDER.filter((t) => presentTags.has(t))
         state.tag = btn.dataset.filter ?? 'all'
         applyState()
         const after = btn.getBoundingClientRect().top
-        if (after !== before) window.scrollBy(0, after - before)
+        if (after !== before) scrollByPx(after - before)
       })
     })
 
