@@ -9,7 +9,7 @@ Status values: `todo`, `in progress`, `done`, `blocked`.
 |---|---|---|---|
 | 01 | Scaffold and deploy an empty site | done | pnpm required a global install first; Astro scaffolded to a scratch dir and copied in to avoid clobbering `tokens.css`/`README.md` |
 | 02 | Tokens, type and layout primitives | done | fonts self-hosted, not `<link>`-loaded; `@theme` reset lines added to `tokens.css`; TypeScript pinned to 5.9.3, not `latest`, for `@astrojs/check` compatibility |
-| 03 | Content collections | todo | |
+| 03 | Content collections | done | English-only schema (no `lang` field); repo links normalised to `https://`; changelog is one YAML file via `file()` |
 | 04 | Static home page | todo | |
 | 05 | Archive filter, without GSAP | todo | |
 | 06 | Accessibility and performance gate | todo | |
@@ -30,7 +30,10 @@ Status values: `todo`, `in progress`, `done`, `blocked`.
 Blocking or near-blocking. Add to this list rather than guessing.
 
 - [ ] Opening line: A, B or C, rewritten in his words.
-- [ ] All `[FILL]` markers in `docs/content.md`, especially the archive `role` values.
+- [ ] All `[FILL]` markers, now seeded verbatim into `src/content/` (12 total — 9 in
+      archive entries, 1 in the chess note, 2 in the changelog) and still greppable with
+      `grep -rn "\[FILL" src/content/`. Two archive entries (Agente H, Brasilore) have no
+      date at all; step 04 has to decide what to render for them meanwhile.
 - [ ] The word the EduBra Braille set-piece spells.
 - [ ] Contact section: publish WhatsApp number or email only?
 - [ ] `--graphite-2` on `--ground` measures 4.21:1, under the 4.5 AA floor for normal
@@ -82,6 +85,30 @@ was ever published — `pnpm peers check` flagged the mismatch immediately after
 acceptance requires `astro check` to pass, and step 01 had deliberately left both
 uninstalled; they are type-checking tooling and ship zero bytes to the browser.
 
+Step 03 — Two archive repo links stored with an `https://` scheme
+(`https://github.com/Arthur-Heberle/Oficinas_1`, `.../Brasilore`) though `docs/content.md`
+writes them scheme-less (`github.com/...`). Reason: the schema's `links.repo` field uses
+Zod's `z.url()`, which rejects a scheme-less string; the scheme is mechanical
+normalisation of a path Arthur supplied, not an invented fact, but it's a change from the
+source document so it's logged here.
+
+Step 03 — Changelog stored as one `src/content/changelog.yaml` via the `file()` loader,
+rather than one markdown file per entry like `archive` and `notes`. Put to Arthur and
+settled: a changelog entry is a date plus one sentence with no body prose, and one file
+means adding a line is a two-line edit rather than a new file every time.
+
+Step 03 — Site language decided as English-only for v1 (also settled with Arthur, closing
+the open question above): collections carry no `lang` field. `docs/content.md` already
+scopes a future Portuguese version to an additive `lang` field plus one file per entry per
+language, so this isn't expected to need a schema migration later.
+
+Step 03 — `[FILL]` markers are encoded as literal string values in required fields
+(`role: "[FILL]"`, `date: "[FILL]"`), not stripped out or made optional. `role` and `date`
+stay required per the schema (`design-spec.md` §7); a marker satisfies the type while
+staying greppable. One exception: EduBra's date has a real value (`2025-12`) with a
+trailing YAML comment `# [FILL: confirm]`, since the value exists but wants confirming
+rather than supplying.
+
 ---
 
 ## Notes for future sessions
@@ -121,3 +148,20 @@ gotchas, things that looked right and weren't.
   `gap-*`/`p-*`/etc. A token outside `@theme`'s namespaces (e.g. `--radius-control`, kept
   in `:root`, not `@theme`) does not get a bare utility — reach it with an arbitrary value
   (`rounded-[length:var(--radius-control)]`) rather than assuming a class exists.
+- The content-collections config file is `src/content.config.ts` in this Astro version,
+  not `src/content/config.ts` (that's the legacy path). Import `z` from `astro/zod`, not
+  `astro:content` — the latter still re-exports it but the source marks it
+  `// TODO: remove in Astro 8`. Astro 7.3.2 ships Zod **4**.
+- Unquoted YAML dates get parsed as JS `Date` objects and fail a `z.string()` schema —
+  `2026-09-13` unquoted breaks, but `2026-07` (not a valid YAML timestamp shape) happens
+  to survive as a string. Quote every date, in frontmatter and in YAML, without exception.
+- Astro's `file()` loader silently **skips** an array item missing an `id`/`slug` (a log
+  line, not a build error), so a green `pnpm build` doesn't prove every entry survived —
+  count entries after seeding, don't just trust the build.
+- The synced content store lives at `node_modules/.astro/data-store.json` (not the
+  project's own `.astro/`) and is `devalue`-serialized, not plain JSON — not worth
+  decoding by hand. `.astro/collections/<name>.schema.json` (JSON Schema, plain and
+  readable) is the better artifact for confirming which fields a schema actually requires.
+  Counting seed files directly, or parsing `changelog.yaml` with `js-yaml` (resolve it via
+  `node_modules/.pnpm/js-yaml@<version>/node_modules/js-yaml`, since it's Astro's nested
+  dependency, not a top-level one), is simpler than either.
