@@ -11,6 +11,15 @@
 @import "tailwindcss";
 
 @theme {
+  /* Tailwind v4 keeps its whole default theme reachable unless a namespace is reset.
+   * Without this, `text-gray-500` and `font-serif` still compile and leak gray/serif
+   * values into dist — this reset makes "no gray outside the token list" structural
+   * rather than a matter of code review. --spacing-* is deliberately not reset: the
+   * numeric spacing scale (p-4, gap-8) is meant to survive alongside --spacing-gutter. */
+  --color-*: initial;
+  --font-*: initial;
+  --text-*: initial;
+
   /* Color
    * --signal never fills a background. Strokes, marks and text only, roughly eight
    * appearances on the whole page.

@@ -1,0 +1,265 @@
+---
+// Temporary route proving the type system from design-spec.md section 5 is
+// correct before any real page uses it. Delete in step 14, not before.
+import Base from '../layouts/Base.astro'
+// Vite's ?raw suffix inlines the file's text at build time. A plain fs.readFileSync
+// with a relative path breaks here: Astro's build moves this module into dist/, so
+// the source tree is no longer at a resolvable relative location once rendered.
+import tokensCss from '../styles/tokens.css?raw'
+
+// Contrast table computed at build time, from the tokens themselves. This runs in
+// Astro frontmatter (build-time, ships no JS) and reads the actual --color-* hex
+// values out of tokens.css by regex, so the numbers below cannot drift out of sync
+// with the tokens and no hex value gets duplicated into this component.
+const colorRe = /--color-([a-z0-9-]+):\s*(#[0-9a-fA-F]{3,8})/g
+const colors: Record<string, string> = {}
+let match: RegExpExecArray | null
+while ((match = colorRe.exec(tokensCss))) {
+  colors[match[1]] = match[2]
+}
+
+function hexToRgb(hex: string): [number, number, number] {
+  let h = hex.replace('#', '')
+  if (h.length === 3) h = h.split('').map((c) => c + c).join('')
+  const n = parseInt(h, 16)
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255]
+}
+function relativeLuminance([r, g, b]: [number, number, number]) {
+  const [rs, gs, bs] = [r, g, b].map((c) => {
+    c /= 255
+    return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)
+  })
+  return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs
+}
+function contrast(hexA: string, hexB: string) {
+  const lA = relativeLuminance(hexToRgb(hexA))
+  const lB = relativeLuminance(hexToRgb(hexB))
+  const [lighter, darker] = lA > lB ? [lA, lB] : [lB, lA]
+  return (lighter + 0.05) / (darker + 0.05)
+}
+
+const surfaces = ['ground', 'sheet'] as const
+const textColors = ['graphite', 'graphite-2', 'signal'] as const
+const thresholds: Record<(typeof textColors)[number], number> = {
+  graphite: 7,
+  'graphite-2': 4.5,
+  signal: 4.5,
+}
+const contrastRows = textColors.map((name) => ({
+  name,
+  hex: colors[name],
+  threshold: thresholds[name],
+  results: surfaces.map((surface) => {
+    const ratio = contrast(colors[name], colors[surface])
+    return { surface, ratio, pass: ratio >= thresholds[name] }
+  }),
+}))
+
+const ruler = Array.from({ length: 68 }, (_, i) => ((i + 1) % 10 === 0 ? '|' : '.')).join('')
+---
+
+<Base title="Type test — arthur-heberle.github.io" noindex>
+  <main class="mx-8 my-12 flex flex-col gap-16">
+    <h1 class="text-h2 font-sans font-medium">Type test</h1>
+    <p class="max-w-measure font-mono text-dimension text-graphite-2">
+      Temporary proof surface for design-spec.md §5. Deleted in step 14, not before.
+    </p>
+
+    <!-- 1. Scale — all six steps, each labelled with its spec'd size / leading / tracking.
+         The computed-vs-expected script below stamps the actual measured values beside
+         these labels, turning the acceptance box from an eyeball check into a measured one. -->
+    <section class="flex flex-col gap-10" aria-labelledby="scale-heading">
+      <h2 id="scale-heading" class="text-h3 font-sans font-medium">1. Scale</h2>
+
+      <div>
+        <p class="display" data-scale="display">Aa Gg 0123</p>
+        <p class="font-mono text-dimension text-graphite-2" data-expected="display">
+          display — expected 56px / 1.0 / -0.02em (40px below 768px)
+        </p>
+      </div>
+
+      <div>
+        <p class="text-h2 font-sans font-medium" data-scale="h2">Aa Gg 0123</p>
+        <p class="font-mono text-dimension text-graphite-2" data-expected="h2">
+          h2 — expected 28px / 1.15
+        </p>
+      </div>
+
+      <div>
+        <p class="text-h3 font-sans font-medium" data-scale="h3">Aa Gg 0123</p>
+        <p class="font-mono text-dimension text-graphite-2" data-expected="h3">
+          h3 — expected 20px / 1.3
+        </p>
+      </div>
+
+      <div>
+        <p class="measure text-body font-sans" data-scale="body">
+          Aa Gg 0123 — the quick brown fox jumps over a lazy stove.
+        </p>
+        <p class="font-mono text-dimension text-graphite-2" data-expected="body">
+          body — expected 17px / 1.65, measure capped at 68ch
+        </p>
+      </div>
+
+      <div>
+        <p class="text-small font-sans" data-scale="small">
+          Aa Gg 0123 — the quick brown fox jumps over a lazy stove.
+        </p>
+        <p class="font-mono text-dimension text-graphite-2" data-expected="small">
+          small — expected 14px / 1.5
+        </p>
+      </div>
+
+      <div>
+        <p class="font-mono text-dimension" data-scale="dimension">2026.09 · 0123456789</p>
+        <p class="font-mono text-dimension text-graphite-2" data-expected="dimension">
+          dimension — expected 12px / 1.4, tracking 0.02em, mono only
+        </p>
+      </div>
+    </section>
+
+    <!-- 2. Expanded proof — HAMBURGEFONSTIV at the same size in Archivo 500 and Archivo
+         Expanded 500, stacked. The width difference is the visible proof that the wdth 125
+         instance loaded, rather than silently falling back to normal-width Archivo. -->
+    <section class="flex flex-col gap-4" aria-labelledby="expanded-heading">
+      <h2 id="expanded-heading" class="text-h3 font-sans font-medium">2. Expanded proof</h2>
+      <p class="text-h2 font-sans font-medium" data-width-sample="normal">HAMBURGEFONSTIV</p>
+      <p class="text-h2 font-display font-medium" data-width-sample="expanded">
+        HAMBURGEFONSTIV
+      </p>
+      <p class="font-mono text-dimension text-graphite-2" id="width-comparison">
+        measuring widths…
+      </p>
+    </section>
+
+    <!-- 3. Colour — graphite and graphite-2 on both surfaces, ratio and pass/fail computed
+         at build time directly from tokens.css, never a duplicated hex value. -->
+    <section class="flex flex-col gap-4" aria-labelledby="colour-heading">
+      <h2 id="colour-heading" class="text-h3 font-sans font-medium">3. Colour</h2>
+
+      <div class="flex flex-col gap-4">
+        <div class="bg-ground p-6">
+          <p class="text-body text-graphite">Graphite on ground.</p>
+          <p class="text-small text-graphite-2">Graphite-2 on ground.</p>
+          <p class="text-small text-signal">Signal on ground.</p>
+        </div>
+        <div class="bg-sheet p-6">
+          <p class="text-body text-graphite">Graphite on sheet.</p>
+          <p class="text-small text-graphite-2">Graphite-2 on sheet.</p>
+          <p class="text-small text-signal">Signal on sheet.</p>
+        </div>
+      </div>
+
+      <table class="font-mono text-dimension">
+        <thead>
+          <tr class="text-left text-graphite-2">
+            <th class="pr-8 font-normal">Token</th>
+            <th class="pr-8 font-normal">Surface</th>
+            <th class="pr-8 font-normal">Ratio</th>
+            <th class="pr-8 font-normal">Threshold</th>
+            <th class="font-normal">Result</th>
+          </tr>
+        </thead>
+        <tbody>
+          {
+            contrastRows.map((row) =>
+              row.results.map((r) => (
+                <tr>
+                  <td class="pr-8">
+                    --color-{row.name} ({row.hex})
+                  </td>
+                  <td class="pr-8">--color-{r.surface}</td>
+                  <td class="pr-8">{r.ratio.toFixed(2)}:1</td>
+                  <td class="pr-8">{row.threshold}:1</td>
+                  <td class={r.pass ? 'text-graphite' : 'text-signal'}>
+                    {r.pass ? 'pass' : 'fail'}
+                  </td>
+                </tr>
+              )),
+            )
+          }
+        </tbody>
+      </table>
+      <p class="max-w-measure font-mono text-dimension text-graphite-2">
+        graphite-2/ground fails the 4.5:1 floor — surfaced in docs/progress.md open questions,
+        not fixed here. graphite-2/sheet passes.
+      </p>
+    </section>
+
+    <!-- 4. Hairline — a 0.5px --line rule, and 0 radius on a structural element beside
+         2px on a control, per design-spec.md §5 Layout. -->
+    <section class="flex flex-col gap-4" aria-labelledby="hairline-heading">
+      <h2 id="hairline-heading" class="text-h3 font-sans font-medium">4. Hairline</h2>
+      <div class="measure hairline"></div>
+      <p class="font-mono text-dimension text-graphite-2">hairline — 0.5px, --color-line</p>
+
+      <div class="flex items-center gap-6">
+        <div class="bg-sheet p-4" style="border-radius: 0;">
+          <p class="text-small">structural — 0 radius</p>
+        </div>
+        <button
+          type="button"
+          class="rounded-[length:var(--radius-control)] border border-line bg-sheet px-4 py-2 text-small"
+        >
+          control — 2px radius
+        </button>
+      </div>
+    </section>
+
+    <!-- 5. Measure ruler — a 68ch block of text with a .measure cap, and a ruler strip
+         marking every ten characters up to 68. -->
+    <section class="flex flex-col gap-2" aria-labelledby="measure-heading">
+      <h2 id="measure-heading" class="text-h3 font-sans font-medium">5. Measure ruler</h2>
+      <p class="w-[68ch] whitespace-pre font-mono text-dimension text-graphite-2">{ruler}</p>
+      <p class="measure text-body text-graphite">
+        This paragraph is capped at a 68 character measure, the same limit the ruler above marks
+        every ten characters, so a line of body text never runs wider than comfortable even when
+        the viewport is far wider than the text itself needs to be.
+      </p>
+      <p class="font-mono text-dimension text-graphite-2">68ch measure ruler</p>
+    </section>
+
+    <!-- 6. Layout tokens — proof that max-w-measure, w-margin and gap-gutter emit as
+         utilities from --container-measure, --container-margin and --spacing-gutter. -->
+    <section class="flex flex-col gap-4" aria-labelledby="layout-heading">
+      <h2 id="layout-heading" class="text-h3 font-sans font-medium">6. Layout tokens</h2>
+      <div class="flex gap-gutter">
+        <div class="bg-sheet p-2 font-mono text-dimension">gap-gutter (32px) either side</div>
+        <div class="bg-sheet p-2 font-mono text-dimension">of this gap</div>
+      </div>
+      <div class="w-margin bg-sheet p-2 font-mono text-dimension">w-margin (200px)</div>
+      <div class="max-w-measure bg-sheet p-2 font-mono text-dimension">
+        max-w-measure (68ch) — should match the ruler width above
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // Ships on this route only, and leaves with it in step 14. No other page gains JS
+    // before step 07. Reads getComputedStyle for each scale sample and the two
+    // HAMBURGEFONSTIV widths, stamping the actual measured value beside the expected one.
+    const px = (v: string) => `${parseFloat(v).toFixed(2)}px`
+
+    document.querySelectorAll<HTMLElement>('[data-scale]').forEach((el) => {
+      const name = el.dataset.scale!
+      const label = document.querySelector(`[data-expected="${name}"]`)
+      if (!label) return
+      const cs = getComputedStyle(el)
+      const size = px(cs.fontSize)
+      const lineHeight =
+        cs.lineHeight === 'normal' ? 'normal' : (parseFloat(cs.lineHeight) / parseFloat(cs.fontSize)).toFixed(2)
+      const tracking = cs.letterSpacing === 'normal' ? '0' : px(cs.letterSpacing)
+      label.textContent += ` — computed: ${size} / ${lineHeight} / ${tracking}`
+    })
+
+    const normal = document.querySelector<HTMLElement>('[data-width-sample="normal"]')
+    const expanded = document.querySelector<HTMLElement>('[data-width-sample="expanded"]')
+    const out = document.getElementById('width-comparison')
+    if (normal && expanded && out) {
+      const wNormal = normal.getBoundingClientRect().width
+      const wExpanded = expanded.getBoundingClientRect().width
+      const wider = wExpanded > wNormal
+      out.textContent = `Archivo 500: ${wNormal.toFixed(1)}px — Archivo Expanded 500: ${wExpanded.toFixed(1)}px — ${wider ? 'expanded is wider, wdth 125 loaded' : 'FAIL: expanded did not load wider'}`
+    }
+  </script>
+</Base>

@@ -1,0 +1,41 @@
+/* Self-hosted, four static instances rather than the two-axis variable file:
+ * 59KB total against a 90KB single variable file, and a stable preload URL that
+ * doesn't depend on gstatic's rotating hashed paths. See docs/plans/step-02.md. */
+
+@font-face {
+  font-family: "Archivo";
+  src: url("/fonts/archivo-400-latin.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Archivo";
+  src: url("/fonts/archivo-500-latin.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* "Archivo Expanded" is not a Google Fonts family — css2?family=Archivo+Expanded
+ * returns HTTP 400. This is Archivo's variable font pinned at wdth 125, wght 500,
+ * declared under this exact family name so --font-display in tokens.css resolves
+ * without the token itself being edited. No font-stretch descriptor: the file is
+ * already a pinned instance, and a narrow descriptor range would only risk a match
+ * failure for elements requesting normal stretch. */
+@font-face {
+  font-family: "Archivo Expanded";
+  src: url("/fonts/archivo-expanded-500-latin.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("/fonts/ibm-plex-mono-400-latin.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}

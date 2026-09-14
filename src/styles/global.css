@@ -1,1 +1,5 @@
-@import "tailwindcss";
+/* The single CSS entry. Tailwind arrives via tokens.css's own @import "tailwindcss",
+ * so this file must never import Tailwind a second time. */
+@import "./tokens.css";
+@import "./fonts.css";
+@import "./type.css";

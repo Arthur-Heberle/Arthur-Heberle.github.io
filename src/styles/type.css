@@ -1,0 +1,24 @@
+/* Layout primitives — the handful of things a token doesn't already generate as a
+ * Tailwind utility. Everything else uses generated utilities directly: text-body,
+ * text-h2, font-mono, text-graphite-2, bg-sheet, max-w-measure, w-margin, gap-gutter.
+ * No new class for anything a token already generates. */
+
+.display {
+  font-family: var(--font-display);
+  font-weight: 500;
+  /* --text-display-mobile only exists below 768px (see tokens.css); above that the
+   * var() is undefined and falls through to --text-display. One declaration, no
+   * second breakpoint, no token value changed. */
+  font-size: var(--text-display-mobile, var(--text-display));
+  line-height: var(--text-display--line-height);
+  letter-spacing: var(--text-display--letter-spacing);
+}
+
+.measure {
+  max-width: var(--container-measure);
+}
+
+.hairline {
+  border: 0;
+  border-top: var(--hairline) solid var(--color-line);
+}
