@@ -76,3 +76,33 @@ const byLabel = Object.fromEntries(notes.map((note) => [note.data.label, note]))
     </div>
   </div>
 </section>
+
+<script>
+  // Marker -> note linking (implementation-plan.md step 10: "hovering a marker highlights
+  // its note and its line"). Purely additive: with JS off, or if this never runs, the note
+  // and its leader are already fully visible and the marker is still a real anchor link to
+  // it — nothing here is required content. Keyboard focus produces the identical state,
+  // gated on :focus-visible so a mouse click doesn't leave a note lit after the pointer has
+  // moved away. Interaction, not animation, so it lives here rather than in motion.ts and
+  // outside gsap.matchMedia() — this state must work below 768px too, where leaders don't
+  // exist but the highlight class is still harmless (type.css scopes the visible effect to
+  // .leader-hi and .note-text, and .leader is already display:none there).
+  document
+    .querySelectorAll<HTMLAnchorElement>('.rail-prose .marker[href^="#note-"]')
+    .forEach((marker) => {
+      const note = document.querySelector<HTMLElement>(marker.getAttribute('href')!)
+      if (!note) return
+      const on = () => {
+        note.dataset.linked = ''
+      }
+      const off = () => {
+        delete note.dataset.linked
+      }
+      marker.addEventListener('mouseenter', on)
+      marker.addEventListener('mouseleave', off)
+      marker.addEventListener('focus', () => {
+        if (marker.matches(':focus-visible')) on()
+      })
+      marker.addEventListener('blur', off)
+    })
+</script>

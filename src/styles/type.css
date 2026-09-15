@@ -140,6 +140,26 @@ body {
   }
 }
 
+/* Step 10 — marker<->note highlight. Additive only: note content is never hover-dependent
+ * (design-spec.md §10), this just links the pair. opacity, not a stroke swap —
+ * motion-spec.md's property rule — at the one feedback duration and curve. The note's own
+ * text lifts --graphite-2 -> --graphite instantly, with no transition, for the same reason
+ * color can't be animated; precedent is .control[aria-pressed='true'] below. Specificity
+ * (0,2,1) is deliberate: it beats the text-graphite-2 utility (0,1,0) on .note-text but
+ * doesn't reach the nested <strong> or the back-link .marker, which keep their own colors.
+ * No <768px override needed: .leader is already display:none there, so only the text lift
+ * survives, which is harmless. */
+.leader-hi {
+  opacity: 0;
+  transition: opacity var(--dur-feedback) var(--ease-out);
+}
+.note[data-linked] .leader-hi {
+  opacity: 1;
+}
+.note[data-linked] .note-text {
+  color: var(--color-graphite);
+}
+
 /* The page rule — the vertical line the whole drawing hangs off. Ships in its final,
  * fully-drawn state now (motion-spec.md's initial-state pattern); step 09 adds a
  * drawSVG scrub on `#rule path` and must not need to touch this positioning. Its `left`

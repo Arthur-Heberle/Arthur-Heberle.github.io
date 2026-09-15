@@ -89,6 +89,7 @@ function tier2Reveals(scoped: boolean) {
 
 const SCRUB = 0.8 // motion-spec.md's value. Never `true`.
 const TICK_DRAW_PX = 80 // scroll distance over which one tick draws
+const LEADER_DRAW_PX = 120 // a leader is ~4x a tick's length; it earns a longer draw window
 const RULE_LENGTH = 100 // #rule path's exact length in user units (d="M0.5 0 V100")
 
 // Resolved once, guarded: motion.ts loads on every page via Base.astro, and /type-test
@@ -136,46 +137,102 @@ function tier1Rule(rule: SVGPathElement, main: HTMLElement) {
   )
 }
 
-/** Tier 1: the section ticks, each drawn at the scroll position where the rule's own drawn
- *  tip passes it, not on its section's arrival. The rule is drawn `p` of its own length at
- *  scroll progress `p`, and the trigger's range is `mainTop -> mainTop + (mainH - vh)`, so
- *  the drawn tip sits `p * vh` below the viewport top — near the top of the screen early on
- *  the page, near the bottom at the end. A section-arrival trigger (`top 90%`) would draw a
- *  tick hundreds of px below the line meant to be drawing it. Inverting for a tick at
- *  document position T: f = (T - mainTop) / mainH is the tick's fraction along the rule,
- *  and mainTop + f * (mainH - vh) is the scroll position when the tip reaches it.
+/** Scroll position at which the rule's own drawn tip reaches `el`'s vertical centre. The
+ *  rule is drawn `p` of its own length at scroll progress `p`, and the trigger's range is
+ *  `mainTop -> mainTop + (mainH - vh)`, so the drawn tip sits `p * vh` below the viewport
+ *  top — near the top of the screen early on the page, near the bottom at the end. A
+ *  trigger keyed to the element's own arrival (e.g. `top 90%`) would therefore draw it
+ *  hundreds of px below the line meant to be drawing it, early in the page. Inverting for
+ *  an element at document position T: f = (T - mainTop) / mainH is its fraction along the
+ *  rule, and mainTop + f * (mainH - vh) is the scroll position when the tip reaches it.
  *
- *  Numeric start/end are absolute scroll positions (ScrollTrigger.js's _parsePosition skips
- *  element-bounds parsing for a function returning a number) and, being functions, are
- *  re-evaluated on every refresh — which is what keeps them right across resize and the
- *  archive filter's height changes. */
+ *  Extracted in step 10 (was inline in tier1Ticks() since step 09) so ticks and leader
+ *  lines share one derivation and can't drift apart. Returned as a closure, not a plain
+ *  number: both callers pass it straight to ScrollTrigger's function-valued start/end,
+ *  which are absolute scroll positions (ScrollTrigger.js's _parsePosition skips
+ *  element-bounds parsing for a function returning a number) re-evaluated on every
+ *  refresh — what keeps them right across resize and the archive filter's height changes. */
+function tipScrollFor(el: Element, main: HTMLElement, drawPx: number) {
+  return () => {
+    const mainBox = main.getBoundingClientRect()
+    const box = el.getBoundingClientRect()
+    // Lenis drives real window scroll, so window.scrollY is the true position here.
+    const mainTop = mainBox.top + window.scrollY
+    const centre = box.top + box.height / 2 + window.scrollY
+    const f = gsap.utils.clamp(0, 1, (centre - mainTop) / main.offsetHeight)
+    const at = mainTop + f * (main.offsetHeight - window.innerHeight)
+    // Same lesson as step 08's clamp(): a start position past the scroller's real max is
+    // simply never reached, and the element would sit undrawn forever.
+    return Math.min(at, ScrollTrigger.maxScroll(window) - drawPx)
+  }
+}
+
+/** Tier 1: the section ticks, each drawn at the scroll position where the rule's own drawn
+ *  tip passes it — see tipScrollFor() above for why this, not the tick's own arrival. */
 function tier1Ticks(main: HTMLElement) {
   gsap.utils.toArray<SVGSVGElement>('.tick').forEach((tick) => {
     const path = tick.querySelector('path')
     if (!path) return
-    const tipScroll = () => {
-      const mainBox = main.getBoundingClientRect()
-      const tickBox = tick.getBoundingClientRect()
-      // Lenis drives real window scroll, so window.scrollY is the true position here.
-      const mainTop = mainBox.top + window.scrollY
-      const centre = tickBox.top + tickBox.height / 2 + window.scrollY
-      const f = gsap.utils.clamp(0, 1, (centre - mainTop) / main.offsetHeight)
-      const at = mainTop + f * (main.offsetHeight - window.innerHeight)
-      // Same lesson as step 08's clamp(): a start position past the scroller's real max is
-      // simply never reached, and the tick would sit undrawn forever.
-      return Math.min(at, ScrollTrigger.maxScroll(window) - TICK_DRAW_PX)
-    }
+    const at = tipScrollFor(tick, main, TICK_DRAW_PX)
     gsap.from(path, {
       drawSVG: '0%',
       ease: 'none',
       scrollTrigger: {
         trigger: tick,
-        start: tipScroll,
-        end: () => tipScroll() + TICK_DRAW_PX,
+        start: at,
+        end: () => at() + TICK_DRAW_PX,
         scrub: SCRUB,
         invalidateOnRefresh: true,
       },
     })
+  })
+}
+
+/** Tier 1: the five leader lines, each drawn as the rule's own drawn tip passes it — the
+ *  line branches out of the rule rather than arriving with its note (same tip-sync
+ *  geometry as tier1Ticks(), see tipScrollFor()).
+ *
+ *  Bypasses DrawSVGPlugin, like tier1Rule() — measured live, not assumed from the viewBox
+ *  math alone (docs/plans/step-09.md's mistake the first time around, corrected here
+ *  before it shipped): `.leader`'s 32x24 viewBox and its `aspect-ratio: 4/3` CSS box are
+ *  proportional on paper, but getScreenCTM() on the built page returns scaleX/scaleY that
+ *  differ at the 4th decimal (~0.7499 vs ~0.7498) from ordinary subpixel layout rounding —
+ *  DrawSVGPlugin.js:146 rounds to exactly 4 decimals and fires its "length cannot be
+ *  measured" warning on precisely that gap. `.tick` has no such gap (`width: 8px` against
+ *  `aspect-ratio: 1` forces literal width===height in pixels, not just a ratio, so
+ *  scaleX === scaleY exactly) and stays on DrawSVGPlugin, unaffected.
+ *
+ *  The gap is small enough here not to visibly mis-scale the draw the way the rule's ~30x
+ *  gap did, but the console warning alone fails the clean-console gate, so leaders use the
+ *  rule's own hand-measured strokeDasharray/strokeDashoffset technique instead of drawSVG.
+ *  Each path's length comes from the native, CTM-independent getTotalLength() (SVG path
+ *  length is defined in user-space units and untouched by vector-effect or any transform)
+ *  rather than a hardcoded constant — cheap, and avoids transcribing an irrational number
+ *  (18 + sqrt(14^2 + 8^2)) by hand. `.leader-base` and `.leader-hi` share one identical
+ *  `d`, so one length serves both, and one tween moves both — the highlight can never be
+ *  drawn ahead of the construction line beneath it. */
+function tier1Leaders(main: HTMLElement) {
+  gsap.utils.toArray<SVGSVGElement>('.leader').forEach((leader) => {
+    const paths = Array.from(leader.querySelectorAll<SVGPathElement>('path'))
+    if (!paths.length) return
+    const length = paths[0].getTotalLength()
+    gsap.set(paths, { strokeDasharray: length })
+    const at = tipScrollFor(leader, main, LEADER_DRAW_PX)
+    gsap.fromTo(
+      paths,
+      { strokeDashoffset: length },
+      {
+        strokeDashoffset: 0,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: leader,
+          start: at,
+          end: () => at() + LEADER_DRAW_PX,
+          scrub: SCRUB,
+          invalidateOnRefresh: true,
+        },
+      },
+    )
   })
 }
 
@@ -186,17 +243,20 @@ mm.add('(min-width: 768px) and (prefers-reduced-motion: no-preference)', () => {
   if (rulePath && pageMain) {
     tier1Rule(rulePath, pageMain)
     tier1Ticks(pageMain)
+    tier1Leaders(pageMain)
   }
-  // steps 10-13: leader lines, Flip, hero, and the one pinned set-piece. Cleanup is
-  // automatic on revert.
+  // steps 11-13: Flip, hero, and the one pinned set-piece. Cleanup is automatic on revert.
 })
 
 mm.add('(max-width: 767px) and (prefers-reduced-motion: no-preference)', () => {
   tier2Reveals(false)
   // design-spec.md §8: below 768px the drawing layer keeps the scrubbed rule only — no
-  // ticks (.tick is display:none there anyway, so tier1Ticks is skipped, not just hidden).
+  // ticks (.tick is display:none there anyway, so tier1Ticks is skipped, not just hidden)
+  // and no leader lines (motion-spec.md's degradation contract; .leader is also
+  // display:none there — creating the tween anyway would warn on an unmeasurable
+  // hidden element, DrawSVGPlugin.js:109).
   if (rulePath && pageMain) tier1Rule(rulePath, pageMain)
-  // steps 10-13: never pinned, no leader lines here either.
+  // steps 11-13: never pinned here either.
 })
 
 mm.add('(prefers-reduced-motion: reduce)', () => {
@@ -211,6 +271,6 @@ mm.add('(prefers-reduced-motion: reduce)', () => {
   // branch already wrote inline dash styles, must see the rule and ticks snap to fully
   // drawn rather than being stranded mid-draw. These three properties are exactly what
   // DrawSVG's own style-saver tracks.
-  const drawn = gsap.utils.toArray<SVGPathElement>('#rule path, .tick path')
+  const drawn = gsap.utils.toArray<SVGPathElement>('#rule path, .tick path, .leader path')
   if (drawn.length) gsap.set(drawn, { clearProps: 'strokeDasharray,strokeDashoffset,strokeMiterlimit' })
 })

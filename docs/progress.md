@@ -16,7 +16,7 @@ Status values: `todo`, `in progress`, `done`, `blocked`.
 | 07 | Motion infrastructure only | done | `gsap`+`lenis` installed; all wiring lives in `src/scripts/motion.ts`; `Archive.astro`'s two `window.scrollBy` calls rerouted through it; zero visible change (Lighthouse mobile: perf 99, a11y 100, best-practices 100, CLS 0) |
 | 08 | Tier 2 triggered reveals | done | `CustomEase` registered as a 5th plugin — `motion-spec.md`'s `cubic-bezier(...)` ease string doesn't parse in GSAP and silently degrades to `power1.out`; `start: 'clamp(top 85%)'` on every trigger — a plain `'top 85%'` is unreachable for the Contact paragraph, the page's last content block (Lighthouse mobile: perf 99, a11y 100, best-practices 100, CLS 0; ~65KB JS gzip) |
 | 09 | Tier 1 drawing layer | done | `vector-effect="non-scaling-stroke"` stayed on `#rule path` — removing it broke Lighthouse mobile CLS (0.004 → 0.089), so the rule bypasses DrawSVGPlugin entirely and tweens `strokeDashoffset` directly against its known fixed length (100); ticks keep DrawSVGPlugin, unaffected (1:1 viewBox: perf 99, a11y 100, best-practices 100, CLS 0.0003, ~66KB JS gzip) |
-| 10 | Leader lines to margin notes | todo | |
+| 10 | Leader lines to margin notes | done | `.leader`'s viewBox/CSS-box match on paper but not live (subpixel rounding), so DrawSVGPlugin warns there too — leaders bypass it like the rule, hand-measuring dasharray via `getTotalLength()`; hover/focus highlight is a stacked `--signal` path crossfaded on opacity |
 | 11 | Archive filter with Flip | todo | |
 | 12 | Hero sequence | todo | |
 | 13 | Project page template and EduBra set-piece | todo | |
@@ -291,6 +291,33 @@ set the precedent of making and documenting an equivalent verified technical sub
 (CustomEase for the literal ease string, `clamp()` for the literal `start` value) rather
 than pausing to ask when the fix stays inside the rails CLAUDE.md already sets.
 
+Step 10 — `docs/plans/step-10.md`'s "verified fact 1" claimed `.leader`'s 32x24 viewBox
+against its `aspect-ratio: 4/3` CSS box was proportional (`scaleX === scaleY`) and therefore
+safe for DrawSVGPlugin, unlike the rule. That reasoning was correct on paper but wrong live:
+checked in-browser against the running preview (not re-derived from CSS alone), a leader's
+`getScreenCTM()` returned `scaleX ≈ 0.7499`, `scaleY ≈ 0.7498` — a fourth-decimal gap from
+ordinary subpixel layout rounding (a 2rem-wide box with a non-1:1 aspect-ratio doesn't
+always rasterize its width and height with identical rounding error, unlike `.tick`'s
+literal `width: 8px` + `aspect-ratio: 1`, which forces width===height in pixels and has no
+such gap). `DrawSVGPlugin.js:146` rounds to exactly 4 decimals and warned on precisely that
+gap — caught by reading the console after the first build, not assumed clean because the
+static analysis looked sound.
+
+The gap is far smaller than the rule's ~30x mismatch and doesn't visibly mis-scale the
+draw, but the warning alone fails the clean-console gate, so leaders were switched to the
+rule's own technique: `motion.ts`'s `tier1Leaders()` bypasses DrawSVGPlugin and hand-tweens
+`strokeDasharray`/`strokeDashoffset`, with the length read once per leader via the native
+`path.getTotalLength()` (unaffected by CTM or vector-effect) rather than a transcribed
+constant. `.tick` is unaffected and stays on DrawSVGPlugin. Both `MarginNote.astro`'s
+comment and `docs/plans/step-10.md`'s written plan describe the original (incorrect)
+DrawSVGPlugin-is-safe reasoning; per steps 07–09's precedent, the plan document itself is
+left as written and the correction lives here instead.
+
+This is logged as a divergence rather than a blocking question for the same reason step 09's
+was: it stayed inside every existing hard constraint (stroke-dashoffset only, no new
+dependency, identical visual result, same acceptance criteria) and is a verified technical
+substitution, not a design change.
+
 ---
 
 ## Notes for future sessions
@@ -509,3 +536,51 @@ gotchas, things that looked right and weren't.
   `strokeDashoffset` directly against a `strokeDasharray` set once to that known length.
   DrawSVGPlugin stays correct and worth using for anything with a 1:1 (or otherwise
   proportional) viewBox — `.tick` and `.leader` both qualify and are unaffected.
+- Step 10 corrected the note above: `.leader` does *not* qualify after all, live-measured.
+  A CSS box whose aspect-ratio merely *equals* its viewBox's ratio (`.leader`'s `4/3` vs
+  `32x24`) is not the same guarantee as `.tick`'s literal `width: 8px` + `aspect-ratio: 1`,
+  which forces identical rendered width and height in pixels. The former can still drift a
+  few ten-thousandths between its rendered width and height from ordinary subpixel layout
+  rounding, which `DrawSVGPlugin.js:146`'s 4-decimal-place check is strict enough to catch
+  and warn on. The reliable test going forward is checking `getScreenCTM()` live in the
+  browser (`gsap.utils.toArray('.foo').map(el => el.querySelector('path').getScreenCTM())`),
+  not reasoning from the viewBox/CSS-box math alone — confirmed by console-warning bisection,
+  not assumed. `tipScrollFor()` and the rule's own hand-tweened-dasharray pattern
+  (`motion.ts`) are the reusable fallback for anything DrawSVGPlugin won't measure cleanly.
+- `path.getTotalLength()` is unaffected by `vector-effect="non-scaling-stroke"` or any CTM
+  scaling — it always returns the path's length in its own user-space coordinate system.
+  That's what makes it a safe, non-hardcoded source for a fixed dasharray value (used for
+  `.leader` in step 10; the rule in step 09 used a hand-derived constant instead, since
+  `d="M0.5 0 V100"`'s length is trivially 100 by construction).
+- Testing scrub/scrolled state in this sandbox: `window.scrollTo()` called from
+  `javascript_tool` does **not** drive `ScrollTrigger` — Lenis owns scroll and only updates
+  its own state (and fires the `'scroll'` event `ScrollTrigger.update` listens to) from
+  inside its own `raf()`, driven by real wheel/touch input, not an arbitrary native
+  scrollTop change. `window.scrollY` reads back the value fine, which makes this look like
+  it worked — but every scrub stays frozen. Verify scrubbed motion with the `computer` tool's
+  real mouse-wheel `scroll` action instead; that goes through Lenis correctly and was
+  confirmed to track scroll position exactly as designed (leader dashoffsets matched a
+  hand-computed prediction at three separate scroll positions, including reversing).
+- A plain CSS `transition` (as opposed to a GSAP-driven inline style write) was
+  unreliable to verify via `getComputedStyle` immediately after a DOM mutation in this
+  sandbox — reads taken right after setting `[data-linked]` (even after an `await
+  setTimeout`) sometimes still reported the pre-transition value, and
+  `document.getAnimations()` showed the transition's `playState` stuck at `"running"`
+  indefinitely. This looks like a rendering/compositor-tick artifact of the automation
+  harness (a `Page.captureScreenshot` call itself twice timed out mid-session, "renderer
+  may be frozen"), not a real product bug: a **real mouse hover** (via the `computer` tool,
+  not a dispatched `MouseEvent`) followed by a **screenshot** (which forces an actual
+  paint) did show the correct visual result — `.note-text` darkened to `--graphite` and
+  `getComputedStyle` for `stroke` on `.leader-hi`/`.leader-base` was correct throughout.
+  Prefer a real hover + a subsequent screenshot over a synchronous `getComputedStyle`
+  opacity read when verifying a CSS transition in this sandbox.
+- The `claude-in-chrome` extension attaches to the user's real, already-running Brave
+  browser (`brave.exe`, not a dedicated `chrome.exe` instance) — `tasklist` showed over 20
+  `brave.exe` processes and several GB of memory in normal use, unrelated to anything this
+  session did. A Lighthouse run during or shortly after heavy `claude-in-chrome` activity
+  (many tabs, scrolling, screenshots) can score low from real system contention — one run
+  mid-session read performance 69 / CLS 0.089 / TBT 1410ms; closing the automation tab and
+  rerunning with no other change came back 99 / 0.004 / 100ms, matching baseline exactly.
+  Confirms step 09's lesson generalizes beyond repeated Lighthouse invocations: any heavy
+  concurrent browser-automation activity is a plausible noise source, and CLS is still the
+  more trustworthy signal to sanity-check first when a low score turns up.

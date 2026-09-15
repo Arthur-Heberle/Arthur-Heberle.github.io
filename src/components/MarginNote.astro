@@ -1,7 +1,11 @@
 ---
 // One margin note: its rendered body from the `notes` collection, a back-link to the
-// spine marker that points at it, and a leader-line SVG in its own final, drawn state
-// (step 10 animates it later; the markup doesn't change).
+// spine marker that points at it, and a leader-line SVG in its own final, drawn state.
+// Step 10 adds motion (motion.ts's tier1Leaders scrubs both paths below) and the
+// marker<->note highlight: a second, --signal-coloured path stacked on the construction
+// line, crossfaded in on opacity when Spine.astro's script sets [data-linked] on this
+// <aside> — a stroke-colour swap can't transition (motion-spec.md's property rule), so
+// the highlight is a duplicate element instead.
 import { render } from 'astro:content'
 import type { CollectionEntry } from 'astro:content'
 
@@ -22,10 +26,29 @@ const delay = (0.2 + 0.06 * sibling).toFixed(2)
 
 <aside class="note" id={`note-${entry.id}`} data-anim data-delay={delay}>
   <svg class="leader" viewBox="0 0 32 24" preserveAspectRatio="none" aria-hidden="true">
+    <!-- Two identical paths: the construction line, and the highlight that crossfades
+         over it when this note is [data-linked]. A duplicate rather than a stroke swap
+         because motion-spec.md forbids transitioning color/stroke; opacity is legal.
+         Both are drawn by the same tier 1 tween (motion.ts's tier1Leaders), so the
+         highlight can never be drawn ahead of the line underneath it. vector-effect stays
+         for constant 1px stroke width — but unlike .tick, motion.ts bypasses DrawSVGPlugin
+         for this element too: measured live (not assumed from the viewBox math), this
+         box's proportionality has enough subpixel rounding slop to make DrawSVGPlugin warn
+         even though #rule path's much larger non-proportional gap is absent (see
+         motion.ts's tier1Leaders). -->
     <path
+      class="leader-base"
       d="M0 4 H18 L32 12"
       fill="none"
       stroke="var(--color-line)"
+      stroke-width="1"
+      vector-effect="non-scaling-stroke"
+    />
+    <path
+      class="leader-hi"
+      d="M0 4 H18 L32 12"
+      fill="none"
+      stroke="var(--color-signal)"
       stroke-width="1"
       vector-effect="non-scaling-stroke"
     />
