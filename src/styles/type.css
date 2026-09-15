@@ -171,6 +171,33 @@ body {
   }
 }
 
+/* Section ticks on the page rule — the drawing's scale marks (step 09). `left` is
+ * .rule-svg's formula unchanged, so the tick starts exactly where the rule stands at
+ * every width; `top: -4px` centres the 8x8 box's mid-line on the section's top edge.
+ * Absolute, so it costs no layout space — design-spec §10's no-layout-shift rule. Scoped
+ * to .page-main's own sections, never a bare `section` selector: /type-test has its own
+ * unrelated markup. */
+.page-main > section {
+  position: relative;
+}
+.tick {
+  position: absolute;
+  top: -4px;
+  left: min(var(--container-measure), calc(100% - var(--spacing-gutter) - var(--container-margin)));
+  width: 8px;
+  aspect-ratio: 1;
+  overflow: visible;
+  pointer-events: none;
+}
+/* Below 768px the rule sits at the screen edge and the margin column is gone; design-spec
+ * §8's degradation contract keeps "the scrubbed rule only" there. Ticks join the leader
+ * lines in being absent rather than drawing into the reading column. */
+@media (max-width: 767px) {
+  .tick {
+    display: none;
+  }
+}
+
 /* Archive rows. `.archive-row` is the exact selector motion-spec.md's Flip snippet
  * (`Flip.getState('.archive-row')`) targets in step 11 — defined now so that step adds
  * only script, no markup. Border keys off which siblings are actually visible, not DOM

@@ -3,12 +3,14 @@
 // The invitation line is still `[FILL]`; the email is real. WhatsApp is not rendered —
 // whether to publish it at all is still an open question in docs/progress.md.
 import Fill from './Fill.astro'
+import Tick from './Tick.astro'
 
 const email = 'a.gp.heberle@gmail.com'
 const invitation = '[FILL]'
 ---
 
 <section class="flex flex-col gap-4 py-16" aria-labelledby="contact-heading">
+  <Tick />
   <h2 id="contact-heading" class="text-h2 font-sans font-medium" data-anim>Contact</h2>
   <p class="measure text-body" data-anim data-delay="0.06">
     <Fill value={invitation} />

@@ -87,17 +87,116 @@ function tier2Reveals(scoped: boolean) {
   })
 }
 
+const SCRUB = 0.8 // motion-spec.md's value. Never `true`.
+const TICK_DRAW_PX = 80 // scroll distance over which one tick draws
+const RULE_LENGTH = 100 // #rule path's exact length in user units (d="M0.5 0 V100")
+
+// Resolved once, guarded: motion.ts loads on every page via Base.astro, and /type-test
+// has no rule. `.page-main`, not a bare `main` — progress.md already logged that a bare
+// element selector reaches /type-test's own unrelated <main>.
+const rulePath = document.querySelector<SVGPathElement>('#rule path')
+const pageMain = rulePath?.closest<HTMLElement>('.page-main') ?? null
+
+/** Tier 1: the page rule, scrubbed to scroll position (docs/motion-spec.md). Reversible by
+ *  design — scrolling up runs the drawing backwards — so it needs no data-anim-played
+ *  guard; a matchMedia rebuild re-derives the correct state from the current scroll
+ *  position. `ease: 'none'`: an eased scrub feels broken (design-spec §8).
+ *
+ *  Bypasses DrawSVGPlugin on purpose — measured in-browser, not assumed: removing
+ *  `vector-effect="non-scaling-stroke"` from `#rule path` (so DrawSVGPlugin's own
+ *  getTotalLength()-based measurement, which otherwise mis-scales ~30x inside this
+ *  non-proportional `viewBox="0 0 1 100"` box, works) makes Lighthouse mobile CLS jump
+ *  0.004 -> 0.089 and performance drop from 94 to ~91 — confirmed by bisection, reverting
+ *  only that one attribute restores baseline CLS with everything else unchanged. The
+ *  attribute has to stay. So the rule skips DrawSVGPlugin's automatic measurement
+ *  entirely: the path's length is exactly 100 user units by construction
+ *  (`d="M0.5 0 V100"`, RULE_LENGTH), so `strokeDasharray` is set once to that fixed value
+ *  and only `strokeDashoffset` is tweened — the classic length-100 line-draw technique,
+ *  and literally the one property CLAUDE.md's animate-only list names. gsap.fromTo()
+ *  keeps the initial-state pattern: both ends are set in the one call, so a failed GSAP
+ *  load leaves the markup's already fully-drawn rule (`strokeDasharray` never applies
+ *  without this script running). `.tick` keeps DrawSVGPlugin — its 1:1 viewBox is exactly
+ *  the proportional case the plugin measures correctly (see Rule.astro). */
+function tier1Rule(rule: SVGPathElement, main: HTMLElement) {
+  gsap.set(rule, { strokeDasharray: RULE_LENGTH })
+  gsap.fromTo(
+    rule,
+    { strokeDashoffset: RULE_LENGTH },
+    {
+      strokeDashoffset: 0,
+      ease: 'none',
+      scrollTrigger: {
+        trigger: main,
+        start: 'top top',
+        end: 'bottom bottom',
+        scrub: SCRUB,
+        invalidateOnRefresh: true, // required, or resizing breaks the mapping
+      },
+    },
+  )
+}
+
+/** Tier 1: the section ticks, each drawn at the scroll position where the rule's own drawn
+ *  tip passes it, not on its section's arrival. The rule is drawn `p` of its own length at
+ *  scroll progress `p`, and the trigger's range is `mainTop -> mainTop + (mainH - vh)`, so
+ *  the drawn tip sits `p * vh` below the viewport top — near the top of the screen early on
+ *  the page, near the bottom at the end. A section-arrival trigger (`top 90%`) would draw a
+ *  tick hundreds of px below the line meant to be drawing it. Inverting for a tick at
+ *  document position T: f = (T - mainTop) / mainH is the tick's fraction along the rule,
+ *  and mainTop + f * (mainH - vh) is the scroll position when the tip reaches it.
+ *
+ *  Numeric start/end are absolute scroll positions (ScrollTrigger.js's _parsePosition skips
+ *  element-bounds parsing for a function returning a number) and, being functions, are
+ *  re-evaluated on every refresh — which is what keeps them right across resize and the
+ *  archive filter's height changes. */
+function tier1Ticks(main: HTMLElement) {
+  gsap.utils.toArray<SVGSVGElement>('.tick').forEach((tick) => {
+    const path = tick.querySelector('path')
+    if (!path) return
+    const tipScroll = () => {
+      const mainBox = main.getBoundingClientRect()
+      const tickBox = tick.getBoundingClientRect()
+      // Lenis drives real window scroll, so window.scrollY is the true position here.
+      const mainTop = mainBox.top + window.scrollY
+      const centre = tickBox.top + tickBox.height / 2 + window.scrollY
+      const f = gsap.utils.clamp(0, 1, (centre - mainTop) / main.offsetHeight)
+      const at = mainTop + f * (main.offsetHeight - window.innerHeight)
+      // Same lesson as step 08's clamp(): a start position past the scroller's real max is
+      // simply never reached, and the tick would sit undrawn forever.
+      return Math.min(at, ScrollTrigger.maxScroll(window) - TICK_DRAW_PX)
+    }
+    gsap.from(path, {
+      drawSVG: '0%',
+      ease: 'none',
+      scrollTrigger: {
+        trigger: tick,
+        start: tipScroll,
+        end: () => tipScroll() + TICK_DRAW_PX,
+        scrub: SCRUB,
+        invalidateOnRefresh: true,
+      },
+    })
+  })
+}
+
 const mm = gsap.matchMedia()
 
 mm.add('(min-width: 768px) and (prefers-reduced-motion: no-preference)', () => {
   tier2Reveals(true)
-  // steps 09-13: tier 1 scrubbed drawing, leader lines, Flip, hero, and the one pinned
-  // set-piece. Cleanup is automatic on revert.
+  if (rulePath && pageMain) {
+    tier1Rule(rulePath, pageMain)
+    tier1Ticks(pageMain)
+  }
+  // steps 10-13: leader lines, Flip, hero, and the one pinned set-piece. Cleanup is
+  // automatic on revert.
 })
 
 mm.add('(max-width: 767px) and (prefers-reduced-motion: no-preference)', () => {
   tier2Reveals(false)
-  // steps 09-13: scrubbed rule only. Never pinned, no leader lines.
+  // design-spec.md §8: below 768px the drawing layer keeps the scrubbed rule only — no
+  // ticks (.tick is display:none there anyway, so tier1Ticks is skipped, not just hidden).
+  if (rulePath && pageMain) tier1Rule(rulePath, pageMain)
+  // steps 10-13: never pinned, no leader lines here either.
 })
 
 mm.add('(prefers-reduced-motion: reduce)', () => {
@@ -108,4 +207,10 @@ mm.add('(prefers-reduced-motion: reduce)', () => {
   // reveals and reverted.
   const anim = gsap.utils.toArray<HTMLElement>('[data-anim]')
   if (anim.length) gsap.set(anim, { clearProps: 'all' })
+  // Same, for tier 1: a reader who toggles reduced motion on mid-scroll, after the scrub
+  // branch already wrote inline dash styles, must see the rule and ticks snap to fully
+  // drawn rather than being stranded mid-draw. These three properties are exactly what
+  // DrawSVG's own style-saver tracks.
+  const drawn = gsap.utils.toArray<SVGPathElement>('#rule path, .tick path')
+  if (drawn.length) gsap.set(drawn, { clearProps: 'strokeDasharray,strokeDashoffset,strokeMiterlimit' })
 })

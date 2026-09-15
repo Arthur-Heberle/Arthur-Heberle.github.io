@@ -6,6 +6,7 @@
 // better.
 import { getCollection } from 'astro:content'
 import ArchiveRow from './ArchiveRow.astro'
+import Tick from './Tick.astro'
 
 const entries = await getCollection('archive')
 
@@ -35,6 +36,7 @@ const tags = TAG_ORDER.filter((t) => presentTags.has(t))
 ---
 
 <section class="flex flex-col gap-8 py-16" aria-labelledby="archive-heading">
+  <Tick />
   <h2 id="archive-heading" class="text-h2 font-sans font-medium" data-anim>Archive</h2>
   <div class="filter-bar" role="group" aria-label="Filter archive by tag">
     <button type="button" class="control feedback" data-filter="all" aria-pressed="true">All</button>

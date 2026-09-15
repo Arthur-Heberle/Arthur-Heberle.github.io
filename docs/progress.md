@@ -15,7 +15,7 @@ Status values: `todo`, `in progress`, `done`, `blocked`.
 | 06 | Accessibility and performance gate | done | `--graphite-2` darkened to clear AA on `--ground`; focus ring widened to 2px; `tabindex="-1"` added to both `<main>`s; a second font preload added after measuring CLS > 0 |
 | 07 | Motion infrastructure only | done | `gsap`+`lenis` installed; all wiring lives in `src/scripts/motion.ts`; `Archive.astro`'s two `window.scrollBy` calls rerouted through it; zero visible change (Lighthouse mobile: perf 99, a11y 100, best-practices 100, CLS 0) |
 | 08 | Tier 2 triggered reveals | done | `CustomEase` registered as a 5th plugin — `motion-spec.md`'s `cubic-bezier(...)` ease string doesn't parse in GSAP and silently degrades to `power1.out`; `start: 'clamp(top 85%)'` on every trigger — a plain `'top 85%'` is unreachable for the Contact paragraph, the page's last content block (Lighthouse mobile: perf 99, a11y 100, best-practices 100, CLS 0; ~65KB JS gzip) |
-| 09 | Tier 1 drawing layer | todo | |
+| 09 | Tier 1 drawing layer | done | `vector-effect="non-scaling-stroke"` stayed on `#rule path` — removing it broke Lighthouse mobile CLS (0.004 → 0.089), so the rule bypasses DrawSVGPlugin entirely and tweens `strokeDashoffset` directly against its known fixed length (100); ticks keep DrawSVGPlugin, unaffected (1:1 viewBox: perf 99, a11y 100, best-practices 100, CLS 0.0003, ~66KB JS gzip) |
 | 10 | Leader lines to margin notes | todo | |
 | 11 | Archive filter with Flip | todo | |
 | 12 | Hero sequence | todo | |
@@ -252,6 +252,45 @@ already-shipped, already-guarded pattern step 07 put in place. Recommend a manua
 DevTools Rendering-panel check before step 14 ships, since this session's tooling
 couldn't do it.
 
+Step 09 — `docs/plans/step-09.md` (written and approved at the start of this session)
+specified removing `vector-effect="non-scaling-stroke"` from `#rule path` and letting
+DrawSVGPlugin measure and animate it directly, on the reasoning that the attribute only
+affects stroke rendering (unchanged, verified) and not layout. That reasoning held for
+rendering but not for layout: measured in-browser, not assumed, removing the attribute
+raised Lighthouse mobile CLS from 0.004 to a consistent 0.089 across repeated runs (bisected
+by toggling only this one attribute with everything else — Tick markup, `type.css`,
+`motion.ts`'s tier 1 code — held constant in both directions), well past `CLAUDE.md`'s
+zero-layout-shift floor and the plan's own "stop and ask if... Lighthouse drops below 95"
+line. The mechanism: `.rule-svg` is a deliberately non-proportional box
+(`viewBox="0 0 1 100"`, `preserveAspectRatio="none"`, ~1:1 x-scale vs. ~1:60 y-scale at a
+typical page height) built for the drawing to stretch the full page; without
+`non-scaling-stroke` the browser's own paint/ink-overflow rect for the stroked path is
+computed through that same extreme non-uniform transform, and the *reported* layout box
+used by the Layout Instability API shifts even though the *rendered* pixel stroke does not
+(both confirmed separately — dasharray math and a visual check agreed the line stays 1px).
+
+Fix: keep the attribute (so the paint-rect problem never occurs) and stop relying on
+DrawSVGPlugin's own `getTotalLength()`-based measurement for the rule specifically — that
+measurement is what needed `non-scaling-stroke` gone in the first place
+(`DrawSVGPlugin.js:97-147`, the plan's original finding 1, still correct on its own terms).
+`tier1Rule()` now sets `strokeDasharray` once to the path's known fixed length (100 user
+units, exact by construction from `d="M0.5 0 V100"`) and tweens only `strokeDashoffset`
+100 → 0 — the standard length-100 line-draw technique, and literally the one property
+`CLAUDE.md`'s animate-only list names, so this is arguably a tighter fit for that rule than
+the original plan's `drawSVG` shorthand (which internally re-declares both dasharray and
+dashoffset every frame). `.tick` keeps DrawSVGPlugin unchanged — its 1:1 viewBox is exactly
+the proportional case the plugin measures correctly, confirmed unaffected throughout.
+Re-verified after the fix: CLS 0.0003 on a clean run (Performance 99, Accessibility 100,
+Best Practices 100 — no regression anywhere), rule scrub and tip-synced ticks both still
+correct in-browser (dasharray math checked at three scroll positions).
+
+This is logged as a divergence rather than a blocking question because it stayed within
+every hard constraint already in force (transform/opacity/stroke-dashoffset only, no new
+dependency, same visual result, same acceptance criteria) and because steps 06–08 already
+set the precedent of making and documenting an equivalent verified technical substitution
+(CustomEase for the literal ease string, `clamp()` for the literal `start` value) rather
+than pausing to ask when the fix stays inside the rails CLAUDE.md already sets.
+
 ---
 
 ## Notes for future sessions
@@ -445,3 +484,28 @@ gotchas, things that looked right and weren't.
   cold start; two subsequent full-category runs against the same unchanged build scored
   99 both times — treat a single low score as environment noise and rerun before
   concluding a regression.
+- Step 09 went further on the same lesson: after ~8 consecutive Lighthouse invocations in
+  one session, TBT climbed to ~1000-1400ms (performance ~70-73) on *both* the step-09 build
+  and an unmodified step-08 checkout tested immediately after — proving the drop was
+  session-long environment drift (`npx --yes` re-resolving/launching Chrome repeatedly,
+  plus leftover background `serve` processes from earlier steps' viewport checks left
+  running across `git stash`/rebuild cycles), not a code regression. A single clean run
+  after closing the stray processes came back at performance 99. **CLS was unaffected by
+  this noise across every run** (consistently 0.004 or 0.089 depending only on the code
+  under test) — treat CLS as the trustworthy signal under repeated local profiling and
+  performance/TBT as noisy until confirmed with a clean run; don't chase a TBT number
+  without first checking `tasklist`/`Get-CimInstance Win32_Process` for leftover
+  `serve`/`chrome-launcher` processes from earlier in the same session.
+- `vector-effect="non-scaling-stroke"` on a path inside a non-proportionally-scaled SVG
+  (`.rule-svg`'s `viewBox="0 0 1 100"` with `preserveAspectRatio="none"`, stretched over a
+  page-height box) is not just a DrawSVGPlugin measurement problem
+  (`DrawSVGPlugin.js:97-147`, step 09's original finding) — *removing* the attribute so
+  DrawSVG can measure the path also breaks the browser's own Layout Instability accounting
+  for that element, confirmed by bisection (Lighthouse mobile CLS 0.004 → 0.089, everything
+  else held constant, reversible by re-adding just the attribute). The working pattern for
+  a path in a box shaped like this one: keep `non-scaling-stroke`, and if the path's true
+  length is known and fixed by its own `d` (as `#rule path`'s is — a straight `V100` line,
+  length exactly 100 user units), skip DrawSVGPlugin for that element and tween
+  `strokeDashoffset` directly against a `strokeDasharray` set once to that known length.
+  DrawSVGPlugin stays correct and worth using for anything with a 1:1 (or otherwise
+  proportional) viewBox — `.tick` and `.leader` both qualify and are unaffected.

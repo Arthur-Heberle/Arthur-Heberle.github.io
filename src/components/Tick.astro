@@ -1,0 +1,21 @@
+---
+// One section tick on the page rule — the drawing's scale marks. Ships fully drawn
+// (motion-spec.md's initial-state pattern); motion.ts draws it scrubbed, synced to the
+// moment the rule's own drawn tip passes it. 1:1 viewBox on purpose: unlike Rule.astro's
+// non-proportional box, this one can keep vector-effect="non-scaling-stroke" safely —
+// DrawSVGPlugin only mis-measures a non-scaling-stroke path when scaleX !== scaleY
+// (DrawSVGPlugin.js:146), and an 8x8 viewBox in an 8x8 box (aspect-ratio: 1 in type.css)
+// scales x and y identically. No label, no number, no date beside it — CLAUDE.md's
+// rejected-aesthetic list rules out numbered section markers on content that isn't a
+// sequence. Decorative — the section already has a real heading and aria-label.
+---
+
+<svg class="tick" viewBox="0 0 8 8" aria-hidden="true">
+  <path
+    d="M0 4 H8"
+    fill="none"
+    stroke="var(--color-line)"
+    stroke-width="1"
+    vector-effect="non-scaling-stroke"
+  />
+</svg>
