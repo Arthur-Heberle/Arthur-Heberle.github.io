@@ -236,19 +236,102 @@ function tier1Leaders(main: HTMLElement) {
   })
 }
 
+const FLIP_DURATION = 0.4 // motion-spec.md: Flip duration <= 400ms
+const FADE_FEEDBACK = 0.12 // tokens.css --dur-feedback; the reduced-motion cross-fade
+
+type FilterTransition = (mutate: () => void) => void
+
+// Keyed by branch, not a single mutable variable: crossing 768px fires two matchMedia
+// listeners (one branch stopping, one starting), and whichever cleanup happens to run
+// last would otherwise clobber the other's registration. Distinct keys make the result
+// order-independent. Both no-preference branches register the identical function under
+// 'motion', so their relative order never matters; 'reduce' is checked first so reduced
+// motion always wins regardless of registration order.
+const filterTransitions = new Map<string, FilterTransition>()
+
+function registerFilterTransition(key: string, fn: FilterTransition) {
+  filterTransitions.set(key, fn)
+  return () => filterTransitions.delete(key)
+}
+
+/** Archive.astro's one entry point for a filter/show-all change. Runs whichever
+ *  transition the active matchMedia branch registered, or the bare mutation if none has
+ *  (no branch matched yet, or GSAP failed to load) — the filter must keep working either
+ *  way (motion-spec.md's initial-state pattern: a failed GSAP load degrades gracefully). */
+export function filterTransition(mutate: () => void) {
+  const run = filterTransitions.get('reduce') ?? filterTransitions.get('motion')
+  run ? run(mutate) : mutate()
+}
+
+/** Full-motion archive filter (step 11, docs/motion-spec.md's Flip snippet). Surviving
+ *  rows travel to their new position; a row leaving the filtered set just disappears
+ *  (Flip splices unchanged/entering/leaving comps out of the tweened set on its own,
+ *  Flip.js:640-697, so "no exit animation" costs nothing extra here) and a row newly
+ *  matching fades in via onEnter, which Flip adds into its own timeline at time 0
+ *  (Flip.js:322) — so it can't be left stranded mid-fade by a second click.
+ *
+ *  No `absolute: true` (motion-spec.md's literal value): verified live that it makes
+ *  every row position: absolute for the flight (Flip.js:257's _filterComps short-circuits
+ *  entirely when the option is `true`), collapsing <ul>'s height to zero and visibly
+ *  dropping everything below the archive (show-all button, changelog, contact) for
+ *  400ms. With this step's decided enter/leave behaviour no row is ever painted outside
+ *  the document flow, so the option buys nothing here and costs a full-page reflow.
+ *
+ *  No manual rapid-click guard needed: Flip.getState() calls FlipState.update(), which
+ *  runs this.interrupt() (Flip.js:937) and force-completes any in-progress flip on these
+ *  targets before recording new state (Flip.js:881-894) — a second click always starts
+ *  from clean, settled values. */
+function flipFilter(mutate: () => void) {
+  const state = Flip.getState('.archive-row')
+  mutate()
+  Flip.from(state, {
+    duration: FLIP_DURATION,
+    ease: EASE_OUT,
+    onEnter: (els) => gsap.fromTo(els, { opacity: 0 }, { opacity: 1, duration: FLIP_DURATION, ease: EASE_OUT }),
+  })
+}
+
+/** Reduced-motion archive filter: motion-spec.md's degradation table calls for "filter
+ *  cross-fades" here. Kept fully separate from flipFilter() rather than a shared function
+ *  with a conditional duration — the spec's two-durations-and-one-curve rule
+ *  (motion-spec.md:36) means this uses FADE_FEEDBACK (120ms, tokens.css --dur-feedback),
+ *  not FLIP_DURATION, since this is post-click feedback, not a reveal. No travel, no
+ *  exit animation — only newly-visible rows fade in. `overwrite: true` stands in for
+ *  flipFilter's Flip.getState()-driven interrupt, since there's no Flip call here to do
+ *  it: a second rapid click must overwrite (not stack onto) a fade already in flight on
+ *  the same rows. */
+function crossfadeFilter(mutate: () => void) {
+  const rows = gsap.utils.toArray<HTMLElement>('.archive-row')
+  const wasHidden = rows.map((row) => row.hidden)
+  mutate()
+  const entering = rows.filter((row, i) => wasHidden[i] && !row.hidden)
+  if (entering.length) {
+    gsap.fromTo(
+      entering,
+      { opacity: 0 },
+      { opacity: 1, duration: FADE_FEEDBACK, ease: EASE_OUT, overwrite: true, clearProps: 'opacity' },
+    )
+  }
+}
+
 const mm = gsap.matchMedia()
 
-mm.add('(min-width: 768px) and (prefers-reduced-motion: no-preference)', () => {
+mm.add('(min-width: 768px) and (prefers-reduced-motion: no-preference)', (ctx) => {
   tier2Reveals(true)
   if (rulePath && pageMain) {
     tier1Rule(rulePath, pageMain)
     tier1Ticks(pageMain)
     tier1Leaders(pageMain)
   }
-  // steps 11-13: Flip, hero, and the one pinned set-piece. Cleanup is automatic on revert.
+  // step 11: the click-triggered filter transition also lives inside matchMedia
+  // (motion-spec.md:100, "nothing outside it") via ctx.add(), which wraps flipFilter so
+  // every tween it creates at click time is tracked by this branch's Context and
+  // reverted with it if the branch stops matching mid-flight.
+  return registerFilterTransition('motion', ctx.add('archiveFilter', flipFilter) as FilterTransition)
+  // steps 12-13: hero, and the one pinned set-piece.
 })
 
-mm.add('(max-width: 767px) and (prefers-reduced-motion: no-preference)', () => {
+mm.add('(max-width: 767px) and (prefers-reduced-motion: no-preference)', (ctx) => {
   tier2Reveals(false)
   // design-spec.md §8: below 768px the drawing layer keeps the scrubbed rule only — no
   // ticks (.tick is display:none there anyway, so tier1Ticks is skipped, not just hidden)
@@ -256,10 +339,14 @@ mm.add('(max-width: 767px) and (prefers-reduced-motion: no-preference)', () => {
   // display:none there — creating the tween anyway would warn on an unmeasurable
   // hidden element, DrawSVGPlugin.js:109).
   if (rulePath && pageMain) tier1Rule(rulePath, pageMain)
-  // steps 11-13: never pinned here either.
+  // step 11: Flip runs at this width too — motion-spec.md's degradation contract strips
+  // pinning, leader lines and set-pieces below 768px, not the filter transition, and the
+  // filter is a click-triggered interaction, not a scroll-linked one.
+  return registerFilterTransition('motion', ctx.add('archiveFilter', flipFilter) as FilterTransition)
+  // steps 12-13: never pinned here either.
 })
 
-mm.add('(prefers-reduced-motion: reduce)', () => {
+mm.add('(prefers-reduced-motion: reduce)', (ctx) => {
   // Final states, nothing animates. toArray guards the empty selector — gsap.set on a
   // selector matching nothing logs a "target not found" warning, and step 06's gate
   // expects a clean console. Also clears any inline style left behind if the reader
@@ -273,4 +360,5 @@ mm.add('(prefers-reduced-motion: reduce)', () => {
   // DrawSVG's own style-saver tracks.
   const drawn = gsap.utils.toArray<SVGPathElement>('#rule path, .tick path, .leader path')
   if (drawn.length) gsap.set(drawn, { clearProps: 'strokeDasharray,strokeDashoffset,strokeMiterlimit' })
+  return registerFilterTransition('reduce', ctx.add('archiveFilter', crossfadeFilter) as FilterTransition)
 })

@@ -17,7 +17,7 @@ Status values: `todo`, `in progress`, `done`, `blocked`.
 | 08 | Tier 2 triggered reveals | done | `CustomEase` registered as a 5th plugin — `motion-spec.md`'s `cubic-bezier(...)` ease string doesn't parse in GSAP and silently degrades to `power1.out`; `start: 'clamp(top 85%)'` on every trigger — a plain `'top 85%'` is unreachable for the Contact paragraph, the page's last content block (Lighthouse mobile: perf 99, a11y 100, best-practices 100, CLS 0; ~65KB JS gzip) |
 | 09 | Tier 1 drawing layer | done | `vector-effect="non-scaling-stroke"` stayed on `#rule path` — removing it broke Lighthouse mobile CLS (0.004 → 0.089), so the rule bypasses DrawSVGPlugin entirely and tweens `strokeDashoffset` directly against its known fixed length (100); ticks keep DrawSVGPlugin, unaffected (1:1 viewBox: perf 99, a11y 100, best-practices 100, CLS 0.0003, ~66KB JS gzip) |
 | 10 | Leader lines to margin notes | done | `.leader`'s viewBox/CSS-box match on paper but not live (subpixel rounding), so DrawSVGPlugin warns there too — leaders bypass it like the rule, hand-measuring dasharray via `getTotalLength()`; hover/focus highlight is a stacked `--signal` path crossfaded on opacity |
-| 11 | Archive filter with Flip | todo | |
+| 11 | Archive filter with Flip | done | no `absolute: true` (`motion-spec.md`'s literal value) — verified live it leaves surviving rows permanently `position: absolute`, collapsing everything below the archive; enter/leave decided with Arthur as travel + fade-in-only, no exit animation; Flip runs at both widths; reduced motion gets a 120ms (`--dur-feedback`) entering-only fade, not a new duration (Lighthouse mobile: perf 99, a11y 100, best-practices 100, CLS 0.0003, ~67KB JS gzip) |
 | 12 | Hero sequence | todo | |
 | 13 | Project page template and EduBra set-piece | todo | |
 | 14 | Final QA and ship v1 | todo | |
@@ -252,6 +252,12 @@ already-shipped, already-guarded pattern step 07 put in place. Recommend a manua
 DevTools Rendering-panel check before step 14 ships, since this session's tooling
 couldn't do it.
 
+Step 11's `crossfadeFilter()` (the reduced-motion archive filter transition) has the same
+gap for the same reason and is added to that same DevTools-Rendering-panel check: verified
+by code review only (it registers correctly under the `'reduce'` matchMedia branch, uses
+`FADE_FEEDBACK` not `FLIP_DURATION`, and only tweens `opacity` on newly-visible rows), not
+exercised live under an actual `prefers-reduced-motion: reduce` browser state.
+
 Step 09 — `docs/plans/step-09.md` (written and approved at the start of this session)
 specified removing `vector-effect="non-scaling-stroke"` from `#rule path` and letting
 DrawSVGPlugin measure and animate it directly, on the reasoning that the attribute only
@@ -317,6 +323,42 @@ This is logged as a divergence rather than a blocking question for the same reas
 was: it stayed inside every existing hard constraint (stroke-dashoffset only, no new
 dependency, identical visual result, same acceptance criteria) and is a verified technical
 substitution, not a design change.
+
+Step 11 — `docs/plans/step-11.md` planned to verify `motion-spec.md:188`'s literal
+`absolute: true` live before deciding whether to keep it, following steps 09–10's
+precedent. Verified, and dropped: built once with the flag exactly as the spec gives it,
+narrowed the archive filter to a single-row match, and found the surviving row left
+permanently `position: absolute` in its computed style — not just for the 400ms flight,
+but forever after the animation settled (`Flip.js`'s default `_setFinalStates(comps,
+!clearProps)` only reverts inline styles when `clearProps` is explicitly set, which
+`motion-spec.md`'s snippet doesn't). A `<ul>` with every row pulled out of flow for even
+one settled row loses that row's contribution to its own height, silently shifting the
+show-all button, changelog and contact section up by one row's height on every narrowing
+filter click — confirmed by reading `getComputedStyle(row).position` and
+`document.body.scrollHeight` directly in-browser, not reasoned from `Flip.js` source
+alone (the source reading — `_filterComps`'s `targets !== true` short-circuit,
+`Flip.js:257` — correctly predicted *a* problem, but not that it was permanent rather
+than transitional). Removed the flag entirely: with this step's decided enter/leave
+behaviour (survivors travel, entering rows fade in, leaving rows just disappear — put to
+Arthur this session, see below) no row is ever painted outside the document flow, so
+`absolute: true` bought nothing here. Rebuilt and reverified the same single-row
+transition with the flag gone: `position: static` throughout, `<ul>` height correct.
+
+Also put to Arthur and settled this session (not literal divergences from the spec, which
+leaves these open, but decisions the spec needed to proceed): rows leaving a narrowed
+filter disappear instantly with no exit animation, rather than fading or traveling out;
+Flip runs at both desktop and mobile widths, since `motion-spec.md`'s degradation
+contract strips pinning/leader lines/set-pieces below 768px but says nothing about a
+click-triggered (not scroll-linked) transition; and the reduced-motion "filter
+cross-fade" the spec's degradation table calls for is a 120ms (`--dur-feedback`, the
+existing interactive-feedback duration) fade on newly-visible rows only, not a new third
+duration invented for this — `motion-spec.md:36`'s "two durations and one curve, resist
+adding a third" rule applies here as post-click feedback, not a reveal.
+
+This is logged as a divergence rather than a blocking question for the same reason steps
+09–10's were: it stayed inside every existing hard constraint (transform/opacity only, no
+new dependency, same acceptance criteria) and is a verified technical substitution against
+the spec's literal snippet, not a design change.
 
 ---
 
@@ -584,3 +626,35 @@ gotchas, things that looked right and weren't.
   Confirms step 09's lesson generalizes beyond repeated Lighthouse invocations: any heavy
   concurrent browser-automation activity is a plausible noise source, and CLS is still the
   more trustworthy signal to sanity-check first when a low score turns up.
+- Step 11 hit a new variant of the rAF/compositor-tick family already logged above: a
+  GSAP tween created via a pure `javascript_tool` (CDP `Runtime.evaluate`) click —
+  `document.querySelector(...).click()`, no real input — can sit at `progress: 0` and
+  `totalTime: 0` **indefinitely**, even after several real seconds of `computer` `wait`,
+  because `document.hidden`/`visibilityState` reports `"hidden"` for this tab during
+  pure-JS calls and GSAP's default ticker is `requestAnimationFrame`-driven, which Chrome
+  does not fire for a backgrounded tab at all (confirmed: a bare
+  `requestAnimationFrame(fn)` sampler installed the same way never ran once, while
+  `setTimeout` callbacks on the same page fired normally — rAF specifically is what's
+  frozen, not JS execution generally). `computer wait` alone does not unstick this. A
+  following **real** `computer` action — `left_click`, `scroll`, a keypress — reliably
+  does: the queried tween's `progress()` jumps to `1` immediately after. This looks
+  identical to a real bug (an entering row's opacity or a Flip travel transform stuck
+  mid-animation forever) unless you know to check `document.hidden` first. Verify any
+  GSAP-driven state by triggering with `.click()`/`javascript_tool` if convenient, but
+  always follow with one real `computer` interaction before reading the settled result —
+  never conclude a tween is broken from a `javascript_tool`-only sequence alone, no matter
+  how long you wait.
+- Cross-origin iframe wheel-scroll input (the step 04–06 iframe-at-a-different-port
+  technique, used for 375px viewport checks) did not route into the framed page at all
+  in this session — `computer` `scroll` at coordinates over the iframe moved the *outer*
+  host page instead, leaving the iframe's own scroll position at 0 every time, regardless
+  of scroll amount. This is a new failure mode beyond the already-logged
+  `contentDocument` same-origin restriction (that one blocks script access; this blocks
+  real input routing). Same-origin sidesteps both: serve the iframe host page from the
+  site's own origin instead of a second port — for a `pnpm preview`/`astro build` site
+  this means dropping a small iframe host file directly into `dist/` (e.g.
+  `dist/_iframe-test.html`, `src="/"`) rather than a separate `serve` on another port,
+  since `dist/` is already served by the same origin as the page under test. Delete the
+  file afterward; a real `pnpm build` overwrites `dist/` anyway. With same-origin,
+  `contentDocument` access, scripted clicks, and real `computer` scroll/click all worked
+  correctly for verifying the 375px layout.

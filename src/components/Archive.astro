@@ -70,7 +70,7 @@ const tags = TAG_ORDER.filter((t) => presentTags.has(t))
 </section>
 
 <script>
-  import { refreshTriggers, scrollByPx } from '../scripts/motion.ts'
+  import { filterTransition, refreshTriggers, scrollByPx } from '../scripts/motion.ts'
 
   // Tag filter + "show all", plain JS (docs/implementation-plan.md step 05: "interaction
   // works before animation exists"). All DOM mutation lives in one applyState() function
@@ -104,8 +104,13 @@ const tags = TAG_ORDER.filter((t) => presentTags.has(t))
       detailsEl.replaceWith(showAllBtn)
       showAllBtn.addEventListener('click', () => {
         const before = showAllBtn!.getBoundingClientRect().top
-        state.expanded = !state.expanded
-        applyState()
+        // step 11: rows travel to their new position via Flip rather than snapping
+        // (docs/plans/step-11.md) — filterTransition() wraps the same mutation this
+        // always ran, so applyState() itself is unchanged.
+        filterTransition(() => {
+          state.expanded = !state.expanded
+          applyState()
+        })
         // Routed through Lenis (step 07): Lenis now owns scroll position, so
         // window.scrollBy would fight it.
         const after = showAllBtn!.getBoundingClientRect().top
@@ -143,8 +148,11 @@ const tags = TAG_ORDER.filter((t) => presentTags.has(t))
       btn.addEventListener('click', () => {
         if (btn.dataset.filter === state.tag) return
         const before = btn.getBoundingClientRect().top
-        state.tag = btn.dataset.filter ?? 'all'
-        applyState()
+        // step 11: same wrap as the show-all handler above.
+        filterTransition(() => {
+          state.tag = btn.dataset.filter ?? 'all'
+          applyState()
+        })
         const after = btn.getBoundingClientRect().top
         if (after !== before) scrollByPx(after - before)
       })
