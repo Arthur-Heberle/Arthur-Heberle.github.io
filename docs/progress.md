@@ -18,7 +18,7 @@ Status values: `todo`, `in progress`, `done`, `blocked`.
 | 09 | Tier 1 drawing layer | done | `vector-effect="non-scaling-stroke"` stayed on `#rule path` — removing it broke Lighthouse mobile CLS (0.004 → 0.089), so the rule bypasses DrawSVGPlugin entirely and tweens `strokeDashoffset` directly against its known fixed length (100); ticks keep DrawSVGPlugin, unaffected (1:1 viewBox: perf 99, a11y 100, best-practices 100, CLS 0.0003, ~66KB JS gzip) |
 | 10 | Leader lines to margin notes | done | `.leader`'s viewBox/CSS-box match on paper but not live (subpixel rounding), so DrawSVGPlugin warns there too — leaders bypass it like the rule, hand-measuring dasharray via `getTotalLength()`; hover/focus highlight is a stacked `--signal` path crossfaded on opacity |
 | 11 | Archive filter with Flip | done | no `absolute: true` (`motion-spec.md`'s literal value) — verified live it leaves surviving rows permanently `position: absolute`, collapsing everything below the archive; enter/leave decided with Arthur as travel + fade-in-only, no exit animation; Flip runs at both widths; reduced motion gets a 120ms (`--dur-feedback`) entering-only fade, not a new duration (Lighthouse mobile: perf 99, a11y 100, best-practices 100, CLS 0.0003, ~67KB JS gzip) |
-| 12 | Hero sequence | todo | |
+| 12 | Hero sequence | done | plan's centred origin crosshair (top/left: -6px) clipped above the page's own scroll-top boundary, verified live — switched to an L-bracket flush at (0,0); SplitText's word wrapper defaults to `display: inline`, which `transform` doesn't affect, so words need `wordsClass` + `display: inline-block` for the `y` travel to work at all (Lighthouse mobile: perf noisy this session per steps 09/11's documented cause, CLS 0 on two clean runs, a11y 100, best-practices 100, ~65KB JS gzip) |
 | 13 | Project page template and EduBra set-piece | todo | |
 | 14 | Final QA and ship v1 | todo | |
 | 15 | Later months, one at a time | todo | not part of v1 |
@@ -360,6 +360,34 @@ This is logged as a divergence rather than a blocking question for the same reas
 new dependency, same acceptance criteria) and is a verified technical substitution against
 the spec's literal snippet, not a design change.
 
+Step 12 — `docs/plans/step-12.md`'s approved geometry centred the origin mark's 12px box
+on the header's own top-left corner (`top: -6px; left: -6px`), reading it as a drafter's
+crosshair. Verified live, not assumed correct from the arithmetic: `getBoundingClientRect()`
+on the built page showed `top: -5.99px` — the header is the first thing on the page, so a
+negative `top` there renders past the document's own scroll-top boundary, which cannot be
+scrolled to, leaving roughly half the mark permanently invisible for every visitor. Fixed
+by redrawing `.origin` as an L-shaped corner bracket (`d="M0 0 V12"` / `d="M0 0 H12"`)
+anchored flush at `top: 0; left: 0` — both strokes grow out of the corner point itself
+rather than its centre, which also reads as the more conventional drafting device for
+marking a datum point. Re-verified live after the fix: `origin.top === 0`, fully in the
+viewport, no clipping, console clean.
+
+Also found before it shipped, by checking the installed `gsap@3.15.0`/`SplitText.js`
+rather than assuming: `SplitText`'s per-word wrapper defaults to `display: inline` when
+`tag: 'span'` (the only valid tag inside an `<h1>`, which takes phrasing content only —
+`SplitText`'s own default wrapper is a `<div>`). `transform` has no effect on a
+non-replaced inline element in any browser (confirmed against the CSS spec). Without a
+fix the word-arrival tween's `opacity` half would still have worked but the `y` travel
+would have silently done nothing. Fixed with `wordsClass: 'hero-word'` plus one CSS rule,
+`.hero-word { display: inline-block }` — still a `<span>`, still only
+`transform`/`opacity` tweened (`CLAUDE.md`).
+
+Logged as a divergence rather than a blocking question for the same reason steps 09–11's
+were: both stayed inside every existing hard constraint (transform/opacity/
+stroke-dashoffset only, no new dependency, same acceptance criteria) and are verified
+technical corrections to the plan's own arithmetic, not design changes — `docs/plans/step-12.md`
+is left as approved and the correction lives here instead, per that same precedent.
+
 ---
 
 ## Notes for future sessions
@@ -658,3 +686,35 @@ gotchas, things that looked right and weren't.
   file afterward; a real `pnpm build` overwrites `dist/` anyway. With same-origin,
   `contentDocument` access, scripted clicks, and real `computer` scroll/click all worked
   correctly for verifying the 375px layout.
+- Step 12: `gsap.from()`/`.fromTo()` default `immediateRender: true` even when nested
+  inside a `gsap.timeline()`, confirmed against the installed `gsap@3.15.0`
+  (`gsap-core.js`'s `_createTweenType`, which only applies this default to types 1/2 —
+  `.from`/`.fromTo` — never to a plain `.to()`). Each such tween writes its own "from"
+  state to the DOM synchronously the instant it's created, regardless of its position
+  offset in the timeline — this is the mechanism the codebase's initial-state pattern
+  already leaned on (`tier1Ticks`, `tier1Rule`) without this file ever stating it
+  explicitly. Confirms a nested `tl.from(el, {...}, 0.3)` needs no separate `gsap.set()`
+  call to hide `el` before the timeline actually reaches 0.3s.
+- Step 12: a `gsap.timeline({ id: 'hero' })` (or any id) is not reachable from outside the
+  bundle unless something exposes `gsap` itself on `window` — this codebase's `motion.ts`
+  deliberately doesn't, so `gsap.getById(...)` can't be called from a `javascript_tool`
+  console session as-is. A one-line `window.gsap = gsap` added right after
+  `gsap.registerPlugin(...)`, rebuilt, used to read `gsap.getById('hero').totalDuration()`
+  live, then removed before the final build/commit, is a clean way to get this
+  verification hook without shipping it.
+- Step 12: opening a new tab via `tabs_create_mcp` in this sandbox and navigating it to
+  the same origin an already-tested tab is open on can inherit that other tab's
+  `sessionStorage` (Chrome's own opener-cloning behaviour, not a bug) — a "fresh tab"
+  is not reliably a fresh session for testing a `sessionStorage`-gated feature.
+  `sessionStorage.removeItem(...)` immediately before the navigation you actually want to
+  observe is the reliable way to force the first-play path, in either a top-level tab or
+  a same-origin iframe (`iframe.contentWindow.sessionStorage`).
+- Step 12 re-confirmed steps 09/11's environment-contention lesson under a worse case:
+  with the user's real Brave browser sitting at ~26 `brave.exe` processes throughout (not
+  something this session started or can close — `progress.md`'s own precedent is this is
+  normal background state on this machine), a Lighthouse run taken while a
+  `claude-in-chrome` tab was still open read CLS 0.061 against a 0.0003–0 baseline;
+  closing that one tab and rerunning with no code change at all brought CLS back to a
+  clean 0, twice in a row. Performance/TBT stayed low (48–68, TBT 1.8–2.1s) across every
+  run this session regardless — treated as environment noise per the standing lesson, not
+  chased further, since CLS (the trustworthy signal) was clean and repeatable.

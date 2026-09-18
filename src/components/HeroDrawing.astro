@@ -1,0 +1,52 @@
+---
+// The hero drawing — origin mark, datum line, vertical lead (design-spec.md §9's "origin
+// marks and first construction lines"). Ships fully drawn (motion-spec.md's initial-state
+// pattern); motion.ts's heroSequence() animates them in once per session on top of this
+// already-correct final state. Permanent page furniture from here on — not just present
+// during the sequence — put to Arthur this session before building (docs/plans/step-12.md).
+//
+// All three are --color-line (construction lines), so design-spec.md §5's --signal budget
+// (~8 appearances, strokes/marks/text only) is untouched. Hidden below 768px in type.css:
+// .rule-svg moves to left:0 there and the content origin is also x=0, so a datum line
+// would have zero length — the same family of reasons .tick and .leader are already
+// display:none at that width (design-spec.md §8).
+//
+// Two techniques, matching the two already verified in this codebase rather than a new
+// one: .origin is a 1:1 viewBox in a literal-px + aspect-ratio:1 box, so it stays safely
+// on DrawSVGPlugin (same guarantee as Tick.astro). .datum and .lead are non-proportional
+// boxes (preserveAspectRatio="none"), so — like Rule.astro — they bypass DrawSVGPlugin and
+// tween strokeDashoffset directly against their known fixed length (100, by construction).
+//
+// .origin is an L-shaped corner mark, not a centred crosshair: both strokes start exactly
+// at the header's own top-left corner and extend only right/down into the page. Caught
+// live, not assumed — a symmetric crosshair centred on that corner needs to extend above
+// and left of it, and there is no room above (the header is the very first thing on the
+// page; a negative `top` there renders past the document's own scroll-top boundary, which
+// cannot be scrolled to, so half the mark would be permanently invisible). An L-bracket at
+// the corner is also the more conventional drafting device for marking a datum point.
+---
+
+<svg class="origin" viewBox="0 0 12 12" aria-hidden="true">
+  <path d="M0 0 V12" fill="none" stroke="var(--color-line)" stroke-width="1" vector-effect="non-scaling-stroke" />
+  <path d="M0 0 H12" fill="none" stroke="var(--color-line)" stroke-width="1" vector-effect="non-scaling-stroke" />
+</svg>
+
+<svg class="datum" viewBox="0 0 100 1" preserveAspectRatio="none" aria-hidden="true">
+  <path
+    d="M0 0.5 H100"
+    fill="none"
+    stroke="var(--color-line)"
+    stroke-width="1"
+    vector-effect="non-scaling-stroke"
+  />
+</svg>
+
+<svg class="lead" viewBox="0 0 1 100" preserveAspectRatio="none" aria-hidden="true">
+  <path
+    d="M0.5 0 V100"
+    fill="none"
+    stroke="var(--color-line)"
+    stroke-width="1"
+    vector-effect="non-scaling-stroke"
+  />
+</svg>

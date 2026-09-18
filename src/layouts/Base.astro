@@ -20,6 +20,26 @@ const { title, noindex = false } = Astro.props
          on. is:inline stops Astro from bundling/deferring it. Reused by steps 07-13. -->
     <script is:inline>
       document.documentElement.classList.add('js')
+      // Step 12's flash guard: motion.ts (a deferred module script) can't set the hero
+      // word spans to opacity:0 before first paint, so without this a visitor sees the
+      // heading appear, vanish, then animate in. Opt in only when the sequence will
+      // actually run — not already played this session, not reduced motion — so a
+      // no-JS visitor or a repeat visit never hides the heading in the first place.
+      // The 1.5s failsafe (docs/motion-spec.md's own 1.6s ceiling, minus headroom) is
+      // what keeps the heading readable even if GSAP fails to load; motion.ts removes
+      // the class itself, synchronously, well before that in the success path.
+      try {
+        if (
+          !window.matchMedia('(prefers-reduced-motion: reduce)').matches &&
+          sessionStorage.getItem('hero-played') !== '1'
+        ) {
+          var root = document.documentElement
+          root.classList.add('hero-pending')
+          setTimeout(function () {
+            root.classList.remove('hero-pending')
+          }, 1500)
+        }
+      } catch (e) {}
     </script>
     <!-- The display face is preloaded: it's what paints the hero line, and it's on the
          critical path. crossorigin is mandatory even though the request is same-origin. -->

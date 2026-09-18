@@ -314,6 +314,149 @@ function crossfadeFilter(mutate: () => void) {
   }
 }
 
+const HERO_DUR = 0.6 // --dur-reveal — the sequence's one duration (motion-spec.md:36:
+// "two durations and one curve... resist adding a third"); overlap does the choreography,
+// not a new value.
+const HERO_STAGGER = 0.06 // motion-spec.md's sibling-stagger value, reused here for both
+// the origin's two strokes and the display line's words.
+
+// Guarded three ways, mirroring data-anim-played's reasoning (tier2Reveals, above):
+// gsap.matchMedia() reverts and rebuilds a branch on every 768px crossing or reduced-
+// motion toggle within the same session, and sessionStorage alone only survives that if
+// something also stops the *next* branch from re-running the sequence mid-session. A
+// module-level mirror keeps the guard correct even if sessionStorage throws (some privacy
+// modes) and is set at sequence start, not completion, so two branches firing in the same
+// tick (a resize landing exactly on 768px) can't both start it.
+let heroPlayed = false
+try {
+  heroPlayed = sessionStorage.getItem('hero-played') === '1'
+} catch {
+  /* sessionStorage unavailable; heroPlayed stays false and the sequence runs once per
+   * branch-build instead of once per session — degrades to "plays," never to "blocks." */
+}
+let heroSplit: SplitText | null = null
+
+function markHeroPlayed() {
+  heroPlayed = true
+  try {
+    sessionStorage.setItem('hero-played', '1')
+  } catch {
+    /* see above */
+  }
+}
+
+/** Removes Base.astro's `hero-pending` class, which CSS uses to hold the hero <h1> at
+ *  opacity:0 until this script can set the real initial state itself (docs/plans/step-12.md's
+ *  flash guard — motion.ts is a deferred module script, so without this a visitor sees the
+ *  heading paint, vanish, then animate in). Called from every exit path below, always in
+ *  the same synchronous tick as the state that replaces it, so there is no gap in which
+ *  the heading is unstyled. Idempotent — a second call after the 1.5s failsafe already
+ *  removed it is harmless. */
+function clearHeroPending() {
+  document.documentElement.classList.remove('hero-pending')
+}
+
+/** The hero set-piece (design-spec.md §9, docs/plans/step-12.md): the origin mark and
+ *  first construction lines assemble, the display line arrives per word, once per session,
+ *  under 1.6s. The name line, contact link, identity line and supporting line are never
+ *  animated — implementation-plan.md forbids delaying the contact link behind this.
+ *
+ *  `withDrawing` is false below 768px, where .origin/.datum/.lead are display:none
+ *  (type.css — the datum would have zero length there, same reason .tick and .leader are
+ *  already absent at this width). Skipping the tweens entirely, not just hiding them via
+ *  CSS, matches tier1Ticks/tier1Leaders' own precedent: creating a DrawSVGPlugin tween
+ *  against a hidden element logs a "cannot be measured" warning (DrawSVGPlugin.js:109)
+ *  that would fail the clean-console gate. The display line still arrives per word at
+ *  every width — put to Arthur this session, since design-spec.md §8's degradation
+ *  contract only strips pinning/leader-lines/set-pieces below 768px, and this is neither
+ *  scrubbed nor pinned.
+ *
+ *  gsap.from()/fromTo() default immediateRender:true even nested in a timeline — verified
+ *  against the installed gsap@3.15.0 (gsap-core.js's _createTweenType, type 1/2 only, not
+ *  plain .to()) rather than assumed. That's what tier1Ticks/tier1Rule already lean on for
+ *  the same initial-state pattern: each tween below writes its own hidden starting state
+ *  to the DOM synchronously, the instant it's created, with no separate gsap.set() call. */
+function heroSequence(withDrawing: boolean) {
+  const display = document.querySelector<HTMLElement>('[data-hero-display]')
+  if (!display || heroPlayed) {
+    clearHeroPending()
+    return
+  }
+  markHeroPlayed()
+
+  // words, never characters (motion-spec.md:208; per-character is CLAUDE.md's rejected
+  // aesthetic). wordsClass + .hero-word (type.css): SplitText's word wrapper defaults to
+  // display:inline when tag:'span' (SplitText.js's _getWrapper only forces inline-block
+  // for tag!=='span', and tag:'span' is required here — a <div> is invalid inside <h1>,
+  // which only takes phrasing content) — and transform has no effect on a non-replaced
+  // inline element in any browser, confirmed against the CSS spec, not assumed. Without
+  // the class the opacity half of the tween would still work but the travel (`y`) would
+  // silently do nothing. aria:'auto' (the 3.15 default) puts the full sentence in an
+  // aria-label on the <h1> and aria-hidden on every word span, so a screen reader is
+  // unaffected throughout.
+  heroSplit = SplitText.create(display, { type: 'words', tag: 'span', wordsClass: 'hero-word', aria: 'auto' })
+  const words = heroSplit.words
+
+  const tl = gsap.timeline({
+    id: 'hero', // gsap.getById('hero').totalDuration() is this step's own verification hook.
+    onComplete: () => {
+      heroSplit?.revert() // restores the plain <h1> text — the split spans don't survive
+      heroSplit = null // into the rest of the session.
+    },
+  })
+
+  if (withDrawing) {
+    const origin = document.querySelectorAll<SVGPathElement>('.origin path')
+    const datum = document.querySelector<SVGPathElement>('.datum path')
+    const lead = document.querySelector<SVGPathElement>('.lead path')
+
+    if (origin.length) {
+      // drawSVG '0%' — same technique as tier1Ticks(): both strokes grow from the corner
+      // point outward (HeroDrawing.astro's L-bracket, not a centred crosshair).
+      tl.from(origin, { drawSVG: '0%', duration: HERO_DUR, ease: EASE_OUT, stagger: HERO_STAGGER }, 0)
+    }
+    // .datum/.lead bypass DrawSVGPlugin like #rule path does (Rule.astro, step 09): both
+    // are non-proportional preserveAspectRatio="none" boxes, so DrawSVGPlugin's own
+    // getTotalLength()-based measurement would mis-scale them the same way it did the
+    // rule. Both paths are exactly 100 user units by construction (d="M0 0.5 H100" /
+    // d="M0.5 0 V100"), reusing RULE_LENGTH rather than a second hardcoded constant.
+    if (datum) {
+      gsap.set(datum, { strokeDasharray: RULE_LENGTH })
+      tl.fromTo(
+        datum,
+        { strokeDashoffset: RULE_LENGTH },
+        { strokeDashoffset: 0, duration: HERO_DUR, ease: EASE_OUT },
+        0.18,
+      )
+    }
+    if (lead) {
+      gsap.set(lead, { strokeDasharray: RULE_LENGTH })
+      tl.fromTo(
+        lead,
+        { strokeDashoffset: RULE_LENGTH },
+        { strokeDashoffset: 0, duration: HERO_DUR, ease: EASE_OUT },
+        0.36,
+      )
+    }
+  }
+
+  // y 16, EASE_OUT, 600ms: tier2Reveals' own reveal values (motion-spec.md's table has
+  // exactly one set of reveal values, not a separate set for the hero). Starts at 0.3s
+  // when the drawing runs alongside it, or immediately when it doesn't (<768px) — the
+  // word arrival is the whole sequence there. Last word starts at 0.3 + 11*0.06 = 0.96s,
+  // ends at 1.56s — under the 1.6s ceiling.
+  tl.from(
+    words,
+    { y: 16, opacity: 0, duration: HERO_DUR, ease: EASE_OUT, stagger: HERO_STAGGER },
+    withDrawing ? 0.3 : 0,
+  )
+
+  // Synchronous with every tween's own immediateRender write above — no paint happens in
+  // between, so the CSS opacity:0 guard on the <h1> and the words' own new inline opacity
+  // hand off with nothing visible changing.
+  clearHeroPending()
+}
+
 const mm = gsap.matchMedia()
 
 mm.add('(min-width: 768px) and (prefers-reduced-motion: no-preference)', (ctx) => {
@@ -327,8 +470,9 @@ mm.add('(min-width: 768px) and (prefers-reduced-motion: no-preference)', (ctx) =
   // (motion-spec.md:100, "nothing outside it") via ctx.add(), which wraps flipFilter so
   // every tween it creates at click time is tracked by this branch's Context and
   // reverted with it if the branch stops matching mid-flight.
+  heroSequence(true)
+  // step 13: the one pinned set-piece.
   return registerFilterTransition('motion', ctx.add('archiveFilter', flipFilter) as FilterTransition)
-  // steps 12-13: hero, and the one pinned set-piece.
 })
 
 mm.add('(max-width: 767px) and (prefers-reduced-motion: no-preference)', (ctx) => {
@@ -339,11 +483,16 @@ mm.add('(max-width: 767px) and (prefers-reduced-motion: no-preference)', (ctx) =
   // display:none there — creating the tween anyway would warn on an unmeasurable
   // hidden element, DrawSVGPlugin.js:109).
   if (rulePath && pageMain) tier1Rule(rulePath, pageMain)
+  // step 12: the drawing (origin/datum/lead) is skipped below 768px — display:none in
+  // type.css, same reason ticks and leaders are — but the display line still arrives per
+  // word here; put to Arthur this session, since neither is scrubbed or pinned and
+  // design-spec.md §8's degradation contract doesn't name the hero word-arrival.
+  heroSequence(false)
   // step 11: Flip runs at this width too — motion-spec.md's degradation contract strips
   // pinning, leader lines and set-pieces below 768px, not the filter transition, and the
   // filter is a click-triggered interaction, not a scroll-linked one.
   return registerFilterTransition('motion', ctx.add('archiveFilter', flipFilter) as FilterTransition)
-  // steps 12-13: never pinned here either.
+  // step 13: never pinned here either.
 })
 
 mm.add('(prefers-reduced-motion: reduce)', (ctx) => {
@@ -357,8 +506,22 @@ mm.add('(prefers-reduced-motion: reduce)', (ctx) => {
   // Same, for tier 1: a reader who toggles reduced motion on mid-scroll, after the scrub
   // branch already wrote inline dash styles, must see the rule and ticks snap to fully
   // drawn rather than being stranded mid-draw. These three properties are exactly what
-  // DrawSVG's own style-saver tracks.
-  const drawn = gsap.utils.toArray<SVGPathElement>('#rule path, .tick path, .leader path')
+  // DrawSVG's own style-saver tracks. .origin/.datum/.lead paths added in step 12 — same
+  // family of elements, same risk if the toggle lands mid-sequence.
+  const drawn = gsap.utils.toArray<SVGPathElement>(
+    '#rule path, .tick path, .leader path, .origin path, .datum path, .lead path',
+  )
   if (drawn.length) gsap.set(drawn, { clearProps: 'strokeDasharray,strokeDashoffset,strokeMiterlimit' })
+  // step 12: reduced motion skips the hero sequence entirely (design-spec.md §8) — no
+  // timeline is created, no words are split. Not marked as "played": if the reader turns
+  // reduced motion off again later in the same session, they should still get to see it
+  // once, same as a reader who never had reduced motion on. clearHeroPending() covers the
+  // case where this is the branch gsap.matchMedia() matches at initial load (the head
+  // script's own reduced-motion check means hero-pending was never added then) and the
+  // rarer case of the toggle landing mid-session before the no-preference branch's own
+  // sequence got a chance to clear it.
+  heroSplit?.revert()
+  heroSplit = null
+  clearHeroPending()
   return registerFilterTransition('reduce', ctx.add('archiveFilter', crossfadeFilter) as FilterTransition)
 })

@@ -218,6 +218,77 @@ body {
   }
 }
 
+/* Step 12 — hero drawing (origin mark, datum line, vertical lead). Absolute so they cost
+ * no layout space, like .tick and .leader. `.datum`/`.lead` reuse .rule-svg's own `left`
+ * formula verbatim so the datum always terminates exactly where the rule stands and the
+ * lead lines up with it pixel-for-pixel, at every width — docs/plans/step-12.md.
+ * `.origin` is a literal-px box with aspect-ratio:1 (Tick.astro's own guarantee: forces
+ * width===height in rendered pixels, so DrawSVGPlugin's non-scaling-stroke measurement
+ * never mis-scales it), flush with the header's own top-left corner (`top: 0; left: 0`,
+ * not a centred negative offset — checked live: the header is the first thing on the
+ * page, so a negative `top` here renders past the document's own scroll-top boundary,
+ * unreachable, and half the mark would be permanently invisible). */
+.origin {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 12px;
+  aspect-ratio: 1;
+  overflow: visible;
+  pointer-events: none;
+}
+.datum {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: min(var(--container-measure), calc(100% - var(--spacing-gutter) - var(--container-margin)));
+  height: 1px;
+  overflow: visible;
+  pointer-events: none;
+}
+.lead {
+  position: absolute;
+  inset-block: 0;
+  left: min(var(--container-measure), calc(100% - var(--spacing-gutter) - var(--container-margin)));
+  width: 1px;
+  overflow: visible;
+  pointer-events: none;
+}
+/* Below 768px .rule-svg moves to left:0 (type.css above), the same x as the content
+ * origin — a datum line there would have zero length. .tick and .leader are already
+ * absent at this width for the same reason (design-spec.md §8: "the drawing layer keeps
+ * the scrubbed rule only"). */
+@media (max-width: 767px) {
+  .origin,
+  .datum,
+  .lead {
+    display: none;
+  }
+}
+
+/* Step 12 — SplitText's word wrapper defaults to display:inline (SplitText.js's
+ * _getWrapper only forces inline-block for tag!=='span', and Hero.astro's split uses
+ * tag:'span' so an <h1> ancestor stays valid). transform has no effect on a non-replaced
+ * inline element in any browser, so the word-arrival tween's `y` component would silently
+ * do nothing without this — opacity alone would still work, but not the travel. Still a
+ * <span>, still only transform/opacity animated (CLAUDE.md). */
+.hero-word {
+  display: inline-block;
+}
+
+/* Step 12 — the flash guard. motion.ts is a deferred module script, so without this the
+ * browser can paint the hero <h1> before GSAP sets the word spans to opacity:0: a visible
+ * flash of text appearing, then vanishing, then animating in. Base.astro's inline <head>
+ * script (before first paint) opts in by adding `hero-pending` only when the sequence is
+ * actually going to run (not already played this session, not reduced motion) and removes
+ * it itself after a 1.5s failsafe — so a no-JS visitor, or one where GSAP fails to load,
+ * never sees the heading stay hidden. motion.ts removes the class synchronously, in the
+ * same call as gsap.set()'s initial state, in every branch including the ones that skip
+ * the sequence entirely. */
+.hero-pending [data-hero-display] {
+  opacity: 0;
+}
+
 /* Archive rows. `.archive-row` is the exact selector motion-spec.md's Flip snippet
  * (`Flip.getState('.archive-row')`) targets in step 11 — defined now so that step adds
  * only script, no markup. Border keys off which siblings are actually visible, not DOM
