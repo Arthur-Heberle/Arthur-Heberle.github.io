@@ -475,12 +475,19 @@ high; at 900px the last dot is 73% drawn and the last letter unhighlighted; at 1
 1080px the last cell's dots never appear (`min` dot opacity 0). Arithmetic, not a pin bug:
 a pin can only finish if the content after it is at least one viewport tall (the spacer's
 extra height is the pin distance itself, so shortening the pin changes nothing), and that
-content is currently four short `[FILL]` strings, ~833px. **Not fixed in this step** — it
-depends on copy that doesn't exist yet and a fix (a `min-height` tail, or finishing the
-timeline before the pin's end) is a layout decision for Arthur, not a QA edit. **Re-measure
-when EduBra's prose lands**, at 900, 1000 and 1080px high; if the last dots still don't
-complete, that becomes the next fix. Until then the strongest page on the site is incomplete
-on most desktop monitors, which is worth knowing before pointing anyone at it.
+content is currently four short `[FILL]` strings.
+
+**Fixed, after Arthur asked whether resizing the cell would do it.** The stage's own height
+counts too — the shortfall is `viewportHeight − stageHeight − contentAfter` — so a taller stage
+cancels it one-for-one. `type.css` gives `.js .braille-stage` `min-height: 75svh` (centred),
+scoped by media query to exactly where it pins: ≥768px and no reduced motion. 75svh needs only
+a quarter of a viewport of content after the pin, which holds at any screen height and does not
+depend on how long EduBra's copy turns out to be. Re-measured at the true bottom of the page at
+600/700/800/900/1000/1080/1440px high: every dot and every letter highlight complete at all
+seven (before: 900 one dot short, 1000+ two cells short). Reduced motion, no-JS and mobile keep
+the compact stage (256/256/128px), unchanged. Lighthouse unchanged (99/100/100; EduBra CLS
+0.029 and 0.000, the same placeholder-driven range). The cell itself is not resized — only the
+box it sits in, so nothing about the drawing's proportions or the spec's aspect-ratio changed.
 
 Step 14 — Reduced motion, end to end, finally verified live — the gap steps 08 and 11 both
 logged. Method: Playwright's Chromium binary driven over raw CDP from a throwaway Node

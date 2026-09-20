@@ -384,6 +384,21 @@ body {
   aspect-ratio: 4 / 1;
   overflow: visible;
 }
+/* Only where the stage actually pins (JS on, >=768px, no reduced motion — the same three
+ * conditions as motion.ts's setPieceBraille() branch). A pin only finishes if the stage's
+ * own height plus the content after it is at least one viewport tall: the shortfall at max
+ * scroll is `viewport - stage - contentAfter`, whatever the pin distance. A ~256px stage
+ * with short copy below left the last dots unplayed on any window taller than ~850px
+ * (measured at step 14). 75svh needs only a quarter of a viewport of content after it, which
+ * even placeholder-length sections exceed, and it holds at any screen height. Centred, so the
+ * cell sits in the middle of the pinned box; the static, mobile and reduced-motion versions
+ * keep the compact stage. `.js` is set in <head> before first paint, so this never shifts. */
+@media (min-width: 768px) and (prefers-reduced-motion: no-preference) {
+  .js .braille-stage {
+    min-height: 75svh;
+    justify-content: center;
+  }
+}
 /* An SVG element's default transform-origin is (0,0) of its own coordinate system, not
  * its visual centre — fill-box + a percentage origin corrects that per element, so each
  * dot scales about itself rather than the whole cell row. */

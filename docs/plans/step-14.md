@@ -86,7 +86,8 @@ Full evidence for each is in `docs/progress.md` (Divergences, Step 14). In short
    copy (Plex Mono swap). Bisected, cause named, verified to vanish with real prose. A
    speculative Archivo 500 preload was tried, measured, and reverted.
 3. **EduBra set-piece incomplete at max scroll on tall viewports** with placeholder copy.
-   Not fixed (needs copy and a layout decision); to be re-measured after EduBra's prose.
+   Fixed in a follow-up commit at Arthur's suggestion: the pinned stage gets
+   `min-height: 75svh` (only where it pins). Verified complete at 7 viewport heights.
 4. **Agente H blurb** trimmed from the approved wording to fit two lines.
 5. **`.rounded` leak not resolved by deleting `/type-test`** — the plan's expected side
    benefit didn't happen; the cause is Tailwind scanning `docs/*.md`.
