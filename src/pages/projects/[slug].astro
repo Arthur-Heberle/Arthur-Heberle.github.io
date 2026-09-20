@@ -1,0 +1,41 @@
+---
+// Project page routing — one route per id in PROJECT_PAGES (src/lib/projects.ts), the one
+// list this file and ArchiveRow.astro both read so a linked archive title can never point
+// at a route that doesn't exist. getStaticPaths() is required here: astro.config.mjs
+// declares no `output` key, so the default static output applies.
+//
+// The Braille word (`EDUBRA`) is deliberately not a schema field — docs/plans/step-03.md
+// left it open for this step rather than adding a `brailleWord` field neither spec lists.
+// It's passed here, at the one call site that needs it, the same way each future project
+// (RP3, Agente H — step 15) will pass its own set-piece into the slot below.
+import { getCollection } from 'astro:content'
+import type { CollectionEntry } from 'astro:content'
+import Base from '../../layouts/Base.astro'
+import Rule from '../../components/Rule.astro'
+import ProjectPage from '../../components/ProjectPage.astro'
+import BrailleCell from '../../components/BrailleCell.astro'
+import { PROJECT_PAGES } from '../../lib/projects'
+
+export async function getStaticPaths() {
+  const archive = await getCollection('archive')
+  const pages = archive.filter((entry) => (PROJECT_PAGES as readonly string[]).includes(entry.id))
+  return pages.map((entry) => ({
+    params: { slug: entry.id },
+    props: { entry },
+  }))
+}
+
+interface Props {
+  entry: CollectionEntry<'archive'>
+}
+const { entry } = Astro.props
+---
+
+<Base title={`${entry.data.title} — Arthur Gabriel Pellegrini Heberle`}>
+  <main id="main" tabindex="-1" class="page-main">
+    <Rule />
+    <ProjectPage entry={entry}>
+      {entry.id === 'edubra' && <BrailleCell word="EDUBRA" />}
+    </ProjectPage>
+  </main>
+</Base>

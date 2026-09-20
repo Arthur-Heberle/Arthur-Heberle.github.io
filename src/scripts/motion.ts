@@ -9,6 +9,7 @@ import { SplitText } from 'gsap/SplitText'
 import { Flip } from 'gsap/Flip'
 import { CustomEase } from 'gsap/CustomEase'
 import Lenis from 'lenis'
+import { brailleCells } from '../lib/braille'
 
 gsap.registerPlugin(ScrollTrigger, DrawSVGPlugin, SplitText, Flip, CustomEase)
 
@@ -457,9 +458,78 @@ function heroSequence(withDrawing: boolean) {
   clearHeroPending()
 }
 
+/** Tier 3: the one pinned set-piece on the site (design-spec.md §9, "the strongest piece").
+ *  A single pinned timeline scrubs the Braille cell's raised dots in one by one, spelling
+ *  the word carried on the stage's own `data-braille` attribute (BrailleCell.astro),
+ *  crossfading each letter's --signal highlight on as its own cell completes. Dots animate
+ *  transform:scale + opacity — never drawSVG/stroke-dashoffset: these are filled circles,
+ *  not drawn paths, so the whole DrawSVGPlugin/CTM measurement trap steps 09-10 hit
+ *  (progress.md) doesn't apply here at all.
+ *
+ *  Sets data-anim-played on the stage before tier2Reveals() runs, below, so the generic
+ *  tier-2 reveal system skips it rather than double-claiming it — this pin's own
+ *  dot-by-dot fill is the stage's reveal. Below 768px this function is never called at all
+ *  (design-spec.md §8: nothing is ever pinned there); the stage keeps its data-anim and
+ *  gets the ordinary single triggered reveal from tier2Reveals(false) instead, over
+ *  already-final markup.
+ *
+ *  Bails silently if the stage isn't on this page — motion.ts runs on every route via
+ *  Base.astro, and only /projects/edubra has one today. */
+function setPieceBraille() {
+  const stage = document.querySelector<HTMLElement>('[data-braille]')
+  const word = stage?.dataset.braille
+  if (!stage || !word) return
+  stage.dataset.animPlayed = '1'
+
+  const dots = gsap.utils.toArray<SVGCircleElement>('.braille-dot', stage)
+  const letters = gsap.utils.toArray<HTMLElement>('.braille-letter-hi', stage)
+  // Same source of truth the markup itself was built from (BrailleCell.astro calls this
+  // identical function over the identical word), so the two cannot drift apart.
+  const cells = brailleCells(word)
+
+  const tl = gsap.timeline({
+    scrollTrigger: {
+      trigger: stage,
+      start: 'top top',
+      end: '+=150%', // 15 dots over 1.5 viewport heights. motion-spec.md gives no
+      // set-piece-specific value; this is a pin's scroll distance, not one of the two
+      // durations motion-spec.md:36 asks to hold the line on, so it isn't a third one.
+      pin: true, // design-spec.md §8/motion-spec.md: at most one per page, only inside a
+      // set-piece — this is the only pin in the codebase.
+      // Required, verified against ScrollTrigger.js:1177, not assumed: "if the parent is
+      // display: flex, don't apply pinSpacing by default" — ProjectPage.astro's <article>
+      // is a flex column, so without this the spacer silently reserves zero extra scroll
+      // room and the whole set-piece plays inside its own unpinned height. Confirmed live
+      // (pin-spacer height stuck at the stage's own 204px instead of stage + pin distance)
+      // before this fix, and correct after it.
+      pinSpacing: true,
+      anticipatePin: 1, // avoids a flash of the unpinned layout on a fast scroll into it
+      scrub: SCRUB, // motion.ts's one scrub value (0.8) — never `true`
+      invalidateOnRefresh: true, // required, or resizing breaks the mapping (motion-spec.md)
+    },
+  })
+
+  // Reading order: cell by cell, dot 1..6 within each cell — brailleCells() emits `dots`
+  // in exactly this order, and BrailleCell.astro renders only the raised ones as
+  // .braille-dot, so DOM order already matches the fill order with no index math here.
+  dots.forEach((dot, i) => {
+    tl.from(dot, { scale: 0, opacity: 0, duration: 1, ease: 'none' }, i)
+  })
+  // Each letter's highlight fades in the instant its own cell's last dot lands (+1: a dot
+  // placed at timeline position n completes at n+1), over half a dot-width of scroll so
+  // the crossfade doesn't feel instantaneous.
+  letters.forEach((letter, i) => {
+    tl.to(letter, { opacity: 1, duration: 0.5, ease: 'none' }, cells[i].lastDotIndex + 1)
+  })
+}
+
 const mm = gsap.matchMedia()
 
 mm.add('(min-width: 768px) and (prefers-reduced-motion: no-preference)', (ctx) => {
+  // step 13: must run before tier2Reveals() below — it marks the Braille stage
+  // data-anim-played so the generic reveal system doesn't also claim it (see
+  // setPieceBraille()'s own comment).
+  setPieceBraille()
   tier2Reveals(true)
   if (rulePath && pageMain) {
     tier1Rule(rulePath, pageMain)
@@ -471,7 +541,6 @@ mm.add('(min-width: 768px) and (prefers-reduced-motion: no-preference)', (ctx) =
   // every tween it creates at click time is tracked by this branch's Context and
   // reverted with it if the branch stops matching mid-flight.
   heroSequence(true)
-  // step 13: the one pinned set-piece.
   return registerFilterTransition('motion', ctx.add('archiveFilter', flipFilter) as FilterTransition)
 })
 
@@ -512,6 +581,14 @@ mm.add('(prefers-reduced-motion: reduce)', (ctx) => {
     '#rule path, .tick path, .leader path, .origin path, .datum path, .lead path',
   )
   if (drawn.length) gsap.set(drawn, { clearProps: 'strokeDasharray,strokeDashoffset,strokeMiterlimit' })
+  // step 13: same lesson, for the Braille set-piece's dots/highlights — transform+opacity,
+  // not stroke-dashoffset, so a separate clearProps list rather than folding into `drawn`
+  // above. setPieceBraille() never runs in this branch (it's only called from the
+  // >=768px no-preference branch), so this only matters for a mid-session toggle: a
+  // reader who turns reduced motion on mid-scrub must see the cell snap to fully filled,
+  // not stranded half-drawn.
+  const braille = gsap.utils.toArray<HTMLElement>('.braille-dot, .braille-letter-hi')
+  if (braille.length) gsap.set(braille, { clearProps: 'transform,opacity' })
   // step 12: reduced motion skips the hero sequence entirely (design-spec.md §8) — no
   // timeline is created, no words are split. Not marked as "played": if the reader turns
   // reduced motion off again later in the same session, they should still get to see it

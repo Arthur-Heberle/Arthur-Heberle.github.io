@@ -1,0 +1,73 @@
+---
+// The Braille cell — design-spec.md §9's "strongest piece on the site". Ships in its
+// final, fully-drawn state (motion-spec.md's initial-state pattern): every position (36
+// of them — a Braille cell has six whether or not they're raised, and drawing the empty
+// ones is the annotated-technical-drawing concept doing its job) is present in the markup
+// before any script runs. motion.ts's setPieceBraille() hides the raised dots
+// (transform: scale, opacity) at load and scrubs them back in against a pinned
+// ScrollTrigger; a failed GSAP load leaves this already-complete diagram, the same
+// pattern Rule.astro/Tick.astro/MarginNote.astro already use.
+//
+// The dot pattern is never hand-drawn: brailleCells() (src/lib/braille.ts) derives every
+// circle's position from the word itself, so this component cannot render anything but
+// an accurate translation of `word` (implementation-plan.md step 13: "the dots must
+// correspond to the word actually being spelled").
+//
+// The text row beneath is the "text version rendering alongside" design-spec.md §9 asks
+// for. Each letter ships twice, stacked on one grid cell: a --graphite-2 base (always
+// legible, never moved — motion-spec.md's tier-1 rule that scrubbed text is never used)
+// and a --signal duplicate at opacity:0, crossfaded on as its cell's own last dot lands.
+// Same technique step 10 used for .leader-hi, for the same reason: a colour swap can't
+// transition, so the highlight is a second element instead.
+import { brailleCells } from '../lib/braille'
+
+interface Props {
+  word: string
+}
+const { word } = Astro.props
+const cells = brailleCells(word)
+const viewWidth = cells.length * 6
+---
+
+<div class="braille-stage" data-braille={word} data-anim>
+  <svg
+    class="braille-cells"
+    viewBox={`0 0 ${viewWidth} 9`}
+    role="img"
+    aria-labelledby="braille-title braille-desc"
+  >
+    <title id="braille-title">Braille cell spelling {word}</title>
+    <desc id="braille-desc">
+      A six-dot Braille cell for each letter of "{word}", filling dot by dot as the page scrolls.
+    </desc>
+    {
+      cells.map((cell) =>
+        cell.dots.map((dot) => (
+          <circle
+            cx={dot.x}
+            cy={dot.y}
+            r={dot.raised ? 0.75 : 0.55}
+            class={dot.raised ? 'braille-dot' : 'braille-well'}
+            fill={dot.raised ? 'var(--color-measure)' : 'none'}
+            stroke={dot.raised ? 'none' : 'var(--color-line)'}
+            stroke-width={dot.raised ? undefined : 0.15}
+          />
+        )),
+      )
+    }
+  </svg>
+  <div class="braille-letters text-h3" style={`grid-template-columns: repeat(${cells.length}, 1fr)`}>
+    {
+      cells.map((cell) => (
+        <span class="braille-letter">
+          <span class="braille-letter-base font-sans font-medium text-graphite-2">
+            {cell.letter.toUpperCase()}
+          </span>
+          <span class="braille-letter-hi font-sans font-medium text-signal" aria-hidden="true">
+            {cell.letter.toUpperCase()}
+          </span>
+        </span>
+      ))
+    }
+  </div>
+</div>

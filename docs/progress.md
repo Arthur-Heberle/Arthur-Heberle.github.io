@@ -19,7 +19,7 @@ Status values: `todo`, `in progress`, `done`, `blocked`.
 | 10 | Leader lines to margin notes | done | `.leader`'s viewBox/CSS-box match on paper but not live (subpixel rounding), so DrawSVGPlugin warns there too — leaders bypass it like the rule, hand-measuring dasharray via `getTotalLength()`; hover/focus highlight is a stacked `--signal` path crossfaded on opacity |
 | 11 | Archive filter with Flip | done | no `absolute: true` (`motion-spec.md`'s literal value) — verified live it leaves surviving rows permanently `position: absolute`, collapsing everything below the archive; enter/leave decided with Arthur as travel + fade-in-only, no exit animation; Flip runs at both widths; reduced motion gets a 120ms (`--dur-feedback`) entering-only fade, not a new duration (Lighthouse mobile: perf 99, a11y 100, best-practices 100, CLS 0.0003, ~67KB JS gzip) |
 | 12 | Hero sequence | done | plan's centred origin crosshair (top/left: -6px) clipped above the page's own scroll-top boundary, verified live — switched to an L-bracket flush at (0,0); SplitText's word wrapper defaults to `display: inline`, which `transform` doesn't affect, so words need `wordsClass` + `display: inline-block` for the `y` travel to work at all (Lighthouse mobile: perf noisy this session per steps 09/11's documented cause, CLS 0 on two clean runs, a11y 100, best-practices 100, ~65KB JS gzip) |
-| 13 | Project page template and EduBra set-piece | todo | |
+| 13 | Project page template and EduBra set-piece | done | word is `EDUBRA` (Arthur, this session); `project` object added to the archive schema, optional, for the template's four prose fields — closes the question step-03 left open; pin needed an explicit `pinSpacing: true` not in the plan — verified against `ScrollTrigger.js:1177`, GSAP disables it by default under a `display: flex` parent (Lighthouse mobile: perf 99, a11y 100, best-practices 100, CLS 0–0.018 across three runs, noise per steps 09/11's precedent; ~68KB JS gzip) |
 | 14 | Final QA and ship v1 | todo | |
 | 15 | Later months, one at a time | todo | not part of v1 |
 
@@ -32,15 +32,17 @@ Blocking or near-blocking. Add to this list rather than guessing.
 - [x] Opening line: rewritten in his words as "I make technical things make sense to
       people who didn't build them." Supporting line, mono identity line, the three spine
       paragraphs and all five margin notes are also final now — see `docs/content.md`.
-- [ ] All `[FILL]` markers, now seeded verbatim into `src/content/` (11 total — 9 in
+- [ ] All `[FILL]` markers, now seeded verbatim into `src/content/` (15 total — 13 in
       archive entries, 2 in the changelog) and still greppable with
       `grep -rn "\[FILL" src/content/`. The chess note is resolved and no longer one of
       them. Two archive entries (Agente H, Brasilore) have no date at all; step 04 has to
       decide what to render for them meanwhile. **Render policy, decided:** an unresolved
       marker renders visibly on the page as a drafting annotation — mono, `--graphite-2`,
       marker text intact — rather than a silent placeholder or an omitted field. Step 14
-      gates on the count reaching zero.
-- [ ] The word the EduBra Braille set-piece spells.
+      gates on the count reaching zero. Step 13 raised the count from 11 to 15: EduBra's
+      four new `project` prose fields (what/did/team/differently — `docs/content.md`'s new
+      "Project pages" section) are all still `[FILL]`.
+- [x] The word the EduBra Braille set-piece spells: `EDUBRA`, decided at step 13.
 - [ ] Contact section: publish WhatsApp number or email only?
 - [x] `--graphite-2` on `--ground` measured 4.21:1, under the 4.5 AA floor. Put to Arthur
       at step 06: darkened the token to `#666a6f` (4.59:1 on `--ground`, 5.07:1 on
@@ -388,6 +390,28 @@ stroke-dashoffset only, no new dependency, same acceptance criteria) and are ver
 technical corrections to the plan's own arithmetic, not design changes — `docs/plans/step-12.md`
 is left as approved and the correction lives here instead, per that same precedent.
 
+Step 13 — `setPieceBraille()`'s pinned `ScrollTrigger` needed an explicit `pinSpacing: true`
+that `docs/plans/step-13.md`'s approved plan didn't call for. Verified live, not assumed:
+the first build pinned correctly (confirmed via `ScrollTrigger.getAll()`'s own `start`/`end`,
+1109px apart as intended) but the page's total scroll height never grew to match — the
+`.pin-spacer` GSAP inserts stayed exactly the stage's own 204px, with zero extra room
+reserved, so the whole set-piece played out inside its unpinned height and the "pin" was
+never visible as one. Read `node_modules/gsap/ScrollTrigger.js:1177` rather than guess:
+*"if the parent is display: flex, don't apply pinSpacing by default"* — `ProjectPage.astro`'s
+`<article>` (the pinned stage's parent) is exactly that, a `flex flex-col` container, and
+GSAP silently disables its own spacing mechanism there unless told otherwise. Fixing it is
+one line, `pinSpacing: true` in the `scrollTrigger` config; re-verified live afterward
+(`.pin-spacer` height 1313px = 204 + the full 1109px pin distance, document height 790px →
+1899px, dots filling in correctly under real scroll with the letter highlights crossfading
+in at the right position, reversible on scroll-up, and the scroll position — mid-pin —
+correctly restored, not reset, on a real `location.reload()`).
+
+This is logged as a divergence rather than a blocking question for the same reason steps
+09–12's were: it stayed inside every existing hard constraint (only `pinSpacing`, a
+`ScrollTrigger` option already in the one pin the plan called for — no new dependency, no
+markup change, same acceptance criteria) and is a verified technical correction, not a
+design change.
+
 ---
 
 ## Notes for future sessions
@@ -718,3 +742,25 @@ gotchas, things that looked right and weren't.
   clean 0, twice in a row. Performance/TBT stayed low (48–68, TBT 1.8–2.1s) across every
   run this session regardless — treated as environment noise per the standing lesson, not
   chased further, since CLS (the trustworthy signal) was clean and repeatable.
+- Step 13: `ScrollTrigger`'s `pin: true` silently disables its own `pinSpacing` (the
+  mechanism that actually reserves extra scroll room for a pin) whenever the pinned
+  element's parent has `display: flex` — confirmed in
+  `node_modules/gsap/ScrollTrigger.js:1177`, not assumed. The pin still "works" in the
+  sense that `ScrollTrigger.getAll()` reports the correct `start`/`end` and the element
+  does go `position: fixed`, which is what makes this easy to miss without checking the
+  DOM: the bug is that the page's total scroll height never grows to match, so the whole
+  pinned sequence plays out inside the element's own unpinned height with no perceptible
+  "stuck" scroll at all. Any future pinned `ScrollTrigger` (step 15's RP3/Agente H pages
+  are spec'd as scrubbed-not-pinned, but a later set-piece might not be) needs
+  `pinSpacing: true` explicitly whenever its parent — or any ancestor up to the nearest
+  block container — is a flex or grid container, which this codebase's `flex flex-col`
+  layout convention makes the common case, not the exception. Diagnosed by reading
+  `.pin-spacer`'s own rendered height (stuck at the stage's natural height instead of
+  stage + pin distance) against the ScrollTrigger instance's own `start`/`end`, not by
+  guessing from the visual symptom (page reads too short) alone.
+- Step 13: a `location.reload()` in this sandbox (via `javascript_tool`, not the
+  `navigate` tool re-issuing the same URL — that one does not reproduce a real browser's
+  scroll-restoration behaviour) does correctly restore the pre-reload `scrollY` and the
+  matching mid-pin state, exactly like a real F5 — useful for verifying "no scroll jump
+  on refresh mid-page" acceptance criteria without needing a native keyboard shortcut the
+  extension can't send.

@@ -27,6 +27,19 @@ const archive = defineCollection({
       .default({}),
     blurb: z.string().min(1),
     pinned: z.boolean().default(false),
+    // Step 13's four project-page prose fields (design-spec.md §6: "what he actually
+    // did, role and team, ... what he'd do differently"), optional because only entries
+    // with their own page (src/lib/projects.ts's PROJECT_PAGES) need it — the other six
+    // archive entries are untouched by adding this. Each value may itself be an
+    // unresolved [FILL] marker, same convention as role/date above.
+    project: z
+      .object({
+        what: z.string().min(1), // one paragraph: what and why
+        did: z.string().min(1), // what he actually did
+        team: z.string().min(1), // role and team
+        differently: z.string().min(1), // what he'd do differently
+      })
+      .optional(),
   }),
 })
 

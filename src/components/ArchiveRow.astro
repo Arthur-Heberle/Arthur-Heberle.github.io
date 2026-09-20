@@ -4,6 +4,7 @@
 // ones inside "show all".
 import type { CollectionEntry } from 'astro:content'
 import Fill from './Fill.astro'
+import { hasProjectPage, projectPageHref } from '../lib/projects'
 
 interface Props {
   entry: CollectionEntry<'archive'>
@@ -14,6 +15,10 @@ const { date, title, role, tags, links, blurb } = entry.data
 // left as-is for Fill to render as a drafting annotation.
 const displayDate = date.includes('[FILL') ? date : date.replace('-', '.')
 const hasLinks = Boolean(links.repo || links.live || links.pdf)
+// Step 13: the only entry point to a project page. hasProjectPage() reads the one list
+// src/pages/projects/[slug].astro's getStaticPaths() also reads, so a linked title can
+// never point at a route that doesn't exist.
+const projectHref = hasProjectPage(entry.id) ? projectPageHref(entry.id) : null
 ---
 
 <li class="archive-row bg-sheet px-6" data-tags={tags.join(' ')}>
@@ -21,7 +26,15 @@ const hasLinks = Boolean(links.repo || links.live || links.pdf)
     <Fill value={displayDate} />
   </p>
   <div class="flex flex-col gap-2">
-    <h3 class="text-h3 font-sans font-medium">{title}</h3>
+    <h3 class="text-h3 font-sans font-medium">
+      {projectHref ? (
+        <a class="feedback" href={projectHref}>
+          {title}
+        </a>
+      ) : (
+        title
+      )}
+    </h3>
     <p class="flex flex-wrap gap-x-gutter gap-y-1 text-small text-graphite-2">
       <span><Fill value={role} /></span>
       <span>{tags.join(', ')}</span>

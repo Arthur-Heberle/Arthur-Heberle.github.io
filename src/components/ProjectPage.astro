@@ -1,0 +1,97 @@
+---
+// The project page template — design-spec.md §6, "one per set-piece project": title,
+// one-paragraph what and why, the set-piece, what he actually did, role and team, links,
+// what he'd do differently, in that order. This is the whole template; adding an eighth
+// field isn't this step's call to make.
+//
+// One <article>, not several sibling <section>s like the home page — a project page is
+// one self-contained document, not a set of independent page sections. type.css extends
+// its `.page-main > section` positioning rule to `article` for this file's own Tick.
+//
+// Prose comes from the archive entry's `project` field (src/content.config.ts). It's
+// required for any entry this template renders — src/pages/projects/[slug].astro only
+// builds a page for an id in PROJECT_PAGES, and giving an entry a page without giving it
+// `project` data is a content mistake, not a state to degrade gracefully from (same
+// stance as braille.ts throwing on an unmapped letter). An unresolved [FILL] value inside
+// `project` still renders correctly — Fill.astro's policy is unchanged.
+import type { CollectionEntry } from 'astro:content'
+import Fill from './Fill.astro'
+import Tick from './Tick.astro'
+
+interface Props {
+  entry: CollectionEntry<'archive'>
+}
+const { entry } = Astro.props
+const { title, links, project } = entry.data
+
+if (!project) {
+  throw new Error(
+    `ProjectPage: "${entry.id}" has no \`project\` field — add one to its archive frontmatter before giving it a project page.`,
+  )
+}
+
+const hasLinks = Boolean(links.repo || links.live || links.pdf)
+---
+
+<article class="flex flex-col gap-16 py-16">
+  <Tick />
+
+  <div class="flex flex-col gap-4">
+    <h1 id="project-heading" class="text-h2 font-sans font-medium" data-anim>{title}</h1>
+    <p class="measure text-body" data-anim data-delay="0.06">
+      <Fill value={project.what} />
+    </p>
+  </div>
+
+  <slot />
+
+  <section class="flex flex-col gap-3" aria-labelledby="project-did-heading">
+    <h2 id="project-did-heading" class="text-h3 font-sans font-medium" data-anim>What I did</h2>
+    <p class="measure text-body" data-anim data-delay="0.06">
+      <Fill value={project.did} />
+    </p>
+  </section>
+
+  <section class="flex flex-col gap-3" aria-labelledby="project-team-heading">
+    <h2 id="project-team-heading" class="text-h3 font-sans font-medium" data-anim>Role and team</h2>
+    <p class="measure text-body" data-anim data-delay="0.06">
+      <Fill value={project.team} />
+    </p>
+  </section>
+
+  {
+    hasLinks && (
+      <section class="flex flex-col gap-3" aria-labelledby="project-links-heading">
+        <h2 id="project-links-heading" class="text-h3 font-sans font-medium" data-anim>
+          Links
+        </h2>
+        <p class="flex gap-gutter text-small" data-anim data-delay="0.06">
+          {links.repo && (
+            <a class="feedback" href={links.repo}>
+              repo
+            </a>
+          )}
+          {links.live && (
+            <a class="feedback" href={links.live}>
+              live
+            </a>
+          )}
+          {links.pdf && (
+            <a class="feedback" href={links.pdf}>
+              pdf
+            </a>
+          )}
+        </p>
+      </section>
+    )
+  }
+
+  <section class="flex flex-col gap-3" aria-labelledby="project-differently-heading">
+    <h2 id="project-differently-heading" class="text-h3 font-sans font-medium" data-anim>
+      What I'd do differently
+    </h2>
+    <p class="measure text-body" data-anim data-delay="0.06">
+      <Fill value={project.differently} />
+    </p>
+  </section>
+</article>

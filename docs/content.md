@@ -172,7 +172,9 @@ believes `taught ~40`.
 - blurb: Converts digital text to tactile Braille. Python on a Raspberry Pi 4, Wi-Fi,
   multithreading and hardware interrupts driving servos with simultaneous audio feedback.
 - Leads the archive. This is the entry that makes a stranger care in four seconds.
-- Word the set-piece spells: `[FILL]`
+- Word the set-piece spells: `EDUBRA` — decided with Arthur at step 13. 6 cells, 15 raised
+  dots. Not a schema field (`docs/plans/step-03.md`): passed directly at the one call site
+  that needs it, `src/pages/projects/[slug].astro`.
 
 ### 2. Agente H — WhatsApp AI assistant
 - date: `[FILL]`
@@ -215,6 +217,25 @@ believes `taught ~40`.
 - role: `taught ~[FILL]`
 - tags: `[teaching]`
 - blurb: Academic support for engineering students. Ran review sessions.
+
+---
+
+## Project pages
+
+`design-spec.md` §6's template, one per set-piece project: title, one-paragraph what and
+why, the set-piece, what he actually did, role and team, links, what he'd do differently.
+Lives at `/projects/<id>/`, `<id>` matching the archive entry's own filename — decided at
+step 13, since neither spec named a URL.
+
+The four prose fields (what and why / did / team / differently) are an optional `project`
+object on the archive entry, not markdown body prose — decided at step 13, closing the
+question `docs/plans/step-03.md` left open. Only an entry with its own page needs one.
+
+### EduBra
+- what: `[FILL: one paragraph, what EduBra is and why it exists]`
+- did: `[FILL: what Arthur actually did]`
+- team: `[FILL: role and team]`
+- differently: `[FILL: what he'd do differently]`
 
 ---
 

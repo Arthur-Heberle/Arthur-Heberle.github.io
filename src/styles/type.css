@@ -196,8 +196,12 @@ body {
  * every width; `top: -4px` centres the 8x8 box's mid-line on the section's top edge.
  * Absolute, so it costs no layout space — design-spec §10's no-layout-shift rule. Scoped
  * to .page-main's own sections, never a bare `section` selector: /type-test has its own
- * unrelated markup. */
-.page-main > section {
+ * unrelated markup. Step 13 adds `article` to this list: a project page is one
+ * self-contained document, not several sibling sections like the home page, so
+ * ProjectPage.astro's root is a single <article> and needs the same positioning context
+ * for its own leading Tick. */
+.page-main > section,
+.page-main > article {
   position: relative;
 }
 .tick {
@@ -363,4 +367,49 @@ body {
   font-size: var(--text-dimension);
   letter-spacing: var(--text-dimension--letter-spacing);
   color: var(--color-graphite-2);
+}
+
+/* Step 13 — the Braille set-piece. The stage reserves its own box so the pin never causes
+ * layout shift (design-spec.md §10): the SVG's aspect-ratio holds the cell row's height
+ * before any script runs, and the letter row beneath is ordinary text with no reserved
+ * height of its own. Filled dots use --color-measure (tokens.css: "inside set-piece
+ * drawings, never in UI") — the first thing on the site to use that token. */
+.braille-stage {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.braille-cells {
+  width: 100%;
+  aspect-ratio: 4 / 1;
+  overflow: visible;
+}
+/* An SVG element's default transform-origin is (0,0) of its own coordinate system, not
+ * its visual centre — fill-box + a percentage origin corrects that per element, so each
+ * dot scales about itself rather than the whole cell row. */
+.braille-dot {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+/* The text row: one grid column per letter, so its centres land under the SVG's own cell
+ * centres (braille.ts sizes every cell at the same 1/n fraction of the viewBox width —
+ * grid-template-columns is set inline per word length). Base and highlight letters stack
+ * on the same grid cell instead of needing absolute positioning — the same "duplicate
+ * element, crossfade on opacity" technique step 10 used for .leader-hi, since a colour
+ * swap alone can't transition (motion-spec.md's property rule). */
+.braille-letters {
+  display: grid;
+  text-align: center;
+}
+.braille-letter {
+  display: grid;
+  place-items: center;
+}
+.braille-letter-base,
+.braille-letter-hi {
+  grid-area: 1 / 1;
+}
+.braille-letter-hi {
+  opacity: 0;
 }
