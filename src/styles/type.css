@@ -166,8 +166,8 @@ body {
  * mirrors the rail's own column-sizing formula exactly, so the rule always lands right
  * where the prose column ends and the gutter begins, at every width.
  *
- * `.page-main` on purpose, not a bare `main` selector — `/type-test` has its own
- * unrelated `<main>` and must not inherit this page's width/centering. */
+ * `.page-main` on purpose, not a bare `main` selector — a page that isn't laid out on
+ * this rail must not inherit its width/centering. */
 .page-main {
   position: relative;
   width: min(calc(100% - 3rem), calc(var(--container-measure) + var(--spacing-gutter) + var(--container-margin)));
@@ -195,8 +195,8 @@ body {
  * .rule-svg's formula unchanged, so the tick starts exactly where the rule stands at
  * every width; `top: -4px` centres the 8x8 box's mid-line on the section's top edge.
  * Absolute, so it costs no layout space — design-spec §10's no-layout-shift rule. Scoped
- * to .page-main's own sections, never a bare `section` selector: /type-test has its own
- * unrelated markup. Step 13 adds `article` to this list: a project page is one
+ * to .page-main's own sections, never a bare `section` selector, so markup outside the
+ * rail (a future page, a component's own inner section) is never reached. Step 13 adds `article` to this list: a project page is one
  * self-contained document, not several sibling sections like the home page, so
  * ProjectPage.astro's root is a single <article> and needs the same positioning context
  * for its own leading Tick. */

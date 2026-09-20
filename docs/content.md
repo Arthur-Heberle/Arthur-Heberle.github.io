@@ -177,11 +177,15 @@ believes `taught ~40`.
   that needs it, `src/pages/projects/[slug].astro`.
 
 ### 2. Agente H — WhatsApp AI assistant
-- date: `[FILL]`
+- date: `2026-06` — from the build window in `docs/projects/agent-h.md` (~36 commits,
+  2026-05-31 → 2026-06-16), settled at step 14
 - role: `built alone`
 - tags: `[code, ai]`
-- blurb: Personal project. Python logic and integrations, workflow orchestration in n8n,
-  vector database for contextual retrieval.
+- blurb: Personal project. Python, n8n and Postgres vector search: a customer's "sofs"
+  still finds the sofa, and the model gets a filtered catalog, not the whole one.
+  (Rewritten at step 14 from Arthur's own account; the earlier line said "vector database",
+  but the brief records that there is none — it is Postgres with pgvector. Trimmed from the
+  first draft because that wrapped to three lines and blurbs cap at two.)
 
 ### 3. RP3 — additive manufacturing process planning
 - date: `2026-07`
@@ -250,20 +254,25 @@ Written by Arthur, never generated from commits. Newest first, three visible, th
 "show all". It signals the site is maintained rather than abandoned, and it makes every
 editing session produce something visible.
 
-Seed entries, to be replaced with his own:
+Entries as shipped at step 14 (drafted for Arthur, approved by him with the plan; replace
+with his own wording whenever he likes):
 
-- `[FILL: first entry, in his words]`
-- `[FILL: second entry]`
+- `2026-09-20` — First version is live. The EduBra page is the one I'd look at first.
+- `2026-09-13` — Started building this, one section at a time.
 
 ---
 
 ## Contact
 
-Not a form. One sentence of invitation in his own voice, his real email, and WhatsApp if
-he wants it public. The final leader line of the drawing terminates here, and this is the
+Not a form. One sentence of invitation in his own voice, his real email, and WhatsApp
+(published, decided at step 14). The final leader line of the drawing terminates here, and this is the
 only thing on the page the drawing points at.
 
-Invitation line: `[FILL]`
+Invitation line: Tell me what you're building and I'll tell you honestly whether I'm
+useful to it.
+
+WhatsApp: `+55 49 99194-2504`, linked as `https://wa.me/5549991942504`. Email first — it is
+the one the drawing points at.
 
 The site's purpose is to start a conversation, because Arthur's strongest asset is
 one-to-one conversation with a decision maker. Everything above this section exists to

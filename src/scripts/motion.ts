@@ -83,7 +83,20 @@ function tier2Reveals(scoped: boolean) {
       // (the _startClamp path): it constrains the calculated start to the scroller's real
       // bounds instead of leaving it unreachable. No effect on any interior element, where
       // the unclamped position was already in range.
-      scrollTrigger: { trigger: scope ?? el, start: 'clamp(top 85%)', once: true },
+      scrollTrigger: {
+        trigger: scope ?? el,
+        start: 'clamp(top 85%)',
+        once: true,
+        // Found at step 14, live: clamp() pins the start of anything already in view at
+        // load (a project page's h1 and intro, the first spine paragraph) to exactly 0, and
+        // ScrollTrigger only fires onEnter once progress goes *above* 0 — so at scroll 0 the
+        // reveal never fired and the content sat at opacity 0 until the reader scrolled a
+        // pixel. Play it from the refresh instead, once the start is known and already
+        // reached. Already-playing/played is a no-op, so the later onEnter is harmless.
+        onRefresh: (self) => {
+          if (!el.dataset.animPlayed && self.start <= self.scroll()) self.animation?.play()
+        },
+      },
     })
   })
 }
@@ -93,9 +106,9 @@ const TICK_DRAW_PX = 80 // scroll distance over which one tick draws
 const LEADER_DRAW_PX = 120 // a leader is ~4x a tick's length; it earns a longer draw window
 const RULE_LENGTH = 100 // #rule path's exact length in user units (d="M0.5 0 V100")
 
-// Resolved once, guarded: motion.ts loads on every page via Base.astro, and /type-test
-// has no rule. `.page-main`, not a bare `main` — progress.md already logged that a bare
-// element selector reaches /type-test's own unrelated <main>.
+// Resolved once, guarded: motion.ts loads on every page via Base.astro, so the guard keeps
+// it harmless on any future page without a rule. `.page-main`, not a bare `main` — a bare
+// element selector would reach any <main> a later page adds that isn't laid out like this.
 const rulePath = document.querySelector<SVGPathElement>('#rule path')
 const pageMain = rulePath?.closest<HTMLElement>('.page-main') ?? null
 

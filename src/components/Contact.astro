@@ -1,12 +1,15 @@
 ---
 // Contact — the last leader line of the drawing terminates here (design-spec.md §9).
-// The invitation line is still `[FILL]`; the email is real. WhatsApp is not rendered —
-// whether to publish it at all is still an open question in docs/progress.md.
+// Email is the one the drawing points at and comes first; WhatsApp is published too
+// (decided at step 14). wa.me needs the country code, so the number Arthur gave as
+// `49 99194-2504` is +55 (Brazil) + 49 (area code) in the href.
 import Fill from './Fill.astro'
 import Tick from './Tick.astro'
 
 const email = 'a.gp.heberle@gmail.com'
-const invitation = '[FILL]'
+const whatsapp = { href: 'https://wa.me/5549991942504', label: '+55 49 99194-2504' }
+const invitation =
+  "Tell me what you're building and I'll tell you honestly whether I'm useful to it."
 ---
 
 <section class="flex flex-col gap-4 py-16" aria-labelledby="contact-heading">
@@ -18,5 +21,12 @@ const invitation = '[FILL]'
   <!-- The one thing the drawing points at (design-spec.md §9) — signal, not graphite. -->
   <a class="feedback font-mono text-body text-signal no-underline" href={`mailto:${email}`}>
     {email}
+  </a>
+  <a
+    class="feedback font-mono text-body text-signal no-underline"
+    href={whatsapp.href}
+    rel="noopener"
+  >
+    {whatsapp.label}
   </a>
 </section>

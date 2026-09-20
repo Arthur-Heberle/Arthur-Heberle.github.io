@@ -20,7 +20,7 @@ Status values: `todo`, `in progress`, `done`, `blocked`.
 | 11 | Archive filter with Flip | done | no `absolute: true` (`motion-spec.md`'s literal value) — verified live it leaves surviving rows permanently `position: absolute`, collapsing everything below the archive; enter/leave decided with Arthur as travel + fade-in-only, no exit animation; Flip runs at both widths; reduced motion gets a 120ms (`--dur-feedback`) entering-only fade, not a new duration (Lighthouse mobile: perf 99, a11y 100, best-practices 100, CLS 0.0003, ~67KB JS gzip) |
 | 12 | Hero sequence | done | plan's centred origin crosshair (top/left: -6px) clipped above the page's own scroll-top boundary, verified live — switched to an L-bracket flush at (0,0); SplitText's word wrapper defaults to `display: inline`, which `transform` doesn't affect, so words need `wordsClass` + `display: inline-block` for the `y` travel to work at all (Lighthouse mobile: perf noisy this session per steps 09/11's documented cause, CLS 0 on two clean runs, a11y 100, best-practices 100, ~65KB JS gzip) |
 | 13 | Project page template and EduBra set-piece | done | word is `EDUBRA` (Arthur, this session); `project` object added to the archive schema, optional, for the template's four prose fields — closes the question step-03 left open; pin needed an explicit `pinSpacing: true` not in the plan — verified against `ScrollTrigger.js:1177`, GSAP disables it by default under a `display: flex` parent (Lighthouse mobile: perf 99, a11y 100, best-practices 100, CLS 0–0.018 across three runs, noise per steps 09/11's precedent; ~68KB JS gzip) |
-| 14 | Final QA and ship v1 | todo | |
+| 14 | Final QA and ship v1 | done | **Chromium-verified only; Firefox/Safari/iOS Safari untested, open risk.** Found and fixed a real bug: `clamp(top 85%)` left every above-the-fold reveal at `opacity: 0` until the first pixel of scroll (`onRefresh` fix in `motion.ts`). `/type-test` deleted; reduced motion finally verified live via CDP; 16 → 12 `[FILL]` markers, the rest waiting on their project briefs (Lighthouse mobile: perf 99, a11y 100, best-practices 100 on both routes; CLS 0.0003 home, 0.0255 EduBra while its placeholder prose is mono — 0.000–0.003 with real prose; 66KB JS gzip) |
 | 15 | Later months, one at a time | todo | not part of v1 |
 
 ---
@@ -32,18 +32,47 @@ Blocking or near-blocking. Add to this list rather than guessing.
 - [x] Opening line: rewritten in his words as "I make technical things make sense to
       people who didn't build them." Supporting line, mono identity line, the three spine
       paragraphs and all five margin notes are also final now — see `docs/content.md`.
-- [ ] All `[FILL]` markers, now seeded verbatim into `src/content/` (15 total — 13 in
-      archive entries, 2 in the changelog) and still greppable with
-      `grep -rn "\[FILL" src/content/`. The chess note is resolved and no longer one of
-      them. Two archive entries (Agente H, Brasilore) have no date at all; step 04 has to
-      decide what to render for them meanwhile. **Render policy, decided:** an unresolved
-      marker renders visibly on the page as a drafting annotation — mono, `--graphite-2`,
-      marker text intact — rather than a silent placeholder or an omitted field. Step 14
-      gates on the count reaching zero. Step 13 raised the count from 11 to 15: EduBra's
-      four new `project` prose fields (what/did/team/differently — `docs/content.md`'s new
-      "Project pages" section) are all still `[FILL]`.
+- [ ] **12 `[FILL]` markers remain, deliberately open** (`grep -rho "\[FILL" src/content/
+      src/components/Contact.astro | wc -l` → 12). Step 14 resolved 4 of 16: Agente H's date
+      (`2026-06`, from `docs/projects/agent-h.md`'s build window), the contact invitation, and
+      both changelog notes. The rest wait for their own project brief, which is the order
+      Arthur is working in (`docs/projects/README.md`). **Render policy, decided:** an
+      unresolved marker renders visibly as a drafting annotation (`Fill.astro`) — that is
+      what "deliberately still open" looks like on the shipped page.
+
+      | Marker(s) | Field | Unblocked by |
+      |---|---|---|
+      | `edubra.md` ×6 | `date` (confirm), `role`, `project.what/did/team/differently` | EduBra brief |
+      | `rp3.md` | `role` | RP3 brief |
+      | `eletron-energia.md` | `role` | ELETRON brief |
+      | `brasilore.md` ×2 | `date`, `role` | Brasilore brief |
+      | `calculus-ii.md`, `programming-techniques.md` | `role` (`taught ~[FILL]`, student count) | Arthur, directly |
+
+      Re-run the grep after each brief and update this count; when it hits zero this bullet
+      closes. **Do the EduBra ones first** — see the set-piece note under Divergences.
+- [ ] **`docs/projects/` is untracked on purpose (decision for Arthur).** Step 14's plan said
+      to commit it; on reading it, it holds the deployed Agent H app's live URL next to a
+      list of its known security gaps (open CORS, guessable public image URLs, in-memory OTP),
+      plus pricing and the cost model, and this repo is a GitHub Pages user site, which is
+      public on a free account. It never left the machine. Options: keep it untracked, add
+      `docs/projects/` to `.gitignore`, or commit a redacted copy. `progress.md`, `content.md`
+      and the step-14 plan refer to it by path, so a fresh clone won't have it.
+- [ ] **Firefox, desktop Safari and iOS Safari are untested.** None is installed on the dev
+      machine and step 14 chose not to download any. Named risks: the EduBra pinned
+      `ScrollTrigger` on iOS Safari (toolbar show/hide resizes the viewport, the classic
+      pin-breaker) and Lenis against iOS momentum scrolling ("scroll fighting"). Step 14's two
+      acceptance lines that depend on them — "iOS Safari: no pinned-section breakage, no
+      scroll fighting" — are **not met**, not ticked. Needs a real iPhone and a desktop Firefox.
+- [ ] **Changelog wording is a draft, not Arthur's own.** Both entries and the contact
+      invitation were drafted by Claude and approved by Arthur with the step-14 plan. The
+      acceptance line asks for "first changelog entry written by Arthur, in his voice" —
+      replace them with his own words whenever he likes (`changelog.yaml`, `Contact.astro`).
+      Note the first entry sends readers to the EduBra page, which still shows its four
+      `[FILL]` prose fields; reword or resolve before pointing anyone at it.
 - [x] The word the EduBra Braille set-piece spells: `EDUBRA`, decided at step 13.
-- [ ] Contact section: publish WhatsApp number or email only?
+- [x] Contact section: publish WhatsApp number or email only? **Both**, decided at step 14:
+      email first (the one the drawing points at), then `+55 49 99194-2504` linked as
+      `https://wa.me/5549991942504`.
 - [x] `--graphite-2` on `--ground` measured 4.21:1, under the 4.5 AA floor. Put to Arthur
       at step 06: darkened the token to `#666a6f` (4.59:1 on `--ground`, 5.07:1 on
       `--sheet`), the first authorised token-value change in the project.
@@ -412,6 +441,89 @@ This is logged as a divergence rather than a blocking question for the same reas
 markup change, same acceptance criteria) and is a verified technical correction, not a
 design change.
 
+Step 14 — **A real bug from step 08, found by QA: every reveal already in view at load stayed
+at `opacity: 0` until the reader scrolled one pixel.** `start: 'clamp(top 85%)'` pins the
+start of any element near the top of the page to exactly `0`; ScrollTrigger fires `onEnter`
+only once progress goes *above* 0, and at scroll 0 it is exactly 0. Visible symptom: open
+`/projects/edubra/` and the `<h1>` and intro paragraph are invisible (home: the first four
+reveals). Diagnosed live, not guessed: `ScrollTrigger.getAll()` showed those triggers at
+`start: 0, progress: 0`, a synthetic `scroll`/`resize`/`ScrollTrigger.update()`/`refresh()`
+changed nothing, and a 1px real wheel event revealed all of them. Fix, in `motion.ts`
+`tier2Reveals()`: an `onRefresh` callback plays the tween when its trigger's start is
+already reached and it hasn't played. Verified at 1280×900, 1280×600 and 375×800 on both
+routes: nothing in view is hidden at load, and every `[data-anim]` reads opacity 1 after a
+full scroll. Earlier steps never caught it because their verification always scrolled first,
+and step 13's live check ran in a `visibilityState: "hidden"` tab whose rAF was frozen.
+
+Step 14 — **The fix exposed a layout shift it had been hiding, which was investigated rather
+than assumed.** EduBra's Lighthouse CLS went 0.0108 → ~0.027 after the reveal fix. Bisected
+by reverting only `onRefresh` (0.0108 ×3, steady) and by reading Lighthouse's own
+`layout-shifts` audit: different nodes, not the same one worse. Before, the shifting node was
+a lower `<section>` (web-font swap); after, it is `.braille-stage`, which the bug had been
+leaving at `opacity: 0` — hidden elements don't count toward CLS, so the shift was there all
+along. The stated cause is IBM Plex Mono loading, and the element moved is the intro
+paragraph above the stage, which currently holds the `[FILL]` placeholder that `Fill.astro`
+renders in mono. **Verified rather than asserted:** temporarily swapping in ordinary prose
+gave CLS 0.0029 / 0.0025 / 0.0000. So it is a placeholder artefact and clears itself when
+EduBra's real copy lands. Also tried, measured, and *reverted*: preloading Archivo 500 (the
+step-06 remedy) — home stayed 0 but EduBra was unchanged at ~0.025, so it wasn't the cause
+and a speculative preload doesn't stay. Shipped state: EduBra 0.0255, home 0.0003.
+
+Step 14 — **The EduBra set-piece can't finish at max scroll on tall viewports, with the
+placeholder copy.** Measured at 1280px wide, scrolled to the true bottom: fine at ≤800px
+high; at 900px the last dot is 73% drawn and the last letter unhighlighted; at 1000 and
+1080px the last cell's dots never appear (`min` dot opacity 0). Arithmetic, not a pin bug:
+a pin can only finish if the content after it is at least one viewport tall (the spacer's
+extra height is the pin distance itself, so shortening the pin changes nothing), and that
+content is currently four short `[FILL]` strings, ~833px. **Not fixed in this step** — it
+depends on copy that doesn't exist yet and a fix (a `min-height` tail, or finishing the
+timeline before the pin's end) is a layout decision for Arthur, not a QA edit. **Re-measure
+when EduBra's prose lands**, at 900, 1000 and 1080px high; if the last dots still don't
+complete, that becomes the next fix. Until then the strongest page on the site is incomplete
+on most desktop monitors, which is worth knowing before pointing anyone at it.
+
+Step 14 — Reduced motion, end to end, finally verified live — the gap steps 08 and 11 both
+logged. Method: Playwright's Chromium binary driven over raw CDP from a throwaway Node
+script (Node 24's global `WebSocket`, no new dependency), with `Emulation.setEmulatedMedia`
+`prefers-reduced-motion: reduce`, which is what the DevTools Rendering panel toggles.
+Asserted on both routes at 1280 and 375px: every `[data-anim]` visible with no inline
+style, no `hero-pending`, no hero split, zero inline dash styles on rule/ticks/leaders, no
+pin-spacer and a static stage, all 15 Braille dots at final state; and the archive filter
+crossfades entering rows only (min opacity < 1 mid-fade), with no travel, no
+`position: absolute`, and no inline style left once settled. Also passing with JavaScript
+disabled. The recommendation in steps 08/11 to have Arthur check the Rendering panel by hand
+is closed.
+
+Step 14 — Agente H: `date` `"2026-06"` (the brief's build window is ~36 commits over
+2026-05-31 → 2026-06-16; a one-month field takes the month it concluded, decided with
+Arthur), and the blurb rewritten. The old line said "vector database for contextual
+retrieval"; the brief records an explicit decision that there is *no* separate vector
+database (Postgres + pgvector), and Arthur's own account of what it does — a customer's
+"sofs" still finds the sofa, and the model gets a filtered catalog instead of the whole one —
+replaced it. First draft wrapped to three lines with a stranded word, against the two-line
+cap in `content.md`, so it was trimmed; now two lines at 1280px (five at 375px, like the
+other blurbs). The row now sorts between RP3 and Programming Techniques, checked on the
+rendered page.
+
+Step 14 — Contact gains WhatsApp. `49 99194-2504` was given without a country code; `wa.me`
+needs one, so the link is `https://wa.me/5549991942504` and it displays as `+55 49 99194-2504`
+(Brazil, area code 49). Mechanical normalisation of a number Arthur supplied, the same class
+as step 03's scheme-less repo URLs. Same class and treatment as the email line, no new CSS,
+no `data-anim` (the email never had one), both links keyboard-reachable with a visible 2px
+ring.
+
+Step 14 — `/type-test` deleted, along with three code comments that named it as the reason
+for scoping selectors to `.page-main`; the scoping is still right, the comments now say why
+without it. The expected side benefit did **not** happen and the older note was wrong: the
+`.rounded { border-radius: .25rem }` leak is still in the built CSS. It never came from
+`/type-test` — Tailwind v4 scans the whole repo for class candidates, including
+`docs/*.md`, which quote that class in prose. Twenty-five bytes of dead CSS; fixing it means
+a `source()` change in `tokens.css`, which needs Arthur's go-ahead, so it stays.
+
+Logged as divergences rather than blocking questions for the same reason steps 09–13's were:
+each stayed inside every hard constraint (no new dependency, no token change, no new section)
+and is a verified correction or a decision Arthur made in-session, not a design change.
+
 ---
 
 ## Notes for future sessions
@@ -764,3 +876,57 @@ gotchas, things that looked right and weren't.
   matching mid-pin state, exactly like a real F5 — useful for verifying "no scroll jump
   on refresh mid-page" acceptance criteria without needing a native keyboard shortcut the
   extension can't send.
+- Step 14: **the reduced-motion / no-JS / viewport-size verification recipe that finally
+  works in this sandbox** — drive the Playwright Chromium binary directly over raw CDP from a
+  throwaway Node script instead of through the `claude-in-chrome` extension. Launch
+  `chrome.exe --headless=new --no-sandbox --remote-debugging-port=9333 --user-data-dir=<dir>`,
+  read `/json/version` for the browser WebSocket, then per test: `Target.createTarget` →
+  `Target.attachToTarget {flatten:true}` → `Emulation.setDeviceMetricsOverride` (real
+  viewport widths *and heights*, which the extension's `resize_window` never gave),
+  `Emulation.setEmulatedMedia` (`prefers-reduced-motion`), `Emulation.setScriptExecutionDisabled`
+  (no-JS), `Emulation.setFocusEmulationEnabled`, and `Input.dispatchMouseEvent` type
+  `mouseWheel` for real wheel input that Lenis honours. Node 24's global `WebSocket` means no
+  dependency. The tab is genuinely visible, so rAF runs (unlike the extension's background
+  tab, `visibilityState: "hidden"`). Keep the script in a scratch dir inside the project (Node
+  can't resolve the `ARTHUR~1` short path) and delete it before committing. Use
+  `fileURLToPath(new URL(...))` for paths — `URL.pathname` leaves `%20` in "Arthur Heberle".
+- Step 14: **`ScrollTrigger` won't fire `onEnter` for a trigger whose start is exactly the
+  current scroll** — progress must go above 0. `clamp(...)` turns any negative start (an
+  element already in view at load) into exactly 0, so above-the-fold reveals silently wait for
+  the first pixel of scroll. Diagnose with `ScrollTrigger.getAll()` (`start`, `progress`,
+  `trigger`), not by staring at opacity: a synthetic `scroll` event does nothing because
+  ScrollTrigger ignores scroll events where the position hasn't changed. To get at it in a
+  bundled page, temporarily add `window.__dbg = { gsap, ScrollTrigger, lenis }` in
+  `motion.ts`, rebuild, probe, remove it, and grep `dist/_astro/*.js` for `__dbg` to prove it
+  is gone. The fix pattern is an `onRefresh` that plays when `self.start <= self.scroll()`.
+- Step 14: **A verification that always scrolls first can't see load-time bugs.** Every
+  earlier reveal check scrolled before looking, and the hidden-heading bug sat through steps
+  08–13 as a result. Assert state at scroll 0, straight after load, for anything the design
+  says is visible on the first screen — at several viewport heights, not only one.
+- Step 14: **Elements at `opacity: 0` don't count toward CLS.** A bug that leaves something
+  hidden can therefore mask a real layout shift, and fixing the bug "adds" CLS that was always
+  there. When CLS moves after a change, bisect by reverting *only* that change, then read
+  Lighthouse's own `layout-shifts` audit (`details.items[].node` and `subItems[].cause`) before
+  concluding anything: it names the shifted node and, for font swaps, the font file. Here the
+  node changed between builds — the tell that the shift wasn't the same one worsening.
+- Step 14: **A `[FILL]` placeholder is not layout-neutral.** `Fill.astro` renders it in
+  IBM Plex Mono, which is swap-loaded; the real copy will be Archivo 400, which is preloaded.
+  Any CLS or wrap measurement taken while placeholders are on the page measures the
+  placeholder. Swap in throwaway prose (temporarily, then restore the file from a copy and
+  check `git diff` is empty) to measure what the page will actually do.
+- Step 14: **A pin only finishes if the content after it is at least one viewport tall.**
+  `pinSpacing` adds exactly the pin distance to the page, so the maximum scroll is
+  `start + pinDistance + contentAfter − viewportHeight`, and the pin ends at
+  `start + pinDistance`: the shortfall is `viewportHeight − contentAfter`, whatever the pin
+  length. Any future pinned set-piece needs enough content after it, or a timeline that
+  finishes before the pin does. Measure it by scrolling to the true bottom at several
+  viewport heights and reading the last animated element's opacity.
+- Step 14: Tailwind v4 scans **every file in the repo** for class candidates, including
+  `docs/*.md`, so a class name quoted in prose can compile into `dist`. That is where the
+  `.rounded` leak came from (step 02's note blamed `/type-test`, and deleting it changed
+  nothing). If it ever matters, `@import "tailwindcss" source("../")`-style scoping in
+  `tokens.css` fixes it — a token-file change, so ask first.
+- Step 14: `Edit`/scripted replacements on this repo's files can fail on a multi-line string
+  because some files carry mixed CRLF/LF line endings (`file` reports CRLF; `od` on a single
+  line shows LF). Read the file and use the `Edit` tool, which matches on content; a Python
+  `str.replace` on a multi-line block assumed to be LF will silently assert-fail.
