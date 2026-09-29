@@ -32,8 +32,9 @@ Blocking or near-blocking. Add to this list rather than guessing.
 - [x] Opening line: rewritten in his words as "I make technical things make sense to
       people who didn't build them." Supporting line, mono identity line, the three spine
       paragraphs and all five margin notes are also final now — see `docs/content.md`.
-- [ ] **12 `[FILL]` markers remain, deliberately open** (`grep -rho "\[FILL" src/content/
-      src/components/Contact.astro | wc -l` → 12). Step 14 resolved 4 of 16: Agente H's date
+- [ ] **10 `[FILL]` markers remain, deliberately open** (`grep -rho "\[FILL" src/content/
+      src/components/Contact.astro | wc -l` → 10; EduBra's `date` and `project.what` resolved
+      after step 14 from the `Oficinas_1` repo). Step 14 resolved 4 of 16: Agente H's date
       (`2026-06`, from `docs/projects/agent-h.md`'s build window), the contact invitation, and
       both changelog notes. The rest wait for their own project brief, which is the order
       Arthur is working in (`docs/projects/README.md`). **Render policy, decided:** an
@@ -42,7 +43,7 @@ Blocking or near-blocking. Add to this list rather than guessing.
 
       | Marker(s) | Field | Unblocked by |
       |---|---|---|
-      | `edubra.md` ×6 | `date` (confirm), `role`, `project.what/did/team/differently` | EduBra brief |
+      | `edubra.md` ×4 | `role`, `project.did/team/differently` | Arthur, directly (repo doesn't say who did what) |
       | `rp3.md` | `role` | RP3 brief |
       | `eletron-energia.md` | `role` | ELETRON brief |
       | `brasilore.md` ×2 | `date`, `role` | Brasilore brief |
@@ -530,6 +531,13 @@ a `source()` change in `tokens.css`, which needs Arthur's go-ahead, so it stays.
 Logged as divergences rather than blocking questions for the same reason steps 09–13's were:
 each stayed inside every hard constraint (no new dependency, no token change, no new section)
 and is a verified correction or a decision Arthur made in-session, not a design change.
+
+After step 14 — EduBra, at Arthur's request: the set-piece's pin distance halved,
+`end: '+=150%'` → `'+=75%'` (it read slow); the pin distance doesn't affect whether it
+completes at max scroll (see the 75svh note above). From the `Oficinas_1` repo: `date`
+`2025-12` → `2025-06` (last commit 2025-06-25, confirmed by Arthur), `project.what` written,
+and the blurb's "simultaneous audio feedback" corrected — the Pi speaks each word *before*
+the pins rise.
 
 ---
 

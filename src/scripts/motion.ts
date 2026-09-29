@@ -504,7 +504,8 @@ function setPieceBraille() {
     scrollTrigger: {
       trigger: stage,
       start: 'top top',
-      end: '+=150%', // 15 dots over 1.5 viewport heights. motion-spec.md gives no
+      end: '+=75%', // 15 dots over 0.75 viewport heights (halved from 150%, Arthur's call
+      // after step 14 — it read slow). motion-spec.md gives no
       // set-piece-specific value; this is a pin's scroll distance, not one of the two
       // durations motion-spec.md:36 asks to hold the line on, so it isn't a third one.
       pin: true, // design-spec.md §8/motion-spec.md: at most one per page, only inside a
