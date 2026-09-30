@@ -622,6 +622,18 @@ After step 14 — the Braille controls become a cross-shaped pad beside the word
   drift, reduced motion and mobile are all unchanged. Lighthouse desktop is 100/100/100,
   CLS 0.
 
+After step 14 — **token added, authorised by Arthur: `--color-control: #f2c230`**. It is
+the second token change in the project, after step 06's `--graphite-2`.
+- **Use:** the yellow fill of the EduBra pad buttons only. It isn't a neutral gray, so the
+  "no gray outside the list" rule is untouched.
+- **Chosen with Arthur:** filled buttons with graphite icons (~9:1) rather than a yellow
+  outline (too faint on `--ground`).
+- **Icons:** − slower, + faster, ⏮ restart, and ⏯ pause/play as one fixed combined icon.
+  The state lives in its `aria-label`/`title`, so the icon-swap CSS was removed.
+- **Docs:** design-spec.md §5 lists the token and its one use.
+- **Verified:** loop, pad and controls tests all pass unchanged, and Lighthouse desktop
+  is 100/100/100, CLS 0.
+
 ---
 
 ## Notes for future sessions

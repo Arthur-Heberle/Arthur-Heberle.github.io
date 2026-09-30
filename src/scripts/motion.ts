@@ -577,7 +577,8 @@ function setPieceBraille(): (() => void) | undefined {
       b.disabled = !BRAILLE_RATES[rateIndex + step]
     })
   }
-  // The pad's down button: its icon swaps on data-paused (type.css), its name on aria-label.
+  // The pad's down button: a fixed ⏯ icon, so the state lives in its name (aria-label,
+  // title) and in data-paused.
   const setPaused = (paused: boolean) => {
     userPaused = paused
     if (toggle) {

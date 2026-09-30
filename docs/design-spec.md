@@ -132,11 +132,13 @@ Six values. The two chromatic ones have specific jobs and never decorate.
 --line:      #C3C8C6;  /* hairlines and construction lines */
 --signal:    #B3261E;  /* annotation terminations, active states, links */
 --measure:   #2F6F8F;  /* data traces inside set-pieces only */
+--control:   #F2C230;  /* EduBra device-button fill only (added by Arthur, 2026-09-29) */
 ```
 
 Rules: `--signal` never fills a background, only strokes, marks and text. It should
 appear roughly eight times on the whole page. `--measure` appears only inside set-piece
-drawings, never in UI. No pure `#000`, no pure `#FFF`, no neutral grays outside the list.
+drawings, never in UI. `--control` fills the four EduBra pad buttons and nothing else, with
+`--graphite` icons on it (~9:1). No pure `#000`, no pure `#FFF`, no neutral grays outside the list.
 
 ### Type
 
@@ -368,9 +370,9 @@ opacity, 120ms, `--ease-out`, no translate). They hold for 600ms, drop, and the 
 character rises. After the last letter there's a 600ms pause, then it repeats. The text
 version renders alongside, and the letter whose pins are up is highlighted.
 
-Beside the word is a cross-shaped pad of the device's own buttons: **up** restarts the word,
-**left** slower, **right** faster (0.5×–2×), **down** pause/play, and the current speed sits
-as a count in the middle. They are also what makes an endless,
+Beside the word is a cross-shaped pad of the device's own buttons, filled yellow
+(`--control`): **up** ⏮ restarts the word, **left** − slower, **right** + faster (0.5×–2×),
+**down** ⏯ pause/play, and the current speed sits as a count in the middle. They are also what makes an endless,
 self-starting loop acceptable (WCAG 2.2.2), and the loop pauses itself while it's out of view.
 The controls exist only where the loop runs (≥768px, motion allowed, JS). Everywhere else the
 cell is a static, complete word. The device converts text to touch, and the set-piece
