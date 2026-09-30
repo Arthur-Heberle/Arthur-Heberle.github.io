@@ -921,6 +921,8 @@ Stage E — **voice.**
   cancels; sound off stops speech; reduced motion shows Sound and Play, stays silent until asked,
   and the cone stays still. The real (unstubbed) API gave no console errors. JS is about 75 KB gzip.
 
+- **Fixed after stage E (Arthur saw it):** the speaker's vibrating part was off-centre. Wrapping cone and dust cap in `.cdrive` (stage E) took them out of the `.drv > *` rule that gave them `position: absolute`, so their `left`/`top` were ignored. `.drv .cdrive > *` now has the same rule. Lesson: a new wrapper inside `.drv` needs the same absolute-children rule.
+
 Divergences from the brief's wording, recorded per its instruction:
 - **Autoplay instead of scroll-scrubbed.** The pinned `ScrollTrigger` scrub is gone; `render(p)`,
   `T` and `ITEMS` are unchanged, driven by a 10 s linear tween of p (stage A).

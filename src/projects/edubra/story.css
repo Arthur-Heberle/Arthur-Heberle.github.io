@@ -691,7 +691,8 @@ html:not(.js) .story .hits,
   transform-origin: 50% 100%;
   transform: rotateZ(14deg) rotateX(-90deg);
 }
-.story .drv > * {
+.story .drv > *,
+.story .drv .cdrive > * {
   position: absolute;
 }
 .story .drv .plate {
