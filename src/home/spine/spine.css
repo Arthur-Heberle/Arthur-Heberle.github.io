@@ -1,0 +1,86 @@
+/* Annotation markers linking spine prose to margin notes. Mono because a callout number
+ * is a count, not a label. --graphite-2, not --signal: the signal budget (design-spec.md
+ * §5, roughly eight appearances) is spent on leader terminations and links, not on every
+ * one of these. */
+.marker {
+  font-family: var(--font-mono);
+  font-size: var(--text-dimension);
+  color: var(--color-graphite-2);
+  text-decoration: none;
+}
+
+/* The three-column rail: prose, gutter, margin. The gutter column carries no content of
+ * its own — it's where leader lines are drawn — so it's named but never targeted by a
+ * grid-area. Below 768px the margin collapses under the prose, in source order, which is
+ * what makes each note land directly after its paragraph with no JS. */
+.rail {
+  display: grid;
+  grid-template-columns: minmax(0, var(--container-measure)) var(--spacing-gutter) var(--container-margin);
+  grid-template-areas: 'prose gutter margin';
+}
+.rail-prose {
+  grid-area: prose;
+}
+.rail-margin {
+  grid-area: margin;
+  align-self: start;
+}
+@media (max-width: 767px) {
+  .rail {
+    grid-template-columns: 1fr;
+    grid-template-areas: 'prose' 'margin';
+    row-gap: 1rem;
+  }
+}
+
+/* One margin note. The leader line is absolutely positioned into the rail's gutter
+ * column, so it never takes up layout space of its own — reserved by the rail's grid
+ * track instead, which is what design-spec.md §10's "no layout shift" box asks for here. */
+.note + .note {
+  margin-top: 1.5rem;
+}
+.note {
+  position: relative;
+}
+/* The rendered note body arrives as a <p> from the notes collection's markdown; folding
+ * it inline keeps "label — text" reading as one line instead of the label sitting above
+ * an orphaned paragraph. */
+.note-text p {
+  display: inline;
+  margin: 0;
+}
+
+.leader {
+  position: absolute;
+  top: 0.4em;
+  right: 100%;
+  width: var(--spacing-gutter);
+  aspect-ratio: 4 / 3;
+  overflow: visible;
+}
+@media (max-width: 767px) {
+  .leader {
+    display: none;
+  }
+}
+
+/* Step 10 — marker<->note highlight. Additive only: note content is never hover-dependent
+ * (design-spec.md §10), this just links the pair. opacity, not a stroke swap —
+ * motion-spec.md's property rule — at the one feedback duration and curve. The note's own
+ * text lifts --graphite-2 -> --graphite instantly, with no transition, for the same reason
+ * color can't be animated; precedent is .control[aria-pressed='true'] below. Specificity
+ * (0,2,1) is deliberate: it beats the text-graphite-2 utility (0,1,0) on .note-text but
+ * doesn't reach the nested <strong> or the back-link .marker, which keep their own colors.
+ * No <768px override needed: .leader is already display:none there, so only the text lift
+ * survives, which is harmless. */
+.leader-hi {
+  opacity: 0;
+  transition: opacity var(--dur-feedback) var(--ease-out);
+}
+.note[data-linked] .leader-hi {
+  opacity: 1;
+}
+.note[data-linked] .note-text {
+  color: var(--color-graphite);
+}
+

@@ -16,8 +16,8 @@
 // stance as braille.ts throwing on an unmapped letter). An unresolved [FILL] value inside
 // `project` still renders correctly — Fill.astro's policy is unchanged.
 import type { CollectionEntry } from 'astro:content'
-import Fill from './Fill.astro'
-import Tick from './Tick.astro'
+import Fill from '../shared/components/Fill.astro'
+import Tick from '../shared/components/Tick.astro'
 
 interface Props {
   entry: CollectionEntry<'archive'>

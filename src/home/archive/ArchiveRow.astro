@@ -3,8 +3,8 @@
 // (docs/motion-spec.md) — defined once here, reused for both the visible rows and the
 // ones inside "show all".
 import type { CollectionEntry } from 'astro:content'
-import Fill from './Fill.astro'
-import { hasProjectPage, projectPageHref } from '../lib/projects'
+import Fill from '../../shared/components/Fill.astro'
+import { hasProjectPage, projectPageHref } from '../../projects/projects'
 
 interface Props {
   entry: CollectionEntry<'archive'>

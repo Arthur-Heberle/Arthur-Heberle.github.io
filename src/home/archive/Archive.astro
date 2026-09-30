@@ -6,7 +6,7 @@
 // better.
 import { getCollection } from 'astro:content'
 import ArchiveRow from './ArchiveRow.astro'
-import Tick from './Tick.astro'
+import Tick from '../../shared/components/Tick.astro'
 
 const entries = await getCollection('archive')
 
@@ -70,7 +70,7 @@ const tags = TAG_ORDER.filter((t) => presentTags.has(t))
 </section>
 
 <script>
-  import { filterTransition, refreshTriggers, scrollByPx } from '../scripts/motion.ts'
+  import { filterTransition, refreshTriggers, scrollByPx } from '../../shared/motion.ts'
 
   // Tag filter + "show all", plain JS (docs/implementation-plan.md step 05: "interaction
   // works before animation exists"). All DOM mutation lives in one applyState() function

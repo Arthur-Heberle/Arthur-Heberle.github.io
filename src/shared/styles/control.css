@@ -1,0 +1,31 @@
+/* Shared chrome for an interactive control that isn't a plain link — "show all" today,
+ * whatever step 05's filter buttons need tomorrow. 2px radius per design-spec.md §5:
+ * structural elements stay square, controls read as controls. */
+.control {
+  display: inline-block;
+  width: fit-content;
+  cursor: pointer;
+  list-style: none;
+  border: var(--hairline) solid var(--color-line);
+  border-radius: var(--radius-control);
+  padding: 0.4em 0.9em;
+  background: var(--color-sheet);
+  color: var(--color-graphite);
+  font-family: var(--font-sans);
+  font-size: var(--text-small);
+}
+.control::-webkit-details-marker {
+  display: none;
+}
+.control::marker {
+  content: '';
+}
+/* An active filter is a stroke/text state, never a fill — design-spec.md §5: --signal
+ * never fills a background. --sheet from .control stays underneath. No transition here:
+ * .feedback already supplies the 120ms opacity feedback; motion-spec.md's hard property
+ * rule (transform/opacity/stroke-dashoffset only) rules out a `transition: color`. */
+.control[aria-pressed='true'] {
+  color: var(--color-signal);
+  border-color: var(--color-signal);
+}
+

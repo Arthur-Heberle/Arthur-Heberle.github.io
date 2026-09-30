@@ -708,6 +708,18 @@ width.**
   - The full device suite still passes: 3D chain, controls, off-screen pause, reduced
     motion, no-JS.
 
+After step 14 — **`src/` reorganised by domain (Arthur), no behaviour change.**
+- **New layout:** `src/shared/`, `src/home/<section>/`, `src/projects/` and
+  `src/projects/edubra/`. The map is in CLAUDE.md's "Where things live".
+- **Moved, not rewritten:** files moved with `git mv`, so history follows.
+- **CSS:** `type.css` was split along its existing sections into per-domain files, all
+  imported by `shared/styles/global.css` in the old section order.
+- **Verified against a pre-move snapshot of `dist/`:**
+  - Both pages' HTML is identical, with asset hashes normalised.
+  - The CSS bundle has the same 153 rules and the same bytes. The one order change is
+    `.control` now ahead of `.archive-row`; they never style the same element.
+  - Build and `astro check` are clean.
+
 ---
 
 ## Notes for future sessions

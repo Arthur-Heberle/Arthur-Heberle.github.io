@@ -1,0 +1,49 @@
+/* EduBra's static system diagram (EdubraDiagram.astro). Two drawings, one per layout: each
+ * SVG reserves its own box via viewBox + aspect-ratio, so neither shifts layout. Capped at
+ * its viewBox width so labels render at ~1:1 (18/17 user units ≈ 18/17px), never scaled up. */
+.edubra-diagram {
+  margin: 0;
+}
+.edubra-diagram svg {
+  width: 100%;
+  overflow: visible;
+}
+.edubra-diagram-wide {
+  display: none;
+  max-width: 680px;
+  aspect-ratio: 680 / 250;
+}
+.edubra-diagram-tall {
+  max-width: 340px;
+  aspect-ratio: 340 / 450;
+}
+@media (min-width: 768px) {
+  .edubra-diagram-wide {
+    display: block;
+  }
+  .edubra-diagram-tall {
+    display: none;
+  }
+}
+.edubra-boxes rect,
+.edubra-links path {
+  fill: none;
+  stroke: var(--color-graphite-2);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+.edubra-labels text {
+  font-family: var(--font-sans);
+  font-size: 18px;
+  fill: var(--color-graphite);
+  text-anchor: middle;
+}
+.edubra-diagram-tall .edubra-labels text {
+  font-size: 17px;
+}
+.edubra-labels .edubra-note {
+  fill: var(--color-graphite-2);
+}
+.edubra-labels .edubra-end {
+  text-anchor: end;
+}

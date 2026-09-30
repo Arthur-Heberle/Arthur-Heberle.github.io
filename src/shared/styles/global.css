@@ -1,0 +1,30 @@
+/* The single CSS entry. Tailwind arrives via tokens.css's own @import "tailwindcss",
+ * so this file must never import Tailwind a second time.
+ *
+ * Styles live next to the domain they belong to (src/shared, src/home/*, src/projects/*)
+ * but are all pulled in here, in this order, as one bundle. The order is the cascade:
+ * it is the section order of the old single type.css, so keep new files in the same
+ * spirit — shared first, then home sections, then project pages. */
+@import "./tokens.css";
+@import "./fonts.css";
+
+/* shared: layout primitives, skip link, feedback, [FILL] rendering */
+@import "./base.css";
+/* home: spine prose, margin notes, leader lines */
+@import "../../home/spine/spine.css";
+/* shared: the page rule and section ticks (both pages) */
+@import "./drawing.css";
+/* home: hero drawing and its flash guard */
+@import "../../home/hero/hero.css";
+/* shared: button/summary chrome (archive filter, show-all) */
+@import "./control.css";
+/* home: archive rows, tag filter, count */
+@import "../../home/archive/archive.css";
+/* projects/edubra: the 3D device and the system diagram */
+@import "../../projects/edubra/device.css";
+@import "../../projects/edubra/diagram.css";
+
+/* Lenis's required stylesheet, shipped by the package. Every rule in it is gated on the
+ * `lenis` class Lenis puts on <html> at runtime, so it is inert with JS disabled. Last,
+ * so Tailwind's preflight (pulled in by tokens.css) can't override it. */
+@import "lenis/dist/lenis.css";

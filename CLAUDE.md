@@ -40,13 +40,31 @@ improvising. A wrong decision made silently costs more than a question.
 
 ---
 
+## Where things live
+
+Code is split by domain, so a change to one project touches one folder.
+
+| Folder | Holds |
+|---|---|
+| `src/shared/` | `layouts/Base.astro`, `components/` (Fill, Rule, Tick), `motion.ts` (the one GSAP/Lenis authority), `styles/` (tokens, fonts, `global.css`, base, drawing, control) |
+| `src/home/<section>/` | one folder per home section (hero, spine, archive, changelog, contact): its components and its CSS |
+| `src/projects/` | `ProjectPage.astro` (the shared template) and `projects.ts` (which ids get a page) |
+| `src/projects/<id>/` | one folder per project page (`edubra/` today): its set-piece, its diagram, its CSS and helpers |
+| `src/content/`, `src/pages/`, `src/content.config.ts` | where Astro requires them: content collections, routes |
+
+Every CSS file is pulled into one bundle by `src/shared/styles/global.css`, **in cascade
+order**. A new domain CSS file gets one `@import` line there, after the files it may
+override. Don't import CSS from components.
+
+---
+
 ## Hard rules
 
 **Never invent facts.** `docs/content.md` contains `[FILL]` markers for things only
 Arthur knows: team sizes, student counts, exact roles. Never guess a number, never write
 a plausible-sounding placeholder into real content. Leave the marker visible and ask.
 
-**Never change the design tokens** in `src/styles/tokens.css` without being asked. If a
+**Never change the design tokens** in `src/shared/styles/tokens.css` without being asked. If a
 color or size feels wrong, say so; don't fix it unilaterally. The palette and type were
 chosen against a specific brief and one drifted value breaks the concept.
 

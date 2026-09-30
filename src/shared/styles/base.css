@@ -1,0 +1,76 @@
+/* Layout primitives — the handful of things a token doesn't already generate as a
+ * Tailwind utility. Everything else uses generated utilities directly: text-body,
+ * text-h2, font-mono, text-graphite-2, bg-sheet, max-w-measure, w-margin, gap-gutter.
+ * No new class for anything a token already generates. */
+
+.display {
+  font-family: var(--font-display);
+  font-weight: 500;
+  /* --text-display-mobile only exists below 768px (see tokens.css); above that the
+   * var() is undefined and falls through to --text-display. One declaration, no
+   * second breakpoint, no token value changed. */
+  font-size: var(--text-display-mobile, var(--text-display));
+  line-height: var(--text-display--line-height);
+  letter-spacing: var(--text-display--letter-spacing);
+}
+
+.measure {
+  max-width: var(--container-measure);
+}
+
+.hairline {
+  border: 0;
+  border-top: var(--hairline) solid var(--color-line);
+}
+
+/* Step 04 — static home page. Everything below is a thing no Tailwind utility already
+ * expresses: the three-column rail, the drawing layer's absolute positioning, and the
+ * handful of interactive elements that repeat across sections. */
+
+html,
+body {
+  overflow-x: hidden;
+}
+
+/* Skip link. Off-screen until focused, per design-spec.md §10. Uses :focus (not
+ * :focus-visible) — a skip link should appear for any way it receives focus, not only
+ * keyboard navigation. */
+.skip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 10;
+  transform: translateY(-100%);
+  background: var(--color-sheet);
+  color: var(--color-graphite);
+  padding: 0.6em 1em;
+  font-family: var(--font-sans);
+  font-size: var(--text-small);
+  text-decoration: none;
+}
+.skip:focus {
+  transform: translateY(0);
+}
+
+/* Interactive feedback: opacity only, at the one feedback duration and curve
+ * (docs/motion-spec.md). Shared by every quiet interactive element — the contact link,
+ * annotation markers, note back-links, "show all" controls. Never a color or shadow
+ * transition: motion-spec.md's hard rule is transform/opacity/stroke-dashoffset only. */
+.feedback {
+  transition: opacity var(--dur-feedback) var(--ease-out);
+}
+.feedback:hover,
+.feedback:focus-visible {
+  opacity: 0.7;
+}
+
+/* A resolved value renders as itself. An unresolved `[FILL]` marker renders as a
+ * drafting annotation — mono, small, secondary — so a gap in the content looks like an
+ * unresolved dimension on a technical drawing rather than a broken page. */
+.fill {
+  font-family: var(--font-mono);
+  font-size: var(--text-dimension);
+  letter-spacing: var(--text-dimension--letter-spacing);
+  color: var(--color-graphite-2);
+}
+

@@ -7,7 +7,7 @@
 // the notes directory's alphabetical listing.
 import { getCollection } from 'astro:content'
 import MarginNote from './MarginNote.astro'
-import Tick from './Tick.astro'
+import Tick from '../../shared/components/Tick.astro'
 
 const notes = await getCollection('notes')
 const byLabel = Object.fromEntries(notes.map((note) => [note.data.label, note]))

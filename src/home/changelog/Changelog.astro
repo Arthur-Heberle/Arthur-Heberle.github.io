@@ -3,8 +3,8 @@
 // Today there are only two entries, so no "show all" control renders at all — nothing
 // to hide yet.
 import { getCollection } from 'astro:content'
-import Fill from './Fill.astro'
-import Tick from './Tick.astro'
+import Fill from '../../shared/components/Fill.astro'
+import Tick from '../../shared/components/Tick.astro'
 
 const entries = await getCollection('changelog')
 const sorted = entries.slice().sort((a, b) => b.data.date.localeCompare(a.data.date))
