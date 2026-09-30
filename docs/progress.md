@@ -46,7 +46,7 @@ team's paper, `public/docs/edubra-paper.pdf`.
 | 1 | Accessibility | done | one `role="img"` with the brief's label; all drawn parts `aria-hidden`; the two "Pause" buttons told apart |
 | 2 | Hardware accuracy | done | MDF, yellow PLA cell, real button layout, knob and jack on the right face (yaw, not the story's rotateZ), no speaker; checked against the paper, contrast audited |
 | 3 | Copy | done | intro, margin note and the four captions verbatim; captions moved to their own full-width row and sized by a grid cell |
-| 4 | New sections | todo | |
+| 4 | New sections | done | By the numbers, How we built it, My part, What I'd do differently, Links last; the paper is linked from `project.paper`, not `links.pdf` |
 | 5 | Final check | todo | |
 
 ---
@@ -1533,3 +1533,47 @@ After step 14 — **EduBra stage 3: copy** (Arthur's brief, 2026-09-30).
 - **Checked:** at 1280 and 375 the intro, margin note (beside at 768 and up, stacked under on
   phones) and caption row look right; caption height checked at 1280, 1024, 768, 767, 600, 375
   and 320 against its box; `astro check` clean.
+
+After step 14 — **EduBra stage 4: new sections** (Arthur's brief, 2026-09-30).
+- **Order:** title and intro (with the margin note), device demo and "Try a word", How it works,
+  By the numbers, How we built it, My part, What I'd do differently, Links. Checked against the
+  built HTML's headings. "What I did" and "Role and team" are gone; "My part" replaces both.
+- **Verbatim:** every paragraph in `src/content/archive/edubra.md`, asserted to appear exactly once
+  in the built HTML (whitespace and entities normalised), including the four figure labels and the
+  two link texts.
+- **Template change (`ProjectPage.astro`, `content.config.ts`):** `project` is now `what`, `note?`,
+  `built?`, `part`, `differently` (each paragraphs, one `<p>` apiece) and `paper?`. `did` and `team`
+  are gone; only EduBra has a `project`, so no other entry changed. Links moved to the end. The
+  repo link reads "Code on GitHub" (on project pages only; the home archive row still says "repo").
+- **The paper link is `project.paper`, not `links.pdf`.** `links.pdf` would also appear on the home
+  page's archive row (it shows every link an entry has), and the brief asked only for the project
+  page's Links. Arthur can move it if he wants the row to have it. `public/docs/edubra-paper.pdf`
+  (4.6 MB, renamed from Arthur's `ArtigoFinal_Oficinas1.pdf`) is committed with this stage; the
+  link is served 200 `application/pdf`.
+- **"By the numbers" (`EdubraNumbers.astro`, `numbers.css`):** four figures; four across from
+  768px and two by two below.
+  - **The drawings** are hand-made paths in a 160x100 viewBox with `aspect-ratio`, graphite
+    outlines and a thinner graphite-2 annotation layer (dimension line and arrows, the pin ticks,
+    the crosses). No `--measure` (the spec reserves it for set-pieces) and no `--signal`.
+  - **The numbers** are Plex Mono at the display size (40px on phones), with the unit small beside
+    them. Each figure has a hairline rule over it like an archive row.
+  - **Sources, all from the paper:** 2.5 mm is Table 1's mean (2.4 to 2.7 mm); the bar is 40 units
+    a second, so the voice is 2.4 s and three pins at 0.2 s each are 0.6 s (Table 2: 2.6 s for one
+    dot, 3.5 s for five, +0.2 s a pin); the eight servos are section 3.3. The "three pins" in the
+    bar is a drawing choice, not a measurement.
+  - **Motion:** `tier2Numbers()` in `motion.ts`, in both no-preference branches. One timeline on
+    the row (`clamp(top 85%)`, once, `onRefresh` for an already-visible row): each figure's paths
+    draw with a per-path dasharray from `getTotalLength()` (600ms, `EASE_OUT`, 60ms stagger), then
+    its labels fade in. `data-anim-played` on the row stops a replay after a matchMedia rebuild.
+    Strokes use butt caps: a round cap leaves a dot at the start of a fully hidden stroke. The
+    reduced-motion branch clears the inline styles. The numbers, captions and heading-adjacent
+    text never animate; the section heading uses the same reveal as every other heading.
+- **Verified (headless Chromium over CDP):**
+  - Every stroke is hidden before the row enters, and the row is below the fold at 1280x900.
+  - Drawn and clean 2.6s after entry: no inline styles, all labels at opacity 1.
+  - Scrolling away and back replays nothing, and neither does crossing 768px afterwards.
+  - Four across at 1280, two by two at 375, and no horizontal overflow at 375.
+  - Phones animate too.
+  - Reduced motion and no-JS show every drawing from the first frame.
+  - The console is clean on EduBra at 1280, 375 and reduced motion, and on home.
+  - `astro check` is clean.

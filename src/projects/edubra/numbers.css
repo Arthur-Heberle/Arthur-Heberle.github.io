@@ -1,0 +1,81 @@
+/* EduBra's "By the numbers" (EdubraNumbers.astro): four figures, four across from 768px and two
+ * by two below. Each is a small drawing in the site's line style (graphite outlines, a
+ * graphite-2 annotation layer, hairline 1px strokes) over a big mono number and its label.
+ * The drawings are the only thing that animates (motion.ts draws the strokes in once); the
+ * numbers and labels are plain text and never move. */
+.numbers {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 32px var(--spacing-gutter);
+}
+@media (max-width: 767px) {
+  .numbers {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 32px 16px;
+  }
+}
+.numbers figure {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  /* a title-block rule over each drawing, like the archive's row rules */
+  border-top: var(--hairline) solid var(--color-line);
+  padding-top: 12px;
+}
+/* viewBox plus aspect-ratio: the box is sized before anything draws, so nothing shifts */
+.numbers svg {
+  display: block;
+  width: 100%;
+  aspect-ratio: 8 / 5;
+  height: auto;
+  overflow: visible;
+}
+.numbers svg path {
+  fill: none;
+  stroke-linecap: butt; /* a round cap would leave a dot at the start of a hidden stroke */
+  stroke-linejoin: round;
+}
+.numbers .ink path {
+  stroke: var(--color-graphite);
+  stroke-width: 0.9;
+}
+/* dimension lines, ears, ticks and the crosses: annotation, so --graphite-2 and thinner */
+.numbers .dim path {
+  stroke: var(--color-graphite-2);
+  stroke-width: 0.7;
+}
+.numbers svg text {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  fill: var(--color-graphite-2);
+}
+.numbers figcaption {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+/* the number is a measured value or a count, so: mono, at the display size */
+.numbers .num {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-weight: 400;
+  color: var(--color-graphite);
+  font-size: var(--text-display);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+@media (max-width: 767px) {
+  .numbers .num {
+    font-size: var(--text-display-mobile);
+  }
+}
+.numbers .num .u {
+  font-size: var(--text-small);
+  letter-spacing: 0;
+  color: var(--color-graphite-2);
+}
+.numbers .lab {
+  margin: 0;
+  color: var(--color-graphite-2);
+}

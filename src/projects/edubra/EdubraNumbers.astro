@@ -1,0 +1,134 @@
+---
+// EduBra's "By the numbers" (Arthur's brief, 2026-09-30): four figures, each a small technical
+// drawing in the site's line style rather than a plain stats row. The numbers are measured
+// values and counts, so they're set in mono (design-spec.md §5). Every figure comes from the
+// team's paper (public/docs/edubra-paper.pdf): the 2.5 mm is Table 1's average pin height
+// (2.4 to 2.7 mm, measured with a caliper's depth rod); the ~3 s and "0.2 s per pin" are
+// Table 2 (2.6 s for a one-dot letter, 3.5 s for five); the 8 servos are section 3.3.
+//
+// Drawn in their final state, so the section reads with JavaScript off and under reduced
+// motion. motion.ts draws the strokes in once, when the row enters the viewport (only
+// stroke-dashoffset and the labels' opacity; the numbers and captions never move). Every
+// drawing is hand-made paths, no rect/circle/line, so that one length-measuring tween covers
+// it and no stroke uses vector-effect (which would change the dash units).
+interface Props {
+  class?: string
+}
+
+// One servo (an SG90 seen from above): a body with two mounting ears and a horn circle.
+// `s` scales it; x, y is its top-left corner at s = 1 (50 wide, 20 high).
+const servo = (x: number, y: number, s = 1) => {
+  const f = (n: number) => +(n * s).toFixed(2)
+  return {
+    body: `M${x + f(7)} ${y + f(3)}H${x + f(43)}V${y + f(7)}H${x + f(50)}V${y + f(13)}H${x + f(43)}V${y + f(17)}H${x + f(7)}V${y + f(13)}H${x}V${y + f(7)}H${x + f(7)}Z`,
+    horn: `M${x + f(10)} ${y + f(10)}a${f(4)} ${f(4)} 0 1 0 ${f(8)} 0a${f(4)} ${f(4)} 0 1 0 ${-f(8)} 0`,
+    // a cross over the whole servo, reaching a little past it
+    x1: `M${x - 2} ${y + f(1)}L${x + f(50) + 2} ${y + f(19)}`,
+    x2: `M${x - 2} ${y + f(19)}L${x + f(50) + 2} ${y + f(1)}`,
+  }
+}
+
+// 6: the cell's 2 x 3 arrangement, one servo per dot
+const six = [10, 40, 70].flatMap((y) => [16, 90].map((x) => servo(x, y)))
+// 8: four by two, small, each one crossed out
+const eight = [24, 62].flatMap((y) => [4, 44, 84, 124].map((x) => servo(x, y, 0.68)))
+
+const figures = [
+  {
+    n: '2.5',
+    unit: ' mm',
+    label: 'how far each pin rises, measured with a caliper',
+  },
+  {
+    n: '6',
+    unit: '',
+    label: 'servos under the lid, one per dot',
+  },
+  {
+    n: '~3',
+    unit: ' s',
+    label: 'per letter at full speed. Each pin adds about 0.2 s; the voice takes the rest.',
+  },
+  {
+    n: '8',
+    unit: '',
+    label: 'servos we burned on the way there',
+  },
+]
+---
+
+<section class="flex flex-col gap-6" aria-labelledby="numbers-heading">
+  <h2 id="numbers-heading" class="text-h3 font-sans font-medium" data-anim>By the numbers</h2>
+  <div class="numbers" data-numbers>
+    <figure>
+      <svg viewBox="0 0 160 100" aria-hidden="true" focusable="false">
+        <!-- a pin rising out of the cell: the cell's top edge is broken where the recess is -->
+        <g class="ink">
+          <path d="M66 62H20V84H140V62H94"></path>
+          <path d="M66 62V80H94V62"></path>
+          <path d="M72 80V34Q72 30 76 30H84Q88 30 88 34V80"></path>
+        </g>
+        <!-- the dimension: two extension lines, the line between them, an arrowhead at each end -->
+        <g class="dim">
+          <path d="M90 30H112"></path>
+          <path d="M96 62H112"></path>
+          <path d="M108 30V62"></path>
+          <path d="M105 37L108 30L111 37"></path>
+          <path d="M105 55L108 62L111 55"></path>
+        </g>
+        <text x="114" y="50">2.5</text>
+      </svg>
+      <figcaption>
+        <p class="num"><span class="n">{figures[0].n}</span><span class="u">{figures[0].unit}</span></p>
+        <p class="lab text-small">{figures[0].label}</p>
+      </figcaption>
+    </figure>
+
+    <figure>
+      <svg viewBox="0 0 160 100" aria-hidden="true" focusable="false">
+        <g class="ink">
+          {six.map((v) => <><path d={v.body}></path><path d={v.horn}></path></>)}
+        </g>
+      </svg>
+      <figcaption>
+        <p class="num"><span class="n">{figures[1].n}</span><span class="u">{figures[1].unit}</span></p>
+        <p class="lab text-small">{figures[1].label}</p>
+      </figcaption>
+    </figure>
+
+    <figure>
+      <svg viewBox="0 0 160 100" aria-hidden="true" focusable="false">
+        <!-- one bar, 40 units a second: the voice (2.4 s) and the pins (three pins at 0.2 s each) -->
+        <g class="ink">
+          <path d="M20 34H140V56H20Z"></path>
+          <path d="M116 34V56"></path>
+        </g>
+        <g class="dim">
+          <path d="M124 34V56"></path>
+          <path d="M132 34V56"></path>
+        </g>
+        <text x="68" y="74" text-anchor="middle">voice</text>
+        <text x="128" y="74" text-anchor="middle">pins</text>
+      </svg>
+      <figcaption>
+        <p class="num"><span class="n">{figures[2].n}</span><span class="u">{figures[2].unit}</span></p>
+        <p class="lab text-small">{figures[2].label}</p>
+      </figcaption>
+    </figure>
+
+    <figure>
+      <svg viewBox="0 0 160 100" aria-hidden="true" focusable="false">
+        <g class="ink">
+          {eight.map((v) => <><path d={v.body}></path><path d={v.horn}></path></>)}
+        </g>
+        <g class="dim">
+          {eight.map((v) => <><path d={v.x1}></path><path d={v.x2}></path></>)}
+        </g>
+      </svg>
+      <figcaption>
+        <p class="num"><span class="n">{figures[3].n}</span><span class="u">{figures[3].unit}</span></p>
+        <p class="lab text-small">{figures[3].label}</p>
+      </figcaption>
+    </figure>
+  </div>
+</section>

@@ -227,14 +227,17 @@ believes `taught ~40`.
 
 ## Project pages
 
-`design-spec.md` §6's template, one per set-piece project: title, one-paragraph what and
-why, the set-piece, what he actually did, role and team, links, what he'd do differently.
-Lives at `/projects/<id>/`, `<id>` matching the archive entry's own filename — decided at
+`design-spec.md` §6's template, one per set-piece project: title and intro (with an optional
+margin note), the set-piece, the project's own sections, "How we built it" (optional), "My
+part", "What I'd do differently", Links. Lives at `/projects/<id>/`, `<id>` matching the archive entry's own filename — decided at
 step 13, since neither spec named a URL.
 
-The four prose fields (what and why / did / team / differently) are an optional `project`
-object on the archive entry, not markdown body prose — decided at step 13, closing the
-question `docs/plans/step-03.md` left open. Only an entry with its own page needs one.
+The prose is an optional `project` object on the archive entry, not markdown body prose —
+decided at step 13, closing the question `docs/plans/step-03.md` left open. Only an entry with
+its own page needs one. Fields (changed 2026-09-30): `what` (the intro), `note` (optional margin
+note), `built` (optional, a list of paragraphs), `part` (a list), `differently` (a list) and
+`paper` (an optional document for Links, `{ href, label }`, kept off `links.pdf` so the home
+archive row doesn't grow a link).
 
 ### EduBra
 Final, in Arthur's words (2026-09-29). "what" is one sentence on purpose: it sits directly
@@ -251,15 +254,24 @@ above the set-piece, and the system diagram below the cells carries how it works
   sends them to the Raspberry Pi inside the box. 3 Audio first: Before reading, the Pi
   prepares a voice file for every word, so it doesn't stall mid-sentence. 4 Read: It says
   the word, then each letter, raising the pins as it goes.
-- did: All of the software. A small upload page that pulls the text out of the file and
-  sends it to the Pi over Wi-Fi, and the program on the Pi that turns each character into
-  six pins, speaks it first, and keeps listening to the buttons and the volume knob while
-  it reads.
-- team: Team of three for Oficina de Integração 1 at UTFPR, 2025, with Luiz Correia and
-  Rafael Fernandes. I wrote the software and built most of the hardware.
-- differently: Run everything on the Pi, so it's one device instead of a laptop and a Pi.
-  And make the speech work offline: right now the spoken words need an internet connection,
-  which is a strange dependency for an assistive device.
+- "By the numbers" (copy in the brief, 2026-09-30; "2.5 mm": how far each pin rises, measured with
+  a caliper. "6": servos under the lid, one per dot. "~3 s": per letter at full speed. Each pin
+  adds about 0.2 s; the voice takes the rest. "8": servos we burned on the way there).
+- built ("How we built it"), 4 paragraphs: the pins took four designs in SolidWorks, printed in PLA
+  at the university's prototyping lab; a separate 5 V supply feeds the motors and the Pi only
+  sends the signal; the 3 mm MDF box, laser-cut with finger joints, the cell opening widened with
+  a jigsaw and the lid thinned under the buttons; a hot-glue symbol on each button.
+- part ("My part", replaces "What I did" and "Role and team"), 3 paragraphs: the team (Luiz
+  Correia, Rafael Fernandes and Arthur, Oficina de Integração 1, UTFPR, 2025) and that Arthur
+  wrote all of the software and built most of the hardware; the Flask page on the laptop and
+  the program on the Pi; the buttons (interrupts, then a thread that only watches them).
+- differently, 3 paragraphs: everything on the Pi; an offline voice that is actually clear (the
+  one used now, Google's, needs internet and is the bottleneck); all six pins at once, to the
+  same height, without the twitch some pins still have.
+- Links: "Code on GitHub" (the repo) and "Final paper, in Portuguese (PDF)"
+  (`/docs/edubra-paper.pdf`).
+- The exact wording of every paragraph above is in `src/content/archive/edubra.md` (verbatim from
+  the brief); this file lists only what each one says.
 
 ---
 

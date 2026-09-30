@@ -27,18 +27,20 @@ const archive = defineCollection({
       .default({}),
     blurb: z.string().min(1),
     pinned: z.boolean().default(false),
-    // Step 13's four project-page prose fields (design-spec.md §6: "what he actually
-    // did, role and team, ... what he'd do differently"), optional because only entries
-    // with their own page (src/lib/projects.ts's PROJECT_PAGES) need it — the other six
-    // archive entries are untouched by adding this. Each value may itself be an
-    // unresolved [FILL] marker, same convention as role/date above.
+    // The project-page prose (design-spec.md §6), optional because only entries with their
+    // own page (src/projects/projects.ts's PROJECT_PAGES) need it — the other six archive
+    // entries are untouched by adding this. Each paragraph may itself be an unresolved
+    // [FILL] marker, same convention as role/date above. Paragraph lists render one <p> each.
     project: z
       .object({
-        what: z.string().min(1), // one paragraph: what and why
+        what: z.string().min(1), // the intro: what and why
         note: z.string().min(1).optional(), // a margin note beside `what` (no label, no marker)
-        did: z.string().min(1), // what he actually did
-        team: z.string().min(1), // role and team
-        differently: z.string().min(1), // what he'd do differently
+        built: z.array(z.string().min(1)).optional(), // "How we built it"
+        part: z.array(z.string().min(1)).min(1), // "My part": team, role and what he did
+        differently: z.array(z.string().min(1)).min(1), // "What I'd do differently"
+        // A document for the Links section. Kept off `links.pdf` so the home page's archive
+        // row, which shows every link an entry has, stays as it was.
+        paper: z.object({ href: z.string().startsWith('/'), label: z.string().min(1) }).optional(),
       })
       .optional(),
   }),

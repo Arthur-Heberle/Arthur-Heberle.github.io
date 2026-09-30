@@ -1,10 +1,9 @@
 ---
-// The project page template — design-spec.md §6, "one per set-piece project": title,
-// one-paragraph what and why, the set-piece, what he actually did, role and team, links,
-// what he'd do differently, in that order. The set-piece (default slot) sits in the header
-// group, tight under the one-line what; the optional `after` slot holds a project's "How it
-// works" section (EduBra's pinned scroll story, which replaced its static system diagram on
-// 2026-09-30 — design-spec.md §6).
+// The project page template — design-spec.md §6, "one per set-piece project". Order: title and
+// intro (with an optional margin note), the set-piece (default slot), the `after` slot (a
+// project's own sections: EduBra's "How it works" story and "By the numbers"), "How we built
+// it" (optional), "My part", "What I'd do differently", Links. The set-piece sits in the header
+// group, tight under the intro.
 //
 // One <article>, not several sibling <section>s like the home page — a project page is
 // one self-contained document, not a set of independent page sections. type.css extends
@@ -33,7 +32,7 @@ if (!project) {
   )
 }
 
-const hasLinks = Boolean(links.repo || links.live || links.pdf)
+const hasLinks = Boolean(links.repo || links.live || project.paper)
 ---
 
 <article class="flex flex-col gap-16 py-16">
@@ -63,18 +62,43 @@ const hasLinks = Boolean(links.repo || links.live || links.pdf)
 
   <slot name="after" />
 
-  <section class="flex flex-col gap-3" aria-labelledby="project-did-heading">
-    <h2 id="project-did-heading" class="text-h3 font-sans font-medium" data-anim>What I did</h2>
-    <p class="measure text-body" data-anim data-delay="0.06">
-      <Fill value={project.did} />
-    </p>
+  {
+    project.built && (
+      <section class="flex flex-col gap-3" aria-labelledby="project-built-heading">
+        <h2 id="project-built-heading" class="text-h3 font-sans font-medium" data-anim>
+          How we built it
+        </h2>
+        {project.built.map((text, i) => (
+          <p class="measure text-body" data-anim data-delay={i === 0 ? '0.06' : undefined}>
+            <Fill value={text} />
+          </p>
+        ))}
+      </section>
+    )
+  }
+
+  <section class="flex flex-col gap-3" aria-labelledby="project-part-heading">
+    <h2 id="project-part-heading" class="text-h3 font-sans font-medium" data-anim>My part</h2>
+    {
+      project.part.map((text, i) => (
+        <p class="measure text-body" data-anim data-delay={i === 0 ? '0.06' : undefined}>
+          <Fill value={text} />
+        </p>
+      ))
+    }
   </section>
 
-  <section class="flex flex-col gap-3" aria-labelledby="project-team-heading">
-    <h2 id="project-team-heading" class="text-h3 font-sans font-medium" data-anim>Role and team</h2>
-    <p class="measure text-body" data-anim data-delay="0.06">
-      <Fill value={project.team} />
-    </p>
+  <section class="flex flex-col gap-3" aria-labelledby="project-differently-heading">
+    <h2 id="project-differently-heading" class="text-h3 font-sans font-medium" data-anim>
+      What I'd do differently
+    </h2>
+    {
+      project.differently.map((text, i) => (
+        <p class="measure text-body" data-anim data-delay={i === 0 ? '0.06' : undefined}>
+          <Fill value={text} />
+        </p>
+      ))
+    }
   </section>
 
   {
@@ -83,10 +107,10 @@ const hasLinks = Boolean(links.repo || links.live || links.pdf)
         <h2 id="project-links-heading" class="text-h3 font-sans font-medium" data-anim>
           Links
         </h2>
-        <p class="flex gap-gutter text-small" data-anim data-delay="0.06">
+        <p class="flex flex-wrap gap-x-gutter gap-y-2 text-small" data-anim data-delay="0.06">
           {links.repo && (
             <a class="feedback" href={links.repo}>
-              repo
+              Code on GitHub
             </a>
           )}
           {links.live && (
@@ -94,22 +118,13 @@ const hasLinks = Boolean(links.repo || links.live || links.pdf)
               live
             </a>
           )}
-          {links.pdf && (
-            <a class="feedback" href={links.pdf}>
-              pdf
+          {project.paper && (
+            <a class="feedback" href={project.paper.href}>
+              {project.paper.label}
             </a>
           )}
         </p>
       </section>
     )
   }
-
-  <section class="flex flex-col gap-3" aria-labelledby="project-differently-heading">
-    <h2 id="project-differently-heading" class="text-h3 font-sans font-medium" data-anim>
-      What I'd do differently
-    </h2>
-    <p class="measure text-body" data-anim data-delay="0.06">
-      <Fill value={project.differently} />
-    </p>
-  </section>
 </article>

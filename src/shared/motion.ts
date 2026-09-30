@@ -101,6 +101,53 @@ function tier2Reveals(scoped: boolean) {
   })
 }
 
+/** Tier 2: EduBra's "By the numbers". Each figure's drawing draws itself once, when the row
+ *  enters the viewport: stroke-dashoffset on its paths, then its labels fade in (opacity). The
+ *  big numbers and the captions are plain text and never move ("only the drawings may
+ *  animate"). Like the tier 2 reveals it fires once, never reverses, and data-anim-played (on
+ *  the row) stops a matchMedia rebuild from replaying it; a revert leaves the drawings in
+ *  their final, fully drawn state, which is also what no-JS and reduced motion show.
+ *
+ *  The paths differ in length, so each gets its own hand-measured dasharray (the same
+ *  getTotalLength() technique as tier1Leaders(), not DrawSVGPlugin). The drawings use no
+ *  vector-effect, so user-space length is the dash unit. gsap.from() writes every start state
+ *  immediately, in this same call, so nothing is hidden that the trigger won't reveal.
+ *  Durations are the tier 2 pair (600ms, EASE_OUT) with the 60ms sibling stagger. */
+function tier2Numbers() {
+  const row = document.querySelector<HTMLElement>('[data-numbers]')
+  if (!row || row.dataset.animPlayed) return
+  const all = gsap.utils.toArray<SVGPathElement>(row.querySelectorAll('svg path'))
+  const texts = gsap.utils.toArray<SVGTextElement>(row.querySelectorAll('svg text'))
+  const tl = gsap.timeline({
+    scrollTrigger: {
+      trigger: row,
+      start: 'clamp(top 85%)',
+      once: true,
+      // same as tier2Reveals: a row already in view at load would otherwise wait for a scroll
+      onRefresh: (self) => {
+        if (!row.dataset.animPlayed && self.start <= self.scroll()) self.animation?.play()
+      },
+    },
+    onComplete: () => {
+      row.dataset.animPlayed = '1'
+      gsap.set(all, { clearProps: 'strokeDasharray,strokeDashoffset' })
+      if (texts.length) gsap.set(texts, { clearProps: 'opacity' })
+    },
+  })
+  gsap.set(all, { strokeDasharray: (_i: number, el: SVGPathElement) => el.getTotalLength() })
+  row.querySelectorAll('figure').forEach((fig, i) => {
+    const paths = gsap.utils.toArray<SVGPathElement>(fig.querySelectorAll('svg path'))
+    const labels = gsap.utils.toArray<SVGTextElement>(fig.querySelectorAll('svg text'))
+    const at = i * 0.06 * 2
+    tl.from(
+      paths,
+      { strokeDashoffset: (_i: number, el: SVGPathElement) => el.getTotalLength(), duration: 0.6, ease: EASE_OUT, stagger: 0.06 },
+      at,
+    )
+    if (labels.length) tl.from(labels, { opacity: 0, duration: 0.6, ease: EASE_OUT }, at + 0.3)
+  })
+}
+
 const SCRUB = 0.8 // motion-spec.md's value. Never `true`.
 const TICK_DRAW_PX = 80 // scroll distance over which one tick draws
 const LEADER_DRAW_PX = 120 // a leader is ~4x a tick's length; it earns a longer draw window
@@ -477,6 +524,7 @@ mm.add('(min-width: 768px) and (prefers-reduced-motion: no-preference)', (ctx) =
   // EduBra's "How it works" story: autoplays once when 40% visible (no pin, no scrub)
   const offStory = storyPlayer({ autoplay: true, ease: EASE_OUT })
   tier2Reveals(true)
+  tier2Numbers()
   if (rulePath && pageMain) {
     tier1Rule(rulePath, pageMain)
     tier1Ticks(pageMain)
@@ -497,6 +545,7 @@ mm.add('(min-width: 768px) and (prefers-reduced-motion: no-preference)', (ctx) =
 mm.add('(max-width: 767px) and (prefers-reduced-motion: no-preference)', (ctx) => {
   const offStory = storyPlayer({ autoplay: true, ease: EASE_OUT }) // phones animate too: the story with its camera
   tier2Reveals(false)
+  tier2Numbers()
   // design-spec.md §8: below 768px the drawing layer keeps the scrubbed rule only — no
   // ticks (.tick is display:none there anyway, so tier1Ticks is skipped, not just hidden)
   // and no leader lines (motion-spec.md's degradation contract; .leader is also
@@ -533,9 +582,12 @@ mm.add('(prefers-reduced-motion: reduce)', (ctx) => {
   // DrawSVG's own style-saver tracks. .origin/.datum/.lead paths added in step 12 — same
   // family of elements, same risk if the toggle lands mid-sequence.
   const drawn = gsap.utils.toArray<SVGPathElement>(
-    '#rule path, .tick path, .leader path, .origin path, .datum path, .lead path',
+    '#rule path, .tick path, .leader path, .origin path, .datum path, .lead path, [data-numbers] path',
   )
   if (drawn.length) gsap.set(drawn, { clearProps: 'strokeDasharray,strokeDashoffset,strokeMiterlimit' })
+  // "By the numbers": the drawings' labels, for a reader who turns reduced motion on mid-draw
+  const numberLabels = gsap.utils.toArray<SVGTextElement>('[data-numbers] svg text')
+  if (numberLabels.length) gsap.set(numberLabels, { clearProps: 'opacity' })
   // step 12: reduced motion skips the hero sequence entirely (design-spec.md §8) — no
   // timeline is created, no words are split. Not marked as "played": if the reader turns
   // reduced motion off again later in the same session, they should still get to see it

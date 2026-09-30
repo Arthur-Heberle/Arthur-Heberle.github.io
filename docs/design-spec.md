@@ -192,9 +192,10 @@ Do not add sections. Adding one requires removing one.
 ### Project pages
 
 One per set-piece project, each carrying its own set-piece. Built over time, one at a
-time. Template: title, one-paragraph what and why, the set-piece, what he actually did,
-role and team, links, what he'd do differently. That last field is unusual and worth
-keeping.
+time. Template (changed by Arthur, 2026-09-30): title and intro (with an optional margin
+note beside it), the set-piece, the project's own sections, "How we built it" (optional),
+"My part" (which replaced "What I did" and "Role and team"), "What I'd do differently", Links
+last. "What I'd do differently" is unusual and worth keeping.
 
 EduBra also carries a **"How it works" scroll story** after the set-piece and its "Try a
 word" field (file → web page → Wi-Fi → Raspberry Pi 4 → audio files → six servos + speaker).
@@ -207,8 +208,21 @@ four step ticks that jump to a scene, callouts on six parts (GPIO header, audio 
 processor, Braille cell, speaker) with the six servo pins lit on the header, and a Sound button
 (off by default) that speaks with the browser's own voice, not audio files. Below 768px a camera
 frames the canvas scene by scene and the reading tape is HTML text under it; under reduced
-motion it shows the final state and a Play button, and never starts alone. Its "what and why" is
-one sentence, sitting directly above the set-piece.
+motion it shows the final state and a Play button, and never starts alone. Its intro is two
+sentences, sitting directly above the set-piece, with a margin note beside it (the home page's
+margin-note component with no label and no marker).
+
+EduBra also carries **"By the numbers"** after the story and **"How we built it"** after that
+(Arthur's decision, 2026-09-30, recorded here because §6 forbids adding a section without
+removing one; "What I did" and "Role and team" became the single "My part"). "By the numbers"
+is four figures, four across from 768px and two by two below, each a small technical drawing
+in the site's line style over a big mono number and a short label: one pin rising 2.5 mm out
+of the cell (with a dimension line), six servo outlines in the cell's 2x3 arrangement, a bar
+split into the voice and the pins (~3 s a letter), and eight crossed-out servos. Only the
+drawings animate: once, when the row enters the viewport (stroke-dashoffset, then the labels'
+opacity). Reduced motion and no-JS show them drawn. The figures are from the team's paper
+(`public/docs/edubra-paper.pdf`): Table 1 (2.4 to 2.7 mm a pin, mean 2.5), Table 2 (2.6 to
+3.5 s a letter, about 0.2 s more per pin), section 3.3 (eight servos lost).
 
 ---
 
