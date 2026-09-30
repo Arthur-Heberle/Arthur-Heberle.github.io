@@ -606,7 +606,8 @@ export function storyPlayer(opts: { autoplay: boolean; ease?: string | gsap.Ease
     s.live = true
     s.root.classList.add('is-live')
     s.capsBox.setAttribute('aria-hidden', 'true') // the opacity-stacked captions are not announced; s.liveMsg is
-    s.frame.removeAttribute('tabindex') // nothing to scroll in the live layout
+    // nothing to scroll in the live layout: no focus stop, and no group left to name
+    ;['tabindex', 'role', 'aria-label'].forEach((a) => s.frame.removeAttribute(a))
     setCam()
   }
 
@@ -952,6 +953,8 @@ export function storyPlayer(opts: { autoplay: boolean; ease?: string | gsap.Ease
     s.camOn = false
     s.capsBox.removeAttribute('aria-hidden')
     s.frame.setAttribute('tabindex', '0')
+    s.frame.setAttribute('role', 'group')
+    s.frame.setAttribute('aria-label', 'Drawing, scrolls sideways')
     s.caps.forEach((c) => c.style.removeProperty('opacity'))
     s.ticks.forEach((t) => t.style.removeProperty('opacity'))
     s.toggle.hidden = true

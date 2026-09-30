@@ -34,7 +34,7 @@ const cells = brailleCells(word)
         >
           {
             cells.map((cell, i) => (
-              <div class="cell" data-cell>
+              <div class="cell" data-cell aria-hidden="true">
                 <div class="dots">
                   {cell.dots.map((dot) => (
                     <div
@@ -60,14 +60,14 @@ const cells = brailleCells(word)
         <div class="panel">
           <div class="knobwrap">
             <button type="button" class="knob" data-knob aria-label="Volume: off">
-              <span class="well" /><span class="sd" /><span class="sd2" /><span class="top" />
+              <span class="well" aria-hidden="true" /><span class="sd" aria-hidden="true" /><span class="sd2" aria-hidden="true" /><span class="top" aria-hidden="true" />
             </button>
             <span class="vol" aria-hidden="true" data-vol>off</span>
           </div>
           <div class="cross">
           <button type="button" class="btn" data-back aria-label="Back to the start of the word">
-            <span class="well" /><span class="sd" /><span class="sd2" />
-            <span class="cap">
+            <span class="well" aria-hidden="true" /><span class="sd" aria-hidden="true" /><span class="sd2" aria-hidden="true" />
+            <span class="cap" aria-hidden="true">
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M6.5 6v12" />
                 <path
@@ -78,21 +78,21 @@ const cells = brailleCells(word)
             </span>
           </button>
           <button type="button" class="btn" data-slower aria-label="Slower">
-            <span class="well" /><span class="sd" /><span class="sd2" />
-            <span class="cap">
+            <span class="well" aria-hidden="true" /><span class="sd" aria-hidden="true" /><span class="sd2" aria-hidden="true" />
+            <span class="cap" aria-hidden="true">
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 12h12" /></svg>
             </span>
           </button>
           <div class="speed" aria-live="polite" data-speed>1×</div>
           <button type="button" class="btn" data-faster aria-label="Faster">
-            <span class="well" /><span class="sd" /><span class="sd2" />
-            <span class="cap">
+            <span class="well" aria-hidden="true" /><span class="sd" aria-hidden="true" /><span class="sd2" aria-hidden="true" />
+            <span class="cap" aria-hidden="true">
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 12h12M12 6v12" /></svg>
             </span>
           </button>
           <button type="button" class="btn" data-play aria-label="Pause" aria-pressed="false">
-            <span class="well" /><span class="sd" /><span class="sd2" />
-            <span class="cap">
+            <span class="well" aria-hidden="true" /><span class="sd" aria-hidden="true" /><span class="sd2" aria-hidden="true" />
+            <span class="cap" aria-hidden="true">
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path class="f icon-pause" d="M7.6 6h2.8v12H7.6zM13.6 6h2.8v12h-2.8z" stroke-width="1.4" />
                 <path
@@ -317,6 +317,7 @@ const cells = brailleCells(word)
           const cell = document.createElement('div')
           cell.className = 'cell'
           cell.dataset.cell = ''
+          cell.setAttribute('aria-hidden', 'true')
           const dots = document.createElement('div')
           dots.className = 'dots'
           c.dots.forEach((d) => {

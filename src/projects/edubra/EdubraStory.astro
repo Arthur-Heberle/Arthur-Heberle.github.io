@@ -80,18 +80,22 @@ const holes = [1, 2, 3, 4, 5, 6].map((n) => ({
       }
     </div>
     <div class="controls">
-      <button type="button" class="control feedback" data-toggle aria-pressed="false" hidden>Pause</button>
+      <button type="button" class="control feedback" data-toggle aria-label="Pause the drawing" aria-pressed="false" hidden>Pause</button>
       <button type="button" class="control feedback" data-again hidden>Play again</button>
       <button type="button" class="control feedback" data-sound aria-pressed="false" hidden>Sound</button>
     </div>
     <p class="sr-only" aria-live="polite" data-live></p>
   </div>
-  <div class="frame" role="group" aria-label="The system, drawn" tabindex="0">
+  <!-- One labelled image for the whole drawing: everything drawn inside is aria-hidden, and the
+       controls and callout buttons sit outside the image so they stay reachable. The frame is a
+       focus stop only while it scrolls sideways (the static layout); story.ts takes the three
+       attributes off when the live layout has nothing to scroll. -->
+  <div class="frame" role="group" aria-label="Drawing, scrolls sideways" tabindex="0">
     <div class="fit">
       <div
         class="canvas"
         role="img"
-        aria-label="A file is uploaded to a web page, split into the words hello and world, sent over Wi-Fi to a Raspberry Pi 4, which creates hello.mp3 and world.mp3, then reads the text: it plays each word, then raises the six pins for each letter while the speaker says it."
+        aria-label="A file is uploaded to a web page, split into words and sent over Wi-Fi to a Raspberry Pi. The Pi prepares a voice file for each word, then reads the text: it says each word, then each letter, while six pins rise to form the letter in Braille."
       >
         <svg id="story-svg" viewBox="0 -10 1060 570" width="1060" height="570" aria-hidden="true">
           <!-- 2D: software. The web page, the text, the words, the audio files, the wires. -->

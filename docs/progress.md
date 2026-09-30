@@ -36,6 +36,19 @@ Five sub-steps, in order; a stage starts only when the previous one passes. Comm
 | D | Callouts and real GPIO pins | done | six real-button hit targets + one shared leader/label; header pins 8/12/16/28/32/40 light per letter; story visibility now read from the rect, not an IntersectionObserver |
 | E | Voice (browser speechSynthesis) | done | sound button off by default; one utterance per read item; the tween waits for each utterance's end (min 450 ms, 1.5 s safety); cone driven by start/boundary/end |
 
+### EduBra page: accessibility, hardware accuracy, copy, new sections (2026-09-30, Arthur's brief)
+
+Five stages, in order. Commit message `edubra: <stage>`. The hardware source of truth is the
+team's paper, `public/docs/edubra-paper.pdf`.
+
+| Stage | Step | Status | Notes |
+|---|---|---|---|
+| 1 | Accessibility | done | one `role="img"` with the brief's label; all drawn parts `aria-hidden`; the two "Pause" buttons told apart |
+| 2 | Hardware accuracy | todo | |
+| 3 | Copy | todo | |
+| 4 | New sections | todo | |
+| 5 | Final check | todo | |
+
 ---
 
 ## Open questions for Arthur
@@ -1392,3 +1405,23 @@ deleted). Page order: device, "Try a word", How it works, then the text sections
     of this page sometimes lack the speaker's front face until anything on the page is touched;
     the untouched prototype does not do it, and no style change of mine explains it. Take one
     screenshot per fresh page load when checking the 3D parts.
+
+---
+
+After step 14 — **EduBra stage 1: accessibility** (Arthur's brief, 2026-09-30).
+- **Problem:** a screen reader read the drawing aloud ("h h e e l l l l o o", "helowrd",
+  "Raspberry Pi 4 Model B"), on a page about a device for blind people.
+- **The story:** `.canvas` keeps the section's single `role="img"`, now with the brief's label
+  verbatim. The SVG, the 3D `.scene`, the callout and the HTML tape were already `aria-hidden`.
+  `.frame` is a labelled group ("Drawing, scrolls sideways") and a focus stop only in the static
+  layout, where it scrolls sideways. `story.ts` removes `tabindex`, `role` and `aria-label`
+  together when the live layout starts and puts them back on cleanup.
+- **The device:** every `.cell` (holes, pins, letter) and the button and knob inner spans are
+  `aria-hidden`, including cells rebuilt by "Try a word". The word keeps one `role="img"` label.
+- **Two controls were both named "Pause"** (the device's and the story's). The story's is now
+  `aria-label="Pause the drawing"`; its visible text is still "Pause", so the name contains it.
+- **Tapes:** already exactly one per breakpoint, hidden with `display:none` (never visually).
+  Checked live at 1280, 768, 767, 375, 375 reduced motion, and no-JS at 375 and 1280.
+- **Verified (headless Chromium over CDP, `Accessibility.getFullAXTree`):** at 1280 and 375, with
+  and without JS, the tree has no drawing text. There are two `image` nodes (the drawing and the
+  Braille word), and 17 buttons, each once, with its label. No-JS has none.
