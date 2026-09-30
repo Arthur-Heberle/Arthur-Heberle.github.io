@@ -111,7 +111,7 @@ const cells = brailleCells(word)
         </div>
       </div>
       <!-- the box's edges are laser-cut MDF; "EduBra" is laser-engraved on the front -->
-      <div class="front" aria-hidden="true"><span class="engrave">EduBra</span></div>
+      <div class="front" aria-hidden="true"><span class="engrave" data-text="EduBra"></span></div>
       <!-- the right side face: the volume knob and a 3.5 mm headphone jack, as on the real box.
            There is no built-in speaker. Its 3D children keep the preserve-3d chain (device.css). -->
       <div class="side">
@@ -121,7 +121,7 @@ const cells = brailleCells(word)
           </button>
         </div>
         <div class="jack" aria-hidden="true"><i /></div>
-        <span class="engrave" aria-hidden="true">UTFPR</span>
+        <span class="engrave" aria-hidden="true" data-text="UTFPR"></span>
       </div>
     </div>
     <div class="floor-shadow" aria-hidden="true"></div>

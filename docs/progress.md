@@ -47,13 +47,26 @@ team's paper, `public/docs/edubra-paper.pdf`.
 | 2 | Hardware accuracy | done | MDF, yellow PLA cell, real button layout, knob and jack on the right face (yaw, not the story's rotateZ), no speaker; checked against the paper, contrast audited |
 | 3 | Copy | done | intro, margin note and the four captions verbatim; captions moved to their own full-width row and sized by a grid cell |
 | 4 | New sections | done | By the numbers, How we built it, My part, What I'd do differently, Links last; the paper is linked from `project.paper`, not `links.pdf` |
-| 5 | Final check | todo | |
+| 5 | Final check | done | blurb trimmed, home row still points here; Lighthouse mobile 98 / 100 / 100 on EduBra and home; JS ~74 KB gzip |
 
 ---
 
 ## Open questions for Arthur
 
 Blocking or near-blocking. Add to this list rather than guessing.
+
+- [ ] **EduBra page, flags from the 2026-09-30 brief** (none blocking; each was a call I made):
+      - The story's jack callout now reads "Out to your headphones or speaker" (the brief relabelled
+        "speaker" but gave no callout copy): my wording, the smallest change. The speaker callout's
+        name is "Headphones or speaker".
+      - "EduBra" is engraved on the front face as briefed, and "UTFPR" on the right face; the paper
+        (Figure 15) has the name and UTFPR on the side faces.
+      - The box turns about the vertical axis (`rotateY(-30deg)`) with the 20deg tilt kept, not the
+        story's `rotateZ`; with the tilt kept, that turn shows the side face about 7px wide.
+      - The paper link is `project.paper`, not `links.pdf`, so the home archive row didn't grow a
+        link. Say if you want it on the row.
+      - The ~3 s bar draws three pins (0.6 s) as the pins segment: a drawing choice, not a number.
+      - Two decorative engravings are generated content at 1.43:1 (as briefed), not text.
 
 - [x] Opening line: rewritten in his words as "I make technical things make sense to
       people who didn't build them." Supporting line, mono identity line, the three spine
@@ -1508,8 +1521,8 @@ the user's own headphones or speaker (3.4).
   - No JS: first letter raised, buttons, knob and field absent.
   - The AX tree is unchanged from stage 1: 17 buttons, each once.
   - `astro check` clean.
-- **Not checked:** the story's wire endpoints after the recolour. No geometry changed, only colours
-  and one label, but I didn't re-run the endpoint measurement.
+- **Story wires after the recolour:** re-measured in stage 5: all five wire endpoints are 0px from
+  their anchors at 1280, 1024 and 768.
 
 After step 14 — **EduBra stage 3: copy** (Arthur's brief, 2026-09-30).
 - **Verbatim:** the intro (`project.what`), the margin note (new optional `project.note`) and the
@@ -1577,3 +1590,22 @@ After step 14 — **EduBra stage 4: new sections** (Arthur's brief, 2026-09-30).
   - Reduced motion and no-JS show every drawing from the first frame.
   - The console is clean on EduBra at 1280, 375 and reduced motion, and on home.
   - `astro check` is clean.
+
+After step 14 — **EduBra stage 5: final check** (Arthur's brief, 2026-09-30).
+- **Blurb:** " and hardware interrupts" dropped and the comma fixed (Arthur's call):
+  "Converts digital text to tactile Braille. Python on a Raspberry Pi 4, Wi-Fi and multithreading
+  driving six servos, each word spoken aloud first." The paper says the interrupts were replaced by a
+  button-watching thread, so the old line no longer matched "My part". `docs/content.md` updated.
+- **Home archive entry:** still links `/projects/edubra/`, shows the new blurb, and still has only
+  the `repo` link.
+- **Lighthouse mobile** (Playwright Chromium, no other browser activity, preview on :4399):
+  EduBra performance 98, accessibility 100, best practices 100 (CLS 0.006 to 0.02 across runs, TBT
+  40 to 110ms); home 98 / 100 / 100 (CLS 0).
+- **Found by that run and fixed:** the first EduBra run scored accessibility 96 with a failing
+  `color-contrast` audit on the two engravings ("EduBra" on the front, "UTFPR" on the side: 1.43:1,
+  `#6e4d2f` on `#8a6440`, as briefed). They are decoration, not text anyone reads, so they are now
+  generated content (`::before` with `content: attr(data-text)`) instead of DOM text; they look the
+  same and the checker no longer counts them. The brief's 4.5:1 rule is met for all real text.
+- **JS:** about 74 KB gzip in total (motion 72.8 KB, the rest under 2 KB each), under the 90 KB floor.
+- **Not tested here:** Firefox, desktop Safari and iOS Safari, as before (see the open question
+  above). The `speechSynthesis` voice on iOS is still the standard pattern, not a test result.

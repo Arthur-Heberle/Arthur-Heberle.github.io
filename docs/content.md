@@ -169,9 +169,11 @@ believes `taught ~40`.
 - role: `team of 3, wrote the software, built most of the hardware` (Arthur, 2026-09-29)
 - tags: `[hardware, teaching]`
 - repo: `github.com/Arthur-Heberle/Oficinas_1`
-- blurb: Converts digital text to tactile Braille. Python on a Raspberry Pi 4, Wi-Fi,
-  multithreading and hardware interrupts driving six servos, each word spoken aloud first.
-  (Was "simultaneous audio feedback"; the repo plays the audio *before* the pins rise.)
+- blurb: Converts digital text to tactile Braille. Python on a Raspberry Pi 4, Wi-Fi and
+  multithreading driving six servos, each word spoken aloud first.
+  (Was "simultaneous audio feedback"; the repo plays the audio *before* the pins rise. "and
+  hardware interrupts" dropped 2026-09-30: the paper says the final version replaced the
+  interrupts, which an OS reinstall broke, with a thread that only watches the buttons.)
 - Leads the archive. This is the entry that makes a stranger care in four seconds.
 - Word the set-piece spells: `EDUBRA` — decided with Arthur at step 13. 6 cells, 15 raised
   dots. Not a schema field (`docs/plans/step-03.md`): passed directly at the one call site

@@ -127,6 +127,12 @@
   display: grid;
   place-items: center;
 }
+/* The engraving is decoration, not content: flat and only slightly darker than the cut edge
+ * (1.4:1, as briefed), so it is generated content, not text in the page. A contrast checker
+ * would otherwise count it as text a reader has to read. */
+.device .engrave::before {
+  content: attr(data-text);
+}
 .device .engrave {
   font-family: var(--font-sans);
   font-weight: 500;

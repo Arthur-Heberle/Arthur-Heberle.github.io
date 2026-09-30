@@ -6,8 +6,8 @@ tags: [hardware, teaching]
 links:
   repo: https://github.com/Arthur-Heberle/Oficinas_1
 blurb: >-
-  Converts digital text to tactile Braille. Python on a Raspberry Pi 4, Wi-Fi,
-  multithreading and hardware interrupts driving six servos, each word spoken aloud first.
+  Converts digital text to tactile Braille. Python on a Raspberry Pi 4, Wi-Fi and
+  multithreading driving six servos, each word spoken aloud first.
 pinned: true
 project:
   what: >-
