@@ -1621,3 +1621,8 @@ After the EduBra brief — **the same hint above "How it works"** (Arthur): "Tap
 to see what it does, or turn on the sound." Same style as the device's, JS only. Wording is mine.
 It names the callouts and the Sound button because those exist in every layout; the step ticks
 don't on phones or under reduced motion.
+
+After the EduBra brief — **a "Home" link at the top of every project page** (Arthur, 2026-09-30).
+`HomeLink.astro` (shared): a real `<a href="/">` in the `.control feedback` chrome with a hairline house
+icon and the text "Home", first child of `ProjectPage.astro`'s article. Static (not sticky), no motion,
+no token or library change. Recorded in design-spec.md §6.

@@ -195,7 +195,9 @@ One per set-piece project, each carrying its own set-piece. Built over time, one
 time. Template (changed by Arthur, 2026-09-30): title and intro (with an optional margin
 note beside it), the set-piece, the project's own sections, "How we built it" (optional),
 "My part" (which replaced "What I did" and "Role and team"), "What I'd do differently", Links
-last. "What I'd do differently" is unusual and worth keeping.
+last. "What I'd do differently" is unusual and worth keeping. Every project page also opens with
+a small **"Home" link** (a hairline house and the word, in the control style; static, not sticky):
+Arthur's decision, 2026-09-30.
 
 EduBra also carries a **"How it works" scroll story** after the set-piece and its "Try a
 word" field (file → web page → Wi-Fi → Raspberry Pi 4 → audio files → six servos + speaker).
