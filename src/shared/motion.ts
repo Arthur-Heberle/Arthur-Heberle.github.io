@@ -9,7 +9,7 @@ import { SplitText } from 'gsap/SplitText'
 import { Flip } from 'gsap/Flip'
 import { CustomEase } from 'gsap/CustomEase'
 import Lenis from 'lenis'
-import { storyPlayer, storyStatic } from '../projects/edubra/story'
+import { storyPlayer } from '../projects/edubra/story'
 
 gsap.registerPlugin(ScrollTrigger, DrawSVGPlugin, SplitText, Flip, CustomEase)
 
@@ -475,7 +475,7 @@ const mm = gsap.matchMedia()
 
 mm.add('(min-width: 768px) and (prefers-reduced-motion: no-preference)', (ctx) => {
   // EduBra's "How it works" story: autoplays once when 40% visible (no pin, no scrub)
-  const offStory = storyPlayer({ autoplay: true })
+  const offStory = storyPlayer({ autoplay: true, ease: EASE_OUT })
   tier2Reveals(true)
   if (rulePath && pageMain) {
     tier1Rule(rulePath, pageMain)
@@ -495,7 +495,7 @@ mm.add('(min-width: 768px) and (prefers-reduced-motion: no-preference)', (ctx) =
 })
 
 mm.add('(max-width: 767px) and (prefers-reduced-motion: no-preference)', (ctx) => {
-  const offStory = storyStatic() // no pin below 768px: the story's final state, captions stacked
+  const offStory = storyPlayer({ autoplay: true, ease: EASE_OUT }) // phones animate too: the story with its camera
   tier2Reveals(false)
   // design-spec.md §8: below 768px the drawing layer keeps the scrubbed rule only — no
   // ticks (.tick is display:none there anyway, so tier1Ticks is skipped, not just hidden)
@@ -519,7 +519,7 @@ mm.add('(max-width: 767px) and (prefers-reduced-motion: no-preference)', (ctx) =
 })
 
 mm.add('(prefers-reduced-motion: reduce)', (ctx) => {
-  const offStory = storyPlayer({ autoplay: false }) // never autoplays: final state plus a Play button
+  const offStory = storyPlayer({ autoplay: false, ease: EASE_OUT }) // never autoplays: final state plus a Play button
   // Final states, nothing animates. toArray guards the empty selector — gsap.set on a
   // selector matching nothing logs a "target not found" warning, and step 06's gate
   // expects a clean console. Also clears any inline style left behind if the reader

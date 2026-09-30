@@ -231,4 +231,23 @@ const holes = [1, 2, 3, 4, 5, 6].map((n) => ({
       </div>
     </div>
   </div>
+  <!-- Below 768px the camera frames the canvas and this HTML tape replaces the SVG one (11px floor).
+       Same box as the SVG tape (350 wide, chars every 30), so story.ts moves one cursor model. -->
+  <div class="tape-html" aria-hidden="true">
+    <span class="tlabel">reading</span>
+    <div class="tbox">
+      {
+        TEXT.split('').map((c, i) => (
+          <span class="tc" style={`left:${((10 + i * 30) / 350) * 100}%;width:${(30 / 350) * 100}%`}>
+            <b class="now" style={i === TEXT.length - 1 ? 'opacity:1' : 'opacity:0'}>{c === ' ' ? NBSP : c}</b>
+            <b class="was" style={i === TEXT.length - 1 ? 'opacity:0' : 'opacity:1'}>{c === ' ' ? NBSP : c}</b>
+          </span>
+        ))
+      }
+      <i class="tcur l" style={`transform:translateX(${((CUR_X0 - 415)) * 0.98}px)`}></i>
+      <i class="tcur r" style={`transform:translateX(${(CUR_X1 - 415) * 0.98 - 4}px)`}></i>
+      <i class="tcur t" style={`transform:translateX(${(CUR_X0 + 3 - 415) * 0.98}px) scaleX(${(CUR_X1 - CUR_X0 - 6) * 0.98})`}></i>
+      <i class="tcur b" style={`transform:translateX(${(CUR_X0 + 3 - 415) * 0.98}px) scaleX(${(CUR_X1 - CUR_X0 - 6) * 0.98})`}></i>
+    </div>
+  </div>
 </section>

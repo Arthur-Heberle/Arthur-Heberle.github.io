@@ -18,6 +18,7 @@ const H = 570
 const DURATION = 10 // seconds, linear: render(p) is driven by a tween of p from 0 to 1
 const TEXT = 'hello world'
 const PIN_H = 8
+const TAPE_X = 415 // the SVG tape box's left edge; the HTML tape is the same box, scaled
 
 type Range = [number, number]
 interface Item {
@@ -129,6 +130,16 @@ interface Story {
   toggle: HTMLButtonElement
   again: HTMLButtonElement
   liveMsg: HTMLElement
+  tapeHtml: HTMLElement
+  tbox: HTMLElement
+  hNow: HTMLElement[]
+  hWas: HTMLElement[]
+  hcur: { l: HTMLElement; r: HTMLElement; t: HTMLElement; b: HTMLElement }
+  tf: number // HTML tape scale: its box width over the SVG tape's 350
+  camOn: boolean
+  cam: { cx: number; cy: number; k: number }
+  camScene: number
+  camTw: gsap.core.Tween | null
   live: boolean
   k: number
   p: number
@@ -188,6 +199,16 @@ function grab(): Story | null {
     toggle: $('[data-toggle]'),
     again: $('[data-again]'),
     liveMsg: $('[data-live]'),
+    tapeHtml: $('.tape-html'),
+    tbox: $('.tape-html .tbox'),
+    hNow: $$<HTMLElement>('.tape-html .now'),
+    hWas: $$<HTMLElement>('.tape-html .was'),
+    hcur: { l: $('.tcur.l'), r: $('.tcur.r'), t: $('.tcur.t'), b: $('.tcur.b') },
+    tf: 1,
+    camOn: false,
+    cam: { cx: 0, cy: 0, k: 1 },
+    camScene: 0,
+    camTw: null,
     live: false,
     k: 1,
     p: 1,
@@ -260,6 +281,7 @@ function render(p: number) {
   s.dotRun.setAttribute('transform', `translate(${pr.x} ${pr.y})`)
   op(s.dotRun, rd > 0 && rd < 1 ? 1 : 0)
   op(s.tape, seg(p, ...T.tape))
+  op(s.tapeHtml, seg(p, ...T.tape)) // below 768px the tape is HTML text under the canvas (same values)
 
   const r = seg(p, ...T.read)
   const started = p >= T.read[0]
@@ -278,10 +300,18 @@ function render(p: number) {
   const line = `translate(${x0 + 3} 0) scale(${x1 - x0 - 6} 1)`
   s.cur.t.setAttribute('transform', line)
   s.cur.b.setAttribute('transform', line)
+  const hx = (x: number) => (x - TAPE_X) * s.tf // SVG tape x -> HTML tape px
+  s.hcur.l.style.transform = `translateX(${hx(x0)}px)`
+  s.hcur.r.style.transform = `translateX(${hx(x1) - 4}px)`
+  const hline = `translateX(${hx(x0 + 3)}px) scaleX(${(x1 - x0 - 6) * s.tf})`
+  s.hcur.t.style.transform = hline
+  s.hcur.b.style.transform = hline
   s.now.forEach((el, i) => {
     const done = started && i < cur[0]
     op(el, done ? 0 : 1)
     op(s.was[i], done ? 1 : 0)
+    op(s.hNow[i], done ? 0 : 1)
+    op(s.hWas[i], done ? 1 : 0)
   })
 
   // a word item: its audio file plays (the playhead sweeps), the sound goes to the speaker, the pins stay down
@@ -338,9 +368,67 @@ function render(p: number) {
 // live mode a max-height), so the scale is read back from it and no size is ever written here.
 function layout() {
   const s = S!
-  if (!s.fit.clientWidth || !s.fit.clientHeight) return
-  s.k = Math.min(s.fit.clientWidth / W, s.fit.clientHeight / H)
-  s.canvas.style.transform = `scale(${s.k})`
+  const w = s.fit.clientWidth
+  const h = s.fit.clientHeight
+  if (!w || !h) return
+  if (s.tbox.clientWidth) s.tf = s.tbox.clientWidth / 350
+  if (s.camOn) {
+    s.camTw?.kill()
+    Object.assign(s.cam, camFor(s.camScene, w, h))
+    applyCam()
+  } else {
+    s.k = Math.min(w / W, h / H)
+    s.canvas.style.transform = `scale(${s.k})`
+  }
+}
+
+// Mobile camera (below 768px): .fit is a fixed-aspect window onto the canvas, and ONE
+// translate + scale on the canvas eases between four framings, one per scene. Coordinates
+// are canvas px (SVG y + 10). minText is the smallest text in the framing, in px: the
+// scale never drops below what keeps it at 11px, so a narrower window crops the edges of a
+// framing instead of shrinking its text.
+interface Framing {
+  x0: number
+  y0: number
+  x1: number
+  y1: number
+  minText: number
+}
+const FRAMINGS: Framing[] = [
+  { x0: 20, y0: 100, x1: 363, y1: 440, minText: 11 }, // 1 Send a file: the web page
+  { x0: 388, y0: 110, x1: 731, y1: 430, minText: 11 }, // 2 Over Wi-Fi: the arc and the Pi
+  { x0: 430, y0: 20, x1: 773, y1: 390, minText: 11 }, // 3 Audio first: the two files and the Pi
+  { x0: 740, y0: 110, x1: 1060, y1: 520, minText: 15 }, // 4 Read: the cell, the speaker, the big letter
+]
+const MIN_PX = 11
+let camEase: string | gsap.EaseFunction = 'power2.out'
+
+function camFor(scene: number, w: number, h: number) {
+  const f = FRAMINGS[scene]
+  const fit = Math.min(w / (f.x1 - f.x0), h / (f.y1 - f.y0))
+  return { cx: (f.x0 + f.x1) / 2, cy: (f.y0 + f.y1) / 2, k: Math.max(fit, MIN_PX / f.minText) }
+}
+
+function applyCam() {
+  const s = S!
+  const { cx, cy, k } = s.cam
+  s.k = k
+  s.canvas.style.transform = `translate(${s.fit.clientWidth / 2 - cx * k}px, ${s.fit.clientHeight / 2 - cy * k}px) scale(${k})`
+}
+
+/** Ease the camera to a scene's framing (about 0.6 s), or cut there when `instant`. */
+function moveCam(scene: number, instant: boolean) {
+  const s = S!
+  s.camScene = scene
+  if (!s.camOn || !s.fit.clientWidth) return
+  s.camTw?.kill()
+  const to = camFor(scene, s.fit.clientWidth, s.fit.clientHeight)
+  if (instant) {
+    Object.assign(s.cam, to)
+    applyCam()
+  } else {
+    s.camTw = gsap.to(s.cam, { ...to, duration: 0.6, ease: camEase, onUpdate: applyCam })
+  }
 }
 
 // Hang the 2D wires on the anchors inside the 3D parts: measure them with the hardware at
@@ -401,9 +489,12 @@ const sceneAt = (p: number) => {
  *    autoplay: true  -> starts once, the first time the section is 40% visible
  *    autoplay: false -> reduced motion: shows the final state and a Play button, never starts alone
  *  Pauses while off screen and resumes on return (unless the reader paused). */
-export function storyPlayer(opts: { autoplay: boolean }): () => void {
+export function storyPlayer(opts: { autoplay: boolean; ease?: string | gsap.EaseFunction }): () => void {
   const s = grab()
   if (!s) return () => {}
+  if (opts.ease) camEase = opts.ease
+  const mobile = matchMedia('(max-width: 767px)')
+  const instantCam = !opts.autoplay // reduced motion: the camera cuts instead of easing
   let onScreen = false
   let scene = -1
   let alive = true
@@ -420,6 +511,14 @@ export function storyPlayer(opts: { autoplay: boolean }): () => void {
     s.root.classList.add('is-live')
     s.capsBox.setAttribute('aria-hidden', 'true') // the opacity-stacked captions are not announced; s.liveMsg is
     s.frame.removeAttribute('tabindex') // nothing to scroll in the live layout
+    setCam()
+  }
+
+  // Below 768px a live story frames the canvas with the camera; otherwise it scales whole.
+  const setCam = () => {
+    s.camOn = s.live && mobile.matches
+    s.root.classList.toggle('is-cam', s.camOn)
+    s.camScene = sceneAt(pp)
     relayout()
   }
 
@@ -435,6 +534,7 @@ export function storyPlayer(opts: { autoplay: boolean }): () => void {
     const sc = sceneAt(pp)
     if (sc === scene) return
     scene = sc
+    moveCam(sc, instantCam || !announce)
     s.tickBtns.forEach((b, i) => (i === sc ? b.setAttribute('aria-current', 'step') : b.removeAttribute('aria-current')))
     if (announce) s.liveMsg.textContent = capText[sc]
   }
@@ -525,6 +625,7 @@ export function storyPlayer(opts: { autoplay: boolean }): () => void {
   io.observe(s.root)
   const ro = new ResizeObserver(() => relayout())
   ro.observe(s.fit)
+  mobile.addEventListener('change', () => s.live && setCam(), { signal })
 
   return () => {
     alive = false
@@ -533,7 +634,9 @@ export function storyPlayer(opts: { autoplay: boolean }): () => void {
     ac.abort()
     tween.kill()
     s.live = false
-    s.root.classList.remove('is-live')
+    s.root.classList.remove('is-live', 'is-cam')
+    s.camTw?.kill()
+    s.camOn = false
     s.capsBox.removeAttribute('aria-hidden')
     s.frame.setAttribute('tabindex', '0')
     s.caps.forEach((c) => c.style.removeProperty('opacity'))
@@ -543,21 +646,5 @@ export function storyPlayer(opts: { autoplay: boolean }): () => void {
     s.liveMsg.textContent = ''
     s.p = 1
     relayout()
-  }
-}
-
-/** Below 768px (until stage B): no animation. The final state, captions stacked, in
- *  a frame that scrolls sideways when the column is narrower than the drawing. */
-export function storyStatic(): () => void {
-  const s = grab()
-  if (!s) return () => {}
-  s.live = false
-  s.p = 1
-  relayout()
-  const raf = requestAnimationFrame(relayout) // once more after any live-mode teardown has settled
-  addEventListener('resize', relayout)
-  return () => {
-    cancelAnimationFrame(raf)
-    removeEventListener('resize', relayout)
   }
 }

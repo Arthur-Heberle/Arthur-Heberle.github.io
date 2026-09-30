@@ -31,7 +31,7 @@ Five sub-steps, in order; a stage starts only when the previous one passes. Comm
 | Stage | Step | Status | Notes |
 |---|---|---|---|
 | A | Autoplay (no pin, no scrub) | done | `storyPlayer()` replaces `storyLive()`; one 10 s linear tween of a proxy p drives `render(p)`; controls, tick buttons and a live region added; mobile still static until B |
-| B | Mobile camera (<768px) | todo | |
+| B | Mobile camera (<768px) | done | one translate + scale on the canvas, 0.6 s `EASE_OUT` between four framings; HTML reading tape under the canvas; `storyStatic` deleted |
 | C | Three-quarter view and a real speaker | todo | |
 | D | Callouts and real GPIO pins | todo | |
 | E | Voice (browser speechSynthesis) | todo | |
@@ -798,6 +798,28 @@ After step 14 — **EduBra "How it works" upgrade, stage A: autoplay** (Arthur's
   resume, tick jump (+ announcement), off-screen pause/resume, end state, replay from 0;
   reduced motion holds still and Play plays; 375 and 767 give no overflow and no controls;
   no-JS hides the controls; focus ring is 2px; console clean.
+
+Stage B — **mobile camera** (below 768px; Arthur's decisions on the framings and the tape).
+- **Phones animate too.** The <768px no-preference branch now calls `storyPlayer` like desktop;
+  `storyStatic()` is deleted. Under reduced motion a phone keeps the scrolling static frame
+  until Play, then runs with the camera cutting instead of easing.
+- **Camera:** `.fit` becomes a fixed 343:380 window (width capped at 80svh so landscape
+  phones don't overflow) and one `translate + scale` on the canvas eases to the scene's
+  framing over 0.6 s (`EASE_OUT`), on every scene change, jumps included. Framings are in
+  canvas px (SVG y + 10), tuned from the brief's: 1 x20–363 y100–440, 2 x388–731 y110–430,
+  3 x430–773 y20–390, 4 x740–1060 y110–520. At most one move per scene.
+- **The 11px floor** is enforced by the camera: scale = max(fit, 11 / smallest text in the
+  framing), so a narrower window crops a framing's edges instead of shrinking its text.
+- **Reading tape:** below 768px the SVG tape is hidden and an HTML tape (same 350-wide box,
+  same now/was crossfade, cursor as four transformed parts) sits under the canvas.
+  `render()` writes both, so it stays a pure function of p. This is an addition inside
+  `render`, unavoidable for the HTML tape.
+- **Accepted:** the GPIO header is off-frame in scene 4 on phones.
+- **Verified headless (Playwright Chromium over CDP, not Brave):** at 375, 320 and 767 every
+  visible `<text>` in every framing is ≥11px (measured with the real canvas scale), no page
+  overflow, the framing follows a jump from scene 4 back to 1, console clean; reduced-motion
+  phone is static until Play. Desktop's small SVG text (8.9–9.7px at 0.8 scale) is
+  pre-existing and outside this stage.
 
 ## Notes for future sessions
 

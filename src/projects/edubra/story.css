@@ -132,6 +132,9 @@ html:not(.js) .story .fit {
   top: 0;
   overflow: visible;
 }
+.story .tape-html {
+  display: none;
+}
 .story .scene {
   position: absolute;
   inset: 0;
@@ -161,6 +164,99 @@ html:not(.js) .story .fit {
 }
 .story.is-live .fit {
   width: 100%;
+}
+
+/* ---------- phones: a fixed-aspect window, framed by the camera (story.ts) ---------- */
+.story.is-cam .head {
+  gap: 10px 16px;
+}
+.story.is-cam .caps {
+  flex: 1 1 100%;
+  min-width: 0;
+  height: 76px;
+  order: 3;
+}
+.story.is-cam .cap {
+  display: block;
+}
+.story.is-cam .cap b {
+  margin-right: 8px;
+}
+.story.is-cam .cap span {
+  display: block;
+}
+.story.is-cam .fit {
+  width: min(100%, calc(80svh * 343 / 380));
+  margin-inline: auto;
+  aspect-ratio: 343 / 380;
+  overflow: hidden;
+}
+.story.is-cam #tape {
+  display: none; /* the HTML tape below takes over */
+}
+.story.is-cam .tape-html {
+  display: block;
+  position: relative;
+  height: 62px;
+}
+.tape-html .tlabel {
+  font: 11px/1 var(--font-mono);
+  color: var(--color-graphite-2);
+}
+.tape-html .tbox {
+  position: relative;
+  height: 40px;
+  margin-top: 5px;
+  border: var(--hairline) solid var(--st-line);
+  border-radius: 3px;
+  box-sizing: content-box;
+}
+.tape-html .tc {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  text-align: center;
+  font: 500 20px/40px var(--font-mono);
+}
+.tape-html .tc b {
+  position: absolute;
+  inset: 0;
+  font-weight: 500;
+  color: var(--color-graphite);
+}
+.tape-html .tc .was {
+  color: var(--color-graphite-2);
+}
+.tape-html .tcur {
+  position: absolute;
+  top: 4px;
+  left: 0;
+  border: 0 solid var(--st-pin);
+}
+.tape-html .tcur.l,
+.tape-html .tcur.r {
+  width: 4px;
+  height: 32px;
+  box-sizing: border-box;
+  border-width: 2px;
+}
+.tape-html .tcur.l {
+  border-right-width: 0;
+  border-radius: 3px 0 0 3px;
+}
+.tape-html .tcur.r {
+  border-left-width: 0;
+  border-radius: 0 3px 3px 0;
+}
+.tape-html .tcur.t,
+.tape-html .tcur.b {
+  width: 1px;
+  height: 2px;
+  background: var(--st-pin);
+  transform-origin: 0 0;
+}
+.tape-html .tcur.b {
+  top: 34px;
 }
 
 /* ---------- 2D drawing language ---------- */
