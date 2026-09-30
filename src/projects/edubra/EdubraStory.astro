@@ -20,6 +20,20 @@ const PIN_H = 8
 const PIN_LAYERS = [0.35, 0.7, 1]
 const LETTERS = ['h', 'e', 'l', 'o', 'w', 'r', 'd']
 const STEPS = ['Send a file', 'Over Wi-Fi', 'Audio first', 'Read']
+
+// The six header pins the device code drives the servos with: dot n -> physical pin (BCM 18, 23,
+// 14, 1, 12, 21). Verified against pinout.xyz. Every one is on the even, board-edge row.
+const PIN_OF_DOT: Record<number, number> = { 1: 12, 2: 16, 3: 8, 4: 28, 5: 32, 6: 40 }
+const DOT_OF_PIN: Record<number, number> = Object.fromEntries(Object.entries(PIN_OF_DOT).map(([d, p]) => [p, +d]))
+// A callout's component, its name and its one-line label (copy from Arthur's brief).
+const PARTS = [
+  { id: 'gpio', name: 'GPIO header', text: 'Drives the six servos' },
+  { id: 'jack', name: 'Audio jack', text: 'Out to the speaker' },
+  { id: 'led', name: 'Green LED', text: 'Blinks while the Pi works' },
+  { id: 'soc', name: 'Processor', text: 'Runs the reading loop' },
+  { id: 'cell', name: 'Braille cell', text: 'Six pins, one per servo' },
+  { id: 'spk', name: 'Speaker', text: 'Says each word, then each letter' },
+]
 const NBSP = ' '
 
 // The three wires, as story.ts's wire() measures them at rest (canvas scale independent).
@@ -71,14 +85,13 @@ const holes = [1, 2, 3, 4, 5, 6].map((n) => ({
     </div>
     <p class="sr-only" aria-live="polite" data-live></p>
   </div>
-  <div
-    class="frame"
-    role="img"
-    tabindex="0"
-    aria-label="A file is uploaded to a web page, split into the words hello and world, sent over Wi-Fi to a Raspberry Pi 4, which creates hello.mp3 and world.mp3, then reads the text: it plays each word, then raises the six pins for each letter while the speaker says it."
-  >
+  <div class="frame" role="group" aria-label="The system, drawn" tabindex="0">
     <div class="fit">
-      <div class="canvas">
+      <div
+        class="canvas"
+        role="img"
+        aria-label="A file is uploaded to a web page, split into the words hello and world, sent over Wi-Fi to a Raspberry Pi 4, which creates hello.mp3 and world.mp3, then reads the text: it plays each word, then raises the six pins for each letter while the speaker says it."
+      >
         <svg id="story-svg" viewBox="0 -10 1060 570" width="1060" height="570" aria-hidden="true">
           <!-- 2D: software. The web page, the text, the words, the audio files, the wires. -->
           <g id="browser">
@@ -171,11 +184,22 @@ const holes = [1, 2, 3, 4, 5, 6].map((n) => ({
                    right edge; USB-C, two micro-HDMI and the AV jack on the near edge. -->
               <Cub x={0} y={0} w={240} d={160} h={5} cls="pcb">
                 {[[10, 10], [178, 10], [10, 150], [178, 150]].map(([x, y]) => <i class="hole" style={`left:${x}px;top:${y}px`}></i>)}
-                <Cub x={24} y={4} w={144} d={15} h={9} cls="gpio">
-                  {Array.from({ length: 40 }, (_, i) => <i />)}
+                <Cub x={24} y={4} w={144} d={15} h={9} cls="gpio" part="gpio">
+                  {
+                    Array.from({ length: 40 }, (_, j) => {
+                      // the grid fills the edge row first (even pins), then the inner row (odd pins)
+                      const pin = j < 20 ? (j + 1) * 2 : (j - 20) * 2 + 1
+                      const dot = DOT_OF_PIN[pin]
+                      return (
+                        <i data-pin={pin}>
+                          {dot ? <b class="pl" data-dot={dot} style={`opacity:${RAISED.includes(dot) ? 1 : 0}`} /> : null}
+                        </i>
+                      )
+                    })
+                  }
                   <i class="anchor" id="a-gpio" style="left:144px;top:7px"></i>
                 </Cub>
-                <Cub x={86} y={58} w={46} d={46} h={4} cls="silver" />
+                <Cub x={86} y={58} w={46} d={46} h={4} cls="silver" part="soc" />
                 <Cub x={144} y={60} w={30} d={42} h={3} cls="black" />
                 <Cub x={200} y={4} w={48} d={48} h={24} cls="silver">
                   <Fragment slot="right"><i class="aper eth"></i></Fragment>
@@ -199,7 +223,7 @@ const holes = [1, 2, 3, 4, 5, 6].map((n) => ({
                 <Cub x={76} y={148} w={14} d={13} h={5} cls="silver">
                   <Fragment slot="front"><i class="aper" style="left:2.5px;top:1.2px;width:9px;height:2.6px"></i></Fragment>
                 </Cub>
-                <Cub x={108} y={144} w={15} d={18} h={11} cls="black">
+                <Cub x={108} y={144} w={15} d={18} h={11} cls="black" part="jack">
                   <Fragment slot="front">
                     <i class="jackhole"></i>
                     <i class="anchor" id="a-jack" style="left:7.5px;top:5.5px"></i>
@@ -207,7 +231,7 @@ const holes = [1, 2, 3, 4, 5, 6].map((n) => ({
                 </Cub>
                 <span class="silk" style="left:30px;top:118px">Raspberry Pi 4 Model B</span>
                 <i class="led pwr" style="left:4px;top:28px"></i>
-                <i class="led act" style="left:4px;top:40px"><b class="lit" id="act-lit" style="opacity:0"></b></i>
+                <i class="led act" data-part="led" style="left:4px;top:40px"><b class="lit" id="act-lit" style="opacity:0"></b></i>
                 <i class="anchor" id="a-pi-in" style="left:0px;top:82px"></i>
               </Cub>
             </div>
@@ -217,7 +241,7 @@ const holes = [1, 2, 3, 4, 5, 6].map((n) => ({
             <div class="bench" style="width:120px;height:170px;left:20px;bottom:10px">
               <div class="shadow" style="left:-14px;top:-2px;width:150px;height:198px"></div>
               <!-- Braille cell: a wood block with six holes; each pin is stacked discs that rise -->
-              <Cub x={0} y={0} w={120} d={170} h={26} cls="woodblk">
+              <Cub x={0} y={0} w={120} d={170} h={26} cls="woodblk" part="cell">
                 {
                   holes.map((h) => (
                     <div class="bhole" data-n={h.n} style={`left:${h.left}px;top:${h.top}px`}>
@@ -244,7 +268,7 @@ const holes = [1, 2, 3, 4, 5, 6].map((n) => ({
                    screws, rubber surround, ribbed cone, dust cap; the magnet stacks up behind it -->
               <div class="drv">
                 {[40, 36, 32, 28, 24, 20, 16, 12, 8, 4].map((z, i) => <i class={`mag ${i % 2 ? 'odd' : ''}`} style={`transform:translateZ(-${z}px)`}></i>)}
-                <div class="plate">
+                <div class="plate" data-part="spk">
                   <i class="screw" style="left:5px;top:5px"></i><i class="screw" style="right:5px;top:5px"></i>
                   <i class="screw" style="left:5px;bottom:5px"></i><i class="screw" style="right:5px;bottom:5px"></i>
                 </div>
@@ -256,6 +280,19 @@ const holes = [1, 2, 3, 4, 5, 6].map((n) => ({
               </div>
             </div>
           </div>
+        </div>
+      </div>
+      <!-- Callouts: one real button over each part of the hardware (story.ts places them and draws the
+           leader line and label). Their boxes are measured, so the markup carries no geometry. -->
+      <div class="hits">
+        {
+          PARTS.map((p) => (
+            <button type="button" class="hit" data-hit={p.id} data-name={p.name} data-text={p.text} aria-label={`${p.name}: ${p.text}`}></button>
+          ))
+        }
+        <div class="callout" hidden aria-hidden="true">
+          <svg width="1" height="1"><path class="cl-path"></path><circle class="cl-dot" r="3.5"></circle></svg>
+          <span class="cl-text"></span>
         </div>
       </div>
     </div>

@@ -144,6 +144,57 @@ html:not(.js) .story .fit {
 .story .canvas * {
   transition: none !important;
 }
+/* callouts: the buttons are invisible hit targets (focus ring from the global :focus-visible); the open
+ * one draws a leader line in graphite-2 to a short label, ending in a signal dot */
+.story .hits {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+html:not(.js) .story .hits,
+.story .hits:not([data-ready]) {
+  visibility: hidden;
+}
+.story .hit {
+  position: absolute;
+  left: 0;
+  top: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  border-radius: 4px;
+  cursor: help;
+  pointer-events: auto;
+}
+.story .callout {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+.story .callout svg {
+  position: absolute;
+  left: 0;
+  top: 0;
+  overflow: visible;
+}
+.story .cl-path {
+  fill: none;
+  stroke: var(--color-graphite-2);
+  stroke-width: 1;
+}
+.story .cl-dot {
+  fill: var(--color-signal);
+}
+.story .cl-text {
+  position: absolute;
+  left: 0;
+  top: 0;
+  padding: 1px 6px 3px;
+  font: 13px/1.3 var(--font-sans);
+  color: var(--color-graphite);
+  white-space: nowrap;
+  background: var(--color-ground);
+}
 .story .scene {
   position: absolute;
   inset: 0;
@@ -199,6 +250,7 @@ html:not(.js) .story .fit {
   margin-inline: auto;
   aspect-ratio: 343 / 380;
   overflow: hidden;
+  overflow: clip; /* never scrollable, not even by focusing a hit target that is off-frame */
 }
 .story.is-cam #tape {
   display: none; /* the HTML tape below takes over */
@@ -535,8 +587,17 @@ html:not(.js) .story .fit {
   background: #0b0c0d;
 }
 .story .gpio > .top i {
+  position: relative;
   background: #caa64e;
   border-radius: 1px;
+}
+/* a header pin lit for the current letter: a bright dot with a static glow, crossfaded on opacity */
+.story .gpio .pl {
+  position: absolute;
+  inset: -2.5px;
+  border-radius: 50%;
+  background: #ffe27a;
+  box-shadow: 0 0 6px 2px rgb(255 214 80 / 0.75);
 }
 .story .jackhole {
   position: absolute;

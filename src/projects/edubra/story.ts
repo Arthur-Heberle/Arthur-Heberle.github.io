@@ -18,6 +18,24 @@ const H = 570
 const DURATION = 10 // seconds, linear: render(p) is driven by a tween of p from 0 to 1
 const TEXT = 'hello world'
 const PIN_H = 8
+// The element each callout points at (its top face for cuboids) and where its label goes, in screen px
+// from the part: the elbow of the leader line. Negative x puts the label to the left.
+const PART_SEL: Record<string, string> = {
+  gpio: '[data-part="gpio"] > .top',
+  jack: '[data-part="jack"] > .top',
+  led: '[data-part="led"]',
+  soc: '[data-part="soc"] > .top',
+  cell: '[data-part="cell"] > .top',
+  spk: '[data-part="spk"]',
+}
+const LABEL_AT: Record<string, [number, number]> = {
+  gpio: [30, -34],
+  jack: [-34, 58],
+  led: [-44, -44],
+  soc: [40, -60],
+  cell: [-46, -54],
+  spk: [-30, 46],
+}
 const TAPE_X = 415 // the SVG tape box's left edge; the HTML tape is the same box, scaled
 
 type Range = [number, number]
@@ -135,6 +153,16 @@ interface Story {
   hNow: HTMLElement[]
   hWas: HTMLElement[]
   hcur: { l: HTMLElement; r: HTMLElement; t: HTMLElement; b: HTMLElement }
+  hits: HTMLElement
+  hitBtns: HTMLButtonElement[]
+  parts: { cx: number; cy: number; w: number; h: number }[] // canvas px, measured at rest
+  callout: HTMLElement
+  clPath: SVGPathElement
+  clDot: SVGCircleElement
+  clText: HTMLElement
+  pl: Record<number, HTMLElement> // the lit header pins, by servo (dot) number
+  tx: number // the canvas' current translate (0 unless the camera is on)
+  ty: number
   tf: number // HTML tape scale: its box width over the SVG tape's 350
   camOn: boolean
   cam: { cx: number; cy: number; k: number }
@@ -204,6 +232,16 @@ function grab(): Story | null {
     hNow: $$<HTMLElement>('.tape-html .now'),
     hWas: $$<HTMLElement>('.tape-html .was'),
     hcur: { l: $('.tcur.l'), r: $('.tcur.r'), t: $('.tcur.t'), b: $('.tcur.b') },
+    hits: $('.hits'),
+    hitBtns: $$<HTMLButtonElement>('.hit'),
+    parts: [],
+    callout: $('.callout'),
+    clPath: $('.cl-path'),
+    clDot: $('.cl-dot'),
+    clText: $('.cl-text'),
+    pl: Object.fromEntries($$<HTMLElement>('.pl').map((el) => [+el.dataset.dot!, el])),
+    tx: 0,
+    ty: 0,
     tf: 1,
     camOn: false,
     cam: { cx: 0, cy: 0, k: 1 },
@@ -334,6 +372,9 @@ function render(p: number) {
     })
   })
   s.bigs.forEach((el) => op(el, letter && el.dataset.l === letter ? 1 : 0))
+  // the header pins the device code used for this letter's servos light with the pins themselves
+  Object.entries(s.pl).forEach(([n, el]) => op(el, dots.includes(+n) ? up : 0))
+  s.hits.toggleAttribute('data-ready', p >= 0.06) // the hardware is down: the callouts can be reached
 
   if (letter) {
     const pc = at(s.wCell, s.len.cell, q / 0.5)
@@ -378,8 +419,12 @@ function layout() {
     applyCam()
   } else {
     s.k = Math.min(w / W, h / H)
+    s.tx = 0
+    s.ty = 0
     s.canvas.style.transform = `scale(${s.k})`
   }
+  sizeHits()
+  moveHits()
 }
 
 // Mobile camera (below 768px): .fit is a fixed-aspect window onto the canvas, and ONE
@@ -413,8 +458,35 @@ function applyCam() {
   const s = S!
   const { cx, cy, k } = s.cam
   s.k = k
-  s.canvas.style.transform = `translate(${s.fit.clientWidth / 2 - cx * k}px, ${s.fit.clientHeight / 2 - cy * k}px) scale(${k})`
+  s.tx = s.fit.clientWidth / 2 - cx * k
+  s.ty = s.fit.clientHeight / 2 - cy * k
+  s.canvas.style.transform = `translate(${s.tx}px, ${s.ty}px) scale(${k})`
+  moveHits()
 }
+
+// The callout hit targets sit over the hardware: their boxes are measured at rest (wire()) in
+// canvas px, then placed through the canvas' current translate + scale. A 28px floor keeps the
+// small parts (the LED is 5x7) big enough to hit.
+const HIT_MIN = 28
+function sizeHits() {
+  const s = S!
+  s.parts.forEach((p, i) => {
+    const b = s.hitBtns[i]
+    b.style.width = `${Math.max(HIT_MIN, p.w * s.k)}px`
+    b.style.height = `${Math.max(HIT_MIN, p.h * s.k)}px`
+  })
+}
+function moveHits() {
+  const s = S!
+  s.parts.forEach((p, i) => {
+    const b = s.hitBtns[i]
+    const w = Math.max(HIT_MIN, p.w * s.k)
+    const h = Math.max(HIT_MIN, p.h * s.k)
+    b.style.transform = `translate(${s.tx + p.cx * s.k - w / 2}px, ${s.ty + p.cy * s.k - h / 2}px)`
+  })
+  onPlace?.()
+}
+let onPlace: (() => void) | null = null // the open callout re-aims itself when its part moves
 
 /** Ease the camera to a scene's framing (about 0.6 s), or cut there when `instant`. */
 function moveCam(scene: number, instant: boolean) {
@@ -459,6 +531,13 @@ function wire() {
     el.style.strokeDasharray = String(L)
     return [el, L]
   }
+  s.parts = s.hitBtns.map((b) => {
+    const el = s.root.querySelector<HTMLElement>(PART_SEL[b.dataset.hit!])!
+    const r = el.getBoundingClientRect()
+    return { cx: (r.left + r.width / 2 - c.left) / s.k, cy: (r.top + r.height / 2 - c.top) / s.k, w: r.width / s.k, h: r.height / s.k }
+  })
+  sizeHits()
+  moveHits()
   s.draws = s.drawEls.map(measure)
   s.waves = s.waveEls.map(measure)
   s.len = { arc: s.arc.getTotalLength(), cell: s.wCell.getTotalLength(), spk: s.wSpk.getTotalLength() }
@@ -559,8 +638,9 @@ export function storyPlayer(opts: { autoplay: boolean; ease?: string | gsap.Ease
   })
 
   // The one place that decides whether the tween is running.
+  let hold = false // a callout is open: the story waits (and resumes by itself when it closes)
   const sync = () => {
-    const run = alive && s.live && started && onScreen && !userPaused && !done
+    const run = alive && s.live && started && onScreen && !userPaused && !done && !hold
     tween.paused(!run)
   }
 
@@ -608,28 +688,111 @@ export function storyPlayer(opts: { autoplay: boolean; ease?: string | gsap.Ease
     b.addEventListener('click', () => begin(i === 0 ? 0 : SCENES[i][0]), { signal }),
   )
 
-  const steps = Array.from({ length: 21 }, (_, i) => i / 20)
-  const io = new IntersectionObserver(
-    ([e]) => {
-      onScreen = e.isIntersecting
-      // 40% of the section, or 40% of the viewport when the section is taller than that
-      const need = Math.min(0.4 * e.boundingClientRect.height, 0.4 * innerHeight)
-      if (opts.autoplay && !started && e.isIntersecting && e.intersectionRect.height >= need) {
-        started = true
-        ui()
-      }
-      sync()
-    },
-    { threshold: steps },
-  )
-  io.observe(s.root)
-  const ro = new ResizeObserver(() => relayout())
+  // ---- callouts: hover, focus or tap a part to draw a leader line to a short label. One at a time.
+  let openIx = -1
+  let pinned = false // opened by a click/tap, so a mouse leaving or a blur does not close it
+  let calloutTw: gsap.core.Tween | null = null
+  const aim = () => {
+    if (openIx < 0) return
+    const p = s.parts[openIx]
+    const W_ = s.fit.clientWidth
+    const H_ = s.fit.clientHeight
+    const clampN = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v))
+    const ax = clampN(s.tx + p.cx * s.k, 10, W_ - 10)
+    const ay = clampN(s.ty + p.cy * s.k, 10, H_ - 10)
+    const [dx, dy] = LABEL_AT[s.hitBtns[openIx].dataset.hit!]
+    const tw = s.clText.offsetWidth
+    const th = s.clText.offsetHeight
+    const dir = dx < 0 ? -1 : 1
+    const lx = clampN(dir > 0 ? ax + dx : ax + dx - tw, 4, W_ - tw - 4)
+    const by = clampN(ay + dy, th + 4, H_ - 4)
+    const bx = dir > 0 ? lx : lx + tw
+    const ex = dir > 0 ? lx + tw : lx
+    s.clPath.setAttribute('d', `M${ax} ${ay}L${bx} ${by}L${ex} ${by}`)
+    s.clDot.setAttribute('cx', String(ax))
+    s.clDot.setAttribute('cy', String(ay))
+    s.clText.style.transform = `translate(${lx}px, ${by - th}px)`
+  }
+  const closeCallout = () => {
+    if (openIx < 0) return
+    calloutTw?.kill()
+    openIx = -1
+    pinned = false
+    onPlace = null
+    s.callout.hidden = true
+    s.hitBtns.forEach((b) => b.setAttribute('aria-expanded', 'false'))
+    hold = false
+    sync()
+  }
+  const openCallout = (i: number, byClick: boolean) => {
+    if (openIx === i) {
+      pinned = pinned || byClick
+      return
+    }
+    closeCallout()
+    openIx = i
+    pinned = byClick
+    const b = s.hitBtns[i]
+    b.setAttribute('aria-expanded', 'true')
+    s.clText.textContent = b.dataset.text!
+    s.callout.hidden = false
+    onPlace = aim
+    aim()
+    hold = true
+    sync()
+    // draw the leader in, then the dot and label (reduced motion: already there)
+    const len = s.clPath.getTotalLength()
+    s.clPath.style.strokeDasharray = String(len)
+    const parts = [s.clDot, s.clText]
+    if (instantCam) {
+      s.clPath.style.strokeDashoffset = '0'
+      parts.forEach((el) => ((el as unknown as HTMLElement).style.opacity = '1'))
+    } else {
+      calloutTw = gsap.fromTo(s.clPath, { strokeDashoffset: len }, { strokeDashoffset: 0, duration: 0.28, ease: camEase })
+      gsap.fromTo(parts, { opacity: 0 }, { opacity: 1, duration: 0.2, delay: 0.1, ease: 'none', overwrite: true })
+    }
+  }
+  s.hitBtns.forEach((b, i) => {
+    b.setAttribute('aria-expanded', 'false')
+    b.addEventListener('pointerenter', (e) => e.pointerType === 'mouse' && openCallout(i, false), { signal })
+    b.addEventListener('pointerleave', (e) => e.pointerType === 'mouse' && !pinned && document.activeElement !== b && closeCallout(), { signal })
+    b.addEventListener('focus', () => openCallout(i, false), { signal })
+    b.addEventListener('blur', () => !pinned && closeCallout(), { signal })
+    // e.detail is 0 for a keyboard click: only a mouse or touch click pins the callout open
+    b.addEventListener('click', (e) => (openIx === i && pinned ? closeCallout() : openCallout(i, e.detail > 0)), { signal })
+  })
+  // Esc, or a tap/click anywhere else, closes it
+  document.addEventListener('keydown', (e) => e.key === 'Escape' && closeCallout(), { signal })
+  document.addEventListener('pointerdown', (e) => !(e.target as Element).closest('.hit') && closeCallout(), { signal })
+
+  // Visibility is read from the section's rect on scroll, resize and layout, not from an
+  // IntersectionObserver: headless runs showed its notification for "back in view" sometimes never
+  // arriving, leaving a visible story paused. The rect is always current.
+  const check = () => {
+    const r = s.root.getBoundingClientRect()
+    const shown = Math.min(r.bottom, innerHeight) - Math.max(r.top, 0)
+    onScreen = shown > 0
+    // autoplay starts at 40% of the section, or 40% of the viewport when the section is taller
+    const need = Math.min(0.4 * r.height, 0.4 * innerHeight)
+    if (opts.autoplay && !started && shown > 0 && shown >= need) {
+      started = true
+      ui()
+    }
+    sync()
+  }
+  addEventListener('scroll', check, { passive: true, signal })
+  addEventListener('resize', check, { signal })
+  const ro = new ResizeObserver(() => {
+    relayout()
+    check()
+  })
   ro.observe(s.fit)
+  check()
   mobile.addEventListener('change', () => s.live && setCam(), { signal })
 
   return () => {
+    closeCallout()
     alive = false
-    io.disconnect()
     ro.disconnect()
     ac.abort()
     tween.kill()

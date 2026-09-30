@@ -33,7 +33,7 @@ Five sub-steps, in order; a stage starts only when the previous one passes. Comm
 | A | Autoplay (no pin, no scrub) | done | `storyPlayer()` replaces `storyLive()`; one 10 s linear tween of a proxy p drives `render(p)`; controls, tick buttons and a live region added; mobile still static until B |
 | B | Mobile camera (<768px) | done | one translate + scale on the canvas, 0.6 s `EASE_OUT` between four framings; HTML reading tape under the canvas; `storyStatic` deleted |
 | C | Three-quarter view and a real speaker | done | table turned `rotateZ(+20deg)` (not -20: only a clockwise turn shows the right face); `.right` face on `Cub`; standing round driver; wires re-measured; transition bug fixed |
-| D | Callouts and real GPIO pins | todo | |
+| D | Callouts and real GPIO pins | done | six real-button hit targets + one shared leader/label; header pins 8/12/16/28/32/40 light per letter; story visibility now read from the rect, not an IntersectionObserver |
 | E | Voice (browser speechSynthesis) | todo | |
 
 ---
@@ -857,6 +857,40 @@ Stage C — **three-quarter view, real speaker.**
   while playing at 1280 and 375 have median 16.7 ms and p95 about 17 ms (60 fps), with one 116 ms
   hitch at page load; stage A and B suites still pass; `astro check` clean. Face flicker was
   judged from repeated screenshots only (no automated detector).
+
+Stage D — **callouts and real GPIO pins.**
+- **Callouts:** one real `<button>` over each of the GPIO header, audio jack, green ACT LED,
+  processor (the silver SoC), Braille cell and speaker, with the brief's labels. Hover (mouse),
+  focus or click/tap opens one; one at a time; Esc or a tap elsewhere closes it; a keyboard
+  activation does not pin it (a mouse/touch click does). The leader is a graphite-2 line drawn
+  with `stroke-dashoffset`, ending in a `--color-signal` dot, with the label on a shelf. Under
+  reduced motion it simply appears. Opening one holds the story and closing it resumes, unless
+  the reader had paused: the two are independent flags in `sync()`.
+- **Structure:** the diagram's `role="img"` moved from `.frame` to `.canvas`, because children of
+  `role="img"` are presentational and would have hidden the buttons. `.frame` is a labelled group.
+  Buttons carry `aria-label` ("Name: label") and `aria-expanded`; the drawn callout is `aria-hidden`.
+  Their boxes are measured at rest in `wire()` (canvas px) and placed through the canvas' current
+  translate and scale, so they follow the camera; 28px minimum. In camera mode `.fit` is
+  `overflow: clip`, so focusing an off-frame target cannot scroll it. The layer is hidden until the
+  hardware is down (`p >= 0.06`) and without JS.
+- **Real pins:** dot 1..6 -> physical pins 12, 16, 8, 28, 32, 40 (BCM 18, 23, 14, 1, 12, 21), in
+  the order the brief lists them. Checked against pinout.xyz: BCM numbers match; odd pins are the
+  inner row, even pins the outer (board-edge) row, pin 1 at the corner end. All six are even
+  pins, so they all sit on the edge row of the drawn header. Each pin has a lit copy crossfaded on
+  opacity with the raising of that letter's pins.
+- **Bug found and fixed:** the story's visibility came from an IntersectionObserver whose
+  "back in view" notification sometimes never arrived in headless Chromium (logged: a `true` at
+  0.999, then a `false`, then nothing for seconds while the section was plainly on screen), leaving
+  the story paused. It is now `getBoundingClientRect()` on scroll, resize and layout. 8 of 8 test
+  runs pass against about 3 of 8 before.
+- **Not done on phones:** in scene 4 the GPIO header is off-frame (accepted by Arthur); its
+  callout still opens, with the anchor clamped to the frame edge.
+- **Verified headless (Playwright Chromium over CDP, not Brave):** Tab reaches all six; focus
+  opens with the right label; an open callout freezes the story and Esc resumes it; a
+  reader-paused story stays paused; one at a time; click pins, click elsewhere closes; over a
+  full run the lit pins equal the alphabet's pins for the on-screen letter at 127 samples
+  (h e l o w r d), with none lit when no letter is shown; labels stay inside the frame at 1280 and
+  375.
 
 ## Notes for future sessions
 
