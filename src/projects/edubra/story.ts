@@ -447,7 +447,7 @@ const FRAMINGS: Framing[] = [
   { x0: 20, y0: 100, x1: 363, y1: 440, minText: 11 }, // 1 Send a file: the web page
   { x0: 388, y0: 110, x1: 731, y1: 430, minText: 11 }, // 2 Over Wi-Fi: the arc and the Pi
   { x0: 430, y0: 20, x1: 773, y1: 390, minText: 11 }, // 3 Audio first: the two files and the Pi
-  { x0: 740, y0: 110, x1: 1060, y1: 520, minText: 15 }, // 4 Read: the cell, the speaker, the big letter
+  { x0: 740, y0: 110, x1: 1060, y1: 535, minText: 15 }, // 4 Read: the cell, the speaker and its label, the big letter
 ]
 const MIN_PX = 11
 let camEase: string | gsap.EaseFunction = 'power2.out'

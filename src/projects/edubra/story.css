@@ -3,7 +3,7 @@
  * (Raspberry Pi 4, Braille cell, speaker), software is the 2D SVG; both sit in one fixed
  * 1060x570 canvas that is scaled as a whole, so they share coordinates.
  *
- * Colours below are the objects' materials (board, metal, wood, pins), scoped to .story like
+ * Colours below are the objects' materials (board, metal, PLA, pins), scoped to .story like
  * .device's, not site palette; ground, graphite and signal come from the tokens.
  *
  * THE 3D CHAIN: .obj (perspective) > .bench > .cub > .top / .front > nested .cub ... keeps
@@ -19,8 +19,11 @@
   --st-pin: #1f4f66;
   --st-cap: #e8b93a;
   --st-paper: #f2efe8;
-  --st-wood: #dbc59f;
-  --st-wood-tex: url('/textures/wood-medium.webp');
+  --st-pla: #e9bc2a; /* the Braille cell is a yellow PLA insert with black pins (the paper) */
+  --st-pla-side: #c39a16;
+  --st-pla-front: #a57e10;
+  --st-pla-hole: #b58c10;
+  --st-pla-rim: #7a5a00;
   --st-tilt: 50deg;
   --st-turn: 20deg;
   display: flex;
@@ -631,24 +634,16 @@ html:not(.js) .story .hits,
   box-shadow: 0 0 8px 3px rgb(120 255 150 / 0.65);
 }
 
-/* Braille cell block, same wood as the device box, now with its side face */
-.story .woodblk > .top {
-  background: var(--st-wood) var(--st-wood-tex) 0 0 / 256px 256px;
+/* Braille cell: the yellow PLA insert, with its side faces, black pins in darker-yellow recesses */
+.story .cellblk > .top {
+  background: var(--st-pla);
   border-radius: 3px;
 }
-.story .woodblk > .right,
-.story .woodblk > .front {
-  background: var(--st-wood) var(--st-wood-tex) 0 0 / 256px 256px;
+.story .cellblk > .right {
+  background: var(--st-pla-side);
 }
-.story .woodblk > .right::after,
-.story .woodblk > .front::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: rgb(70 48 22 / 0.2);
-}
-.story .woodblk > .front::after {
-  background: rgb(70 48 22 / 0.4);
+.story .cellblk > .front {
+  background: var(--st-pla-front);
 }
 .story .bhole {
   position: absolute;
@@ -656,10 +651,10 @@ html:not(.js) .story .hits,
   height: 28px;
   margin: -14px;
   border-radius: 50%;
-  background: #c2a375;
+  background: var(--st-pla-hole);
   box-shadow:
-    inset 0 0 0 1.5px #6b4f2e,
-    inset 0 3px 4px rgb(70 48 22 / 0.45);
+    inset 0 0 0 1.5px var(--st-pla-rim),
+    inset 0 3px 4px rgb(80 50 0 / 0.4);
   transform-style: preserve-3d;
 }
 .story .bpin {
@@ -673,10 +668,10 @@ html:not(.js) .story .hits,
   border-radius: 50%;
 }
 .story .bpin .s {
-  background: #173b4c;
+  background: #111113;
 }
 .story .bpin .h {
-  background: radial-gradient(circle at 38% 32%, #2c6683, #1f4f66 62%);
+  background: radial-gradient(circle at 38% 32%, #4a4a50, #1d1d1f 62%);
 }
 
 /* speaker: a round driver standing on the table (a 96x96 plane stood up on its near edge and

@@ -44,7 +44,7 @@ team's paper, `public/docs/edubra-paper.pdf`.
 | Stage | Step | Status | Notes |
 |---|---|---|---|
 | 1 | Accessibility | done | one `role="img"` with the brief's label; all drawn parts `aria-hidden`; the two "Pause" buttons told apart |
-| 2 | Hardware accuracy | todo | |
+| 2 | Hardware accuracy | done | MDF, yellow PLA cell, real button layout, knob and jack on the right face (yaw, not the story's rotateZ), no speaker; checked against the paper, contrast audited |
 | 3 | Copy | todo | |
 | 4 | New sections | todo | |
 | 5 | Final check | todo | |
@@ -1425,3 +1425,88 @@ After step 14 — **EduBra stage 1: accessibility** (Arthur's brief, 2026-09-30)
 - **Verified (headless Chromium over CDP, `Accessibility.getFullAXTree`):** at 1280 and 375, with
   and without JS, the tree has no drawing text. There are two `image` nodes (the drawing and the
   Braille word), and 17 buttons, each once, with its label. No-JS has none.
+
+After step 14 — **EduBra stage 2: hardware accuracy** (Arthur's brief, 2026-09-30).
+
+Checked against the paper (`public/docs/edubra-paper.pdf`, renamed from `ArtigoFinal_Oficinas1.pdf`;
+text extracted with a scratch pypdf). All five points in the brief match it: 3 mm MDF with
+laser-cut finger joints (3.5); the cell and pins printed in PLA, the cell shown yellow and the pins
+black (3.2, Figures 5 and 6); buttons pause up, accelerate right, decelerate down, back left
+(Figure 8); knob and headphone jack on the side (3.4, Figure 15); audio leaves through a P2 jack to
+the user's own headphones or speaker (3.4).
+
+- **Hardware corrections:**
+  - **Box:** MDF, not wood. Lid `#c7a57e` with a fine speckle (`public/textures/mdf.webp`, 8,782
+    bytes, 512 px, seamless by construction: noise generated with wrapped indices, a wrapped
+    blur, quantised to 9 levels, about 1 % lightness std after compression; seam difference ~1
+    level of 255). The front and right faces are flat `#8a6440` (laser-cut edge). "EduBra" is
+    engraved on the front in `#6e4d2f`, flat, no shadow. `wood-medium.webp` deleted.
+  - **Cell:** a yellow PLA plate `#e9bc2a` set into the lid under the holes, recesses `#b58c10`
+    with a `#7a5a00` rim (3.55:1 on the plate), pins `#1d1d1f` with a subtle highlight on the head.
+    In "How it works" the cell is the same yellow block with darker-yellow sides and the same black
+    pins (class renamed `woodblk` to `cellblk`).
+  - **Buttons:** pause on top, back left, faster right, slower at the bottom, the speed in the
+    middle. Markup follows that order, so tab order does too. The symbols stay dark with a light
+    copy nudged 0.6px left and 0.8px up behind them (new `Glyph.astro`): two static paths, because a
+    shadow or filter would flatten the 3D chain.
+  - **Knob and jack:** on a new right face (`.side`), knob `translateZ` discs sticking out of it, a
+    3.5 mm jack drawn as a ring round a dark hole, and UTFPR engraved under it. The volume
+    readout ("volume off / low / high") moved to the lid, under the cross, because text on the
+    turned face would be unreadable. The knob is hidden without JS, like the buttons.
+  - **No speaker:** the drawn label is "your headphones or speaker". The callout names are
+    "Headphones or speaker" and, for the jack, "Out to your headphones or speaker" (my wording,
+    the smallest change from "Out to the speaker"). The drawing still shows a speaker driver as the
+    output device.
+- **Divergences and calls made:**
+  - **The box turns about the vertical axis** (`rotateY(-30deg)` after the 20deg tilt), not the
+    story's `rotateZ(20deg)` table turn. Arthur chose "keep the 20deg tilt"; with that tilt the
+    story's turn shows the right face about 7px wide, too thin for a knob. The turn shows it about
+    30px wide and keeps the lid readable. The knob is about 23x68px on screen. It is smaller than
+    24px wide, which WCAG 2.5.8 allows because no other target is within 24px of it.
+  - **The box is shifted back to centre per container-query tier** (`--shift`, 8 to 11.6cqw):
+    measured, the turn puts the right face and knob 19 to 36px past the column's right edge and
+    leaves 16 to 73px spare on the left. After the shift the box is inside the column at 1024 and
+    up and inside the viewport (at least 7px) at 375 and 320. No scaling was needed.
+  - **Row widths shrank** (the knob left the lid), so the tiers' breakpoints are unchanged but
+    each now has slack.
+  - **Engraving on the sides.** The paper says the name and UTFPR are engraved on the side faces
+    (Figure 15). The brief asks for "EduBra" on the front, which is what I did; UTFPR is on the
+    right face, where the paper's photo has it.
+  - **The story's speaker callout** keeps its shelf below the speaker, and the drawn label moved
+    from y=497 to y=524 so the two don't collide. Phone framing 4's bottom edge 520 to 535 to keep
+    the label in frame.
+  - **Two controls were both "Pause"** (stage 1): the story's is now "Pause the drawing".
+- **Contrast** (`.scratch/contrast.mjs`, against the darkest and lightest MDF pixel with the lid's
+  own light overlay applied; need 4.5 for text, 3 for graphics):
+
+  | Pair | Ratio |
+  |---|---|
+  | Letter labels, speed and volume readouts `#23262a` on darkest / lightest MDF | 5.45 / 8.19 |
+  | Active-letter underline `#1f4f66` on darkest / lightest MDF | 3.18 / 4.78 |
+  | Button focus ring (graphite) on darkest MDF | 5.45 |
+  | Cell rim `#7a5a00` on the PLA plate | 3.55 |
+  | Pin `#1d1d1f` on the plate / on the recess | 9.37 / 5.39 |
+  | Button symbol on the cap, worst case at its edge | 6.60 |
+  | Knob focus ring `#f6f7f6` on the side edge `#8a6440` | 4.92 |
+  | Knob indicator on the knob | 12.34 |
+
+  The knob uses a light focus ring because graphite on the dark edge is 2.88:1. Nothing red
+  sits on the MDF (signal red is 2.35:1 there; it is only the "Try a word" underline, on the page
+  ground). **The engraving is 1.44:1 on the edge, by the brief's "flat, slightly darker" wording,
+  so it is decorative (`aria-hidden`) and not text anyone needs.** The old `#4b4842` labels
+  measure 3.27:1 on the darkest MDF here (the brief says 3.4).
+- **Verified (headless Chromium over CDP):**
+  - The 3D chain holds: 96 elements preserve-3d, overflow visible, opacity 1, no filter.
+  - One letter up at a time.
+  - Pause, play, speed bounds (0.5x to 2x, disabled at the ends) and back all work.
+  - The knob steps off, low, high by click and by arrow keys (clamped), and a real mouse click on
+    its projected centre works.
+  - Each button hit-tests to itself, and the cross is laid out pause top, slower bottom, back
+    left, faster right, speed centre.
+  - "Try a word" rebuilds the cells.
+  - Reduced motion: transitions 0s.
+  - No JS: first letter raised, buttons, knob and field absent.
+  - The AX tree is unchanged from stage 1: 17 buttons, each once.
+  - `astro check` clean.
+- **Not checked:** the story's wire endpoints after the recolour. No geometry changed, only colours
+  and one label, but I didn't re-run the endpoint measurement.

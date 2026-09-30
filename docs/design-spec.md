@@ -136,7 +136,7 @@ Six values. The two chromatic ones have specific jobs and never decorate.
 
 Rules: `--signal` never fills a background, only strokes, marks and text. It should
 appear roughly eight times on the whole page. `--measure` appears only inside set-piece
-drawings, never in UI. The EduBra device's materials (wood, pins, yellow button caps) are
+drawings, never in UI. The EduBra device's materials (MDF, yellow PLA, pins, button caps) are
 scoped tokens on `.device`, not site palette. No pure `#000`, no pure `#FFF`, no neutral grays outside the list.
 
 ### Type
@@ -374,30 +374,35 @@ sequence disabled.
 reference prototype (`edubra-device-3d.html`, 2026-09-29). It replaces the SVG Braille
 cell, which was a pinned scrub through step 14 and a GSAP loop earlier that day.
 
-- **The box:** a wooden box tilted back in CSS 3D, with a textured lid
-  (`/textures/wood-medium.webp`) and a front face folded down.
-- **The pins:** six holes per letter spelling `EDUBRA`. One character at a time, its pins
-  rise (stacked discs translating in Z, with opacity, 120ms `--ease-out`). They hold for
+- **The box:** a 3 mm MDF box (the real one, per the team's paper) tilted back and turned
+  in CSS 3D: a lid with a fine speckle (`/textures/mdf.webp`), and darker laser-cut front and
+  right faces, with "EduBra" engraved on the front. The volume knob and a 3.5 mm headphone
+  jack are on the right face, as on the real box. There is no built-in speaker.
+- **The cell and pins:** a yellow PLA insert set into the lid (`#e9bc2a`, darker-yellow recesses
+  with a rim at 3:1 or better), six black pins per letter spelling `EDUBRA`. One character at a
+  time, its pins rise (stacked discs translating in Z, with opacity, 120ms `--ease-out`). They hold for
   ~900ms, then drop with the same transition, and only then does the next character rise.
   After A there's a longer pause, then it repeats. The letter whose pins are up is marked
   under its cell.
-- **The controls** (prototype v2): a black **volume knob**, like the real box's
-  potentiometer. It steps off / low / high by click or arrow keys, starts off, and speaks
-  each letter as its pins rise through the browser's own speech synthesis.
-- **The buttons:** beside the knob, a **cross** of four round, tactile yellow buttons: up ⏮
-  back to the start of the word, left − slower, right + faster (0.5×–2×), down ⏯
-  pause/play, with the speed as a count in the middle. A press sinks the cap, for the
-  keyboard too.
+- **The controls** (prototype v2, layout per the paper): a black **volume knob** on the box's
+  right face, like the real box's potentiometer. It steps off / low / high by click or arrow
+  keys, starts off, and speaks each letter as its pins rise through the browser's own speech
+  synthesis. Its state also reads "volume off / low / high" on the lid.
+- **The buttons:** on the lid, a **cross** of four round, tactile yellow buttons as on the real
+  lid: pause on top, back to the start of the word on the left, faster on the right (0.5×–2×),
+  slower at the bottom, with the speed as a count in the middle. The symbols are dark with a
+  slight raised edge. A press sinks the cap, for the keyboard too.
 - **Why the controls matter:** they make the endless, self-starting loop acceptable
   (WCAG 2.2.2). An IntersectionObserver also stops the loop while it's off screen.
 - **Exception to §8 (Arthur's decision):** the device stays 3D and animated below 768px.
-  At every width the word stays on the left and the knob and cross on the right. Narrower
-  devices shrink the holes and buttons. Below ~670px the word wraps into EDU / BRA and the
-  knob moves above the cross.
+  At every width the word stays on the left and the cross on the right, the knob on the side
+  face. Narrower devices shrink the holes and buttons, and the box is shifted back to centre
+  (the turn swings its right side toward the reader). Below ~670px the word wraps into
+  EDU / BRA.
   Under reduced motion the loop still steps, with no transitions.
 - **Try a word** (prototype v2, Arthur): a field under the device swaps EDUBRA for the
   reader's own word, A–Z and up to 6 letters, with accents stripped.
-- **Without JS:** the first letter is raised and the controls and the field are absent.
+- **Without JS:** the first letter is raised and the controls, the knob and the field are absent.
 
 The device converts text to touch, and the set-piece performs exactly that conversion. It
 demonstrates the project rather than describing it.

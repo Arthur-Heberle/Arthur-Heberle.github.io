@@ -28,11 +28,11 @@ const DOT_OF_PIN: Record<number, number> = Object.fromEntries(Object.entries(PIN
 // A callout's component, its name and its one-line label (copy from Arthur's brief).
 const PARTS = [
   { id: 'gpio', name: 'GPIO header', text: 'Drives the six servos' },
-  { id: 'jack', name: 'Audio jack', text: 'Out to the speaker' },
+  { id: 'jack', name: 'Audio jack', text: 'Out to your headphones or speaker' },
   { id: 'led', name: 'Green LED', text: 'Blinks while the Pi works' },
   { id: 'soc', name: 'Processor', text: 'Runs the reading loop' },
   { id: 'cell', name: 'Braille cell', text: 'Six pins, one per servo' },
-  { id: 'spk', name: 'Speaker', text: 'Says each word, then each letter' },
+  { id: 'spk', name: 'Headphones or speaker', text: 'Says each word, then each letter' },
 ]
 const NBSP = ' '
 
@@ -149,7 +149,7 @@ const holes = [1, 2, 3, 4, 5, 6].map((n) => ({
           <path id="w-spk" class="ln draw" d={WIRE_SPK}></path>
           <text class="t15 fade mid" x="597" y="372">Raspberry Pi 4</text>
           <text class="t15 fade mid" x="895" y="322">six servos</text>
-          <text class="t15 fade mid" x="895" y="497">speaker</text>
+          <text class="t15 fade mid" x="895" y="524">your headphones or speaker</text>
           {LETTERS.map((l) => <text class="bigletter mono s44" data-l={l} x="1000" y="216" opacity={l === LAST ? 1 : 0}>{l}</text>)}
           <g id="waves" opacity="0.55" transform={WAVES_AT}>
             <path class="ln wv" d="M8 -22 A 30 30 0 0 1 8 22"></path>
@@ -245,8 +245,8 @@ const holes = [1, 2, 3, 4, 5, 6].map((n) => ({
           <div class="obj" id="o-cell" style="left:810px;top:126px;width:170px;height:190px">
             <div class="bench" style="width:120px;height:170px;left:20px;bottom:10px">
               <div class="shadow" style="left:-14px;top:-2px;width:150px;height:198px"></div>
-              <!-- Braille cell: a wood block with six holes; each pin is stacked discs that rise -->
-              <Cub x={0} y={0} w={120} d={170} h={26} cls="woodblk" part="cell">
+              <!-- Braille cell: the yellow PLA insert with six recesses; each black pin is stacked discs that rise -->
+              <Cub x={0} y={0} w={120} d={170} h={26} cls="cellblk" part="cell">
                 {
                   holes.map((h) => (
                     <div class="bhole" data-n={h.n} style={`left:${h.left}px;top:${h.top}px`}>

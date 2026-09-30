@@ -1,9 +1,11 @@
 ---
 // The EduBra device set-piece — design-spec.md §9, "the strongest piece on the site".
 // Ported from Arthur's reference prototype (edubra-device-3d.html, 2026-09-29), not
-// redesigned: a wooden box tilted back in CSS 3D, one Braille character at a time on six
-// pins, a volume knob that speaks each letter, and a cross of four tactile yellow buttons
-// (up restart, left slower, right faster, down pause/play) — controls per prototype v2.
+// redesigned, then corrected against the team's paper (public/docs/edubra-paper.pdf): a 3 mm
+// MDF box tilted back and turned in CSS 3D, a yellow PLA Braille cell with black pins showing one
+// character at a time, four yellow buttons in a cross (pause on top, back left, faster right,
+// slower at the bottom) on the lid, and the volume knob (it speaks each letter) and a 3.5 mm
+// headphone jack on the box's right side. There is no built-in speaker.
 //
 // Markup is rendered here, not built by script, so the page reads without JavaScript: the
 // first letter's pins ship raised, and the controls are absent without `.js` (type.css).
@@ -14,6 +16,21 @@
 // transform-style: preserve-3d and has no overflow other than visible, no opacity below 1
 // and no filter; any of those flattens the whole chain silently (type.css repeats this).
 import { brailleCells } from './braille'
+import Glyph from './Glyph.astro'
+
+// Button symbols on a 24x24 grid (the same shapes the prototype drew).
+const ICONS = {
+  back: [
+    { d: 'M6.5 6v12' },
+    { d: 'M17.5 6.8v10.4a.8.8 0 0 1-1.2.7l-7.9-5.2a.8.8 0 0 1 0-1.4l7.9-5.2a.8.8 0 0 1 1.2.7z', filled: true },
+  ],
+  slower: [{ d: 'M6 12h12' }],
+  faster: [{ d: 'M6 12h12M12 6v12' }],
+  pause: [{ d: 'M7.6 6h2.8v12H7.6zM13.6 6h2.8v12h-2.8z', filled: true, width: 1.4 }],
+  play: [
+    { d: 'M8.5 6.6v10.8a.8.8 0 0 0 1.2.7l8.4-5.4a.8.8 0 0 0 0-1.4L9.7 5.9a.8.8 0 0 0-1.2.7z', filled: true },
+  ],
+}
 
 interface Props {
   word: string
@@ -58,54 +75,54 @@ const cells = brailleCells(word)
           }
         </div>
         <div class="panel">
-          <div class="knobwrap">
-            <button type="button" class="knob" data-knob aria-label="Volume: off">
-              <span class="well" aria-hidden="true" /><span class="sd" aria-hidden="true" /><span class="sd2" aria-hidden="true" /><span class="top" aria-hidden="true" />
-            </button>
-            <span class="vol" aria-hidden="true" data-vol>off</span>
-          </div>
+          <!-- as on the real lid: pause on top, back one word on the left, faster on the right,
+               slower at the bottom, the speed in the middle. Markup follows the visual order. -->
           <div class="cross">
-          <button type="button" class="btn" data-back aria-label="Back to the start of the word">
-            <span class="well" aria-hidden="true" /><span class="sd" aria-hidden="true" /><span class="sd2" aria-hidden="true" />
-            <span class="cap" aria-hidden="true">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M6.5 6v12" />
-                <path
-                  class="f"
-                  d="M17.5 6.8v10.4a.8.8 0 0 1-1.2.7l-7.9-5.2a.8.8 0 0 1 0-1.4l7.9-5.2a.8.8 0 0 1 1.2.7z"
-                />
-              </svg>
-            </span>
-          </button>
-          <button type="button" class="btn" data-slower aria-label="Slower">
-            <span class="well" aria-hidden="true" /><span class="sd" aria-hidden="true" /><span class="sd2" aria-hidden="true" />
-            <span class="cap" aria-hidden="true">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 12h12" /></svg>
-            </span>
-          </button>
-          <div class="speed" aria-live="polite" data-speed>1×</div>
-          <button type="button" class="btn" data-faster aria-label="Faster">
-            <span class="well" aria-hidden="true" /><span class="sd" aria-hidden="true" /><span class="sd2" aria-hidden="true" />
-            <span class="cap" aria-hidden="true">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 12h12M12 6v12" /></svg>
-            </span>
-          </button>
-          <button type="button" class="btn" data-play aria-label="Pause" aria-pressed="false">
-            <span class="well" aria-hidden="true" /><span class="sd" aria-hidden="true" /><span class="sd2" aria-hidden="true" />
-            <span class="cap" aria-hidden="true">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path class="f icon-pause" d="M7.6 6h2.8v12H7.6zM13.6 6h2.8v12h-2.8z" stroke-width="1.4" />
-                <path
-                  class="f icon-play"
-                  d="M8.5 6.6v10.8a.8.8 0 0 0 1.2.7l8.4-5.4a.8.8 0 0 0 0-1.4L9.7 5.9a.8.8 0 0 0-1.2.7z"
-                />
-              </svg>
-            </span>
-          </button>
+            <button type="button" class="btn" data-play aria-label="Pause" aria-pressed="false">
+              <span class="well" aria-hidden="true" /><span class="sd" aria-hidden="true" /><span class="sd2" aria-hidden="true" />
+              <span class="cap" aria-hidden="true">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <Glyph cls="icon-pause" paths={ICONS.pause} />
+                  <Glyph cls="icon-play" paths={ICONS.play} />
+                </svg>
+              </span>
+            </button>
+            <button type="button" class="btn" data-back aria-label="Back to the start of the word">
+              <span class="well" aria-hidden="true" /><span class="sd" aria-hidden="true" /><span class="sd2" aria-hidden="true" />
+              <span class="cap" aria-hidden="true">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><Glyph paths={ICONS.back} /></svg>
+              </span>
+            </button>
+            <div class="speed" aria-live="polite" data-speed>1×</div>
+            <button type="button" class="btn" data-faster aria-label="Faster">
+              <span class="well" aria-hidden="true" /><span class="sd" aria-hidden="true" /><span class="sd2" aria-hidden="true" />
+              <span class="cap" aria-hidden="true">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><Glyph paths={ICONS.faster} /></svg>
+              </span>
+            </button>
+            <button type="button" class="btn" data-slower aria-label="Slower">
+              <span class="well" aria-hidden="true" /><span class="sd" aria-hidden="true" /><span class="sd2" aria-hidden="true" />
+              <span class="cap" aria-hidden="true">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><Glyph paths={ICONS.slower} /></svg>
+              </span>
+            </button>
           </div>
+          <span class="vol" aria-hidden="true" data-vol>off</span>
         </div>
       </div>
-      <div class="front" aria-hidden="true"></div>
+      <!-- the box's edges are laser-cut MDF; "EduBra" is laser-engraved on the front -->
+      <div class="front" aria-hidden="true"><span class="engrave">EduBra</span></div>
+      <!-- the right side face: the volume knob and a 3.5 mm headphone jack, as on the real box.
+           There is no built-in speaker. Its 3D children keep the preserve-3d chain (device.css). -->
+      <div class="side">
+        <div class="knobwrap">
+          <button type="button" class="knob" data-knob aria-label="Volume: off">
+            <span class="well" aria-hidden="true" /><span class="sd" aria-hidden="true" /><span class="sd2" aria-hidden="true" /><span class="top" aria-hidden="true" />
+          </button>
+        </div>
+        <div class="jack" aria-hidden="true"><i /></div>
+        <span class="engrave" aria-hidden="true">UTFPR</span>
+      </div>
     </div>
     <div class="floor-shadow" aria-hidden="true"></div>
   </div>

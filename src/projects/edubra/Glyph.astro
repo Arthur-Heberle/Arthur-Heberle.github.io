@@ -1,0 +1,25 @@
+---
+// One button symbol, drawn twice: a light copy nudged up and to the left under the dark one, so
+// the dark symbol gets a slight raised edge, like the hot-glue symbols on the real lid. A
+// same-colour relief would be unreadable on screen, hence the dark ink. It is two static
+// paths, not a filter or a shadow: either would flatten the device's 3D chain (device.css).
+interface Path {
+  d: string
+  filled?: boolean
+  width?: number
+}
+interface Props {
+  paths: Path[]
+  cls?: string // the pause/play swap targets this
+}
+const { paths, cls } = Astro.props
+---
+
+<g class={cls}>
+  <g class="emb" transform="translate(-0.6 -0.8)">
+    {paths.map((p) => <path class:list={{ f: p.filled }} d={p.d} stroke-width={p.width} />)}
+  </g>
+  <g class="ink">
+    {paths.map((p) => <path class:list={{ f: p.filled }} d={p.d} stroke-width={p.width} />)}
+  </g>
+</g>

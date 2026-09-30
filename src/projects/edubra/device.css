@@ -1,49 +1,63 @@
 /* EduBra device set-piece (EdubraDevice.astro), ported from Arthur's reference prototype
- * edubra-device-3d.html (2026-09-29). Device colours are tokens scoped to .device — they
- * are the object's materials (wood, pins, yellow caps), not site palette.
+ * edubra-device-3d.html (2026-09-29) and corrected against the team's paper
+ * (public/docs/edubra-paper.pdf, 2026-09-30). Device colours are tokens scoped to .device: they
+ * are the object's materials (MDF, PLA, pins, yellow caps), not site palette.
  *
- * THE 3D CHAIN: .box > .lid > .word > .cell > .dots > .pos > .pin, and .lid > .panel >
- * .cross > .btn > .cap and .panel > .knobwrap > .knob, all keep transform-style:
- * preserve-3d. Nothing in that chain may get
- * overflow other than visible, opacity below 1, or a filter — any of them flattens the
- * whole thing silently. Opacity only ever changes on leaves (.pin > i, the cap icons).
- * Only transform and opacity animate; box shadows are static.
+ * What the real box is (paper, sections 3.4 and 3.5): 3 mm MDF, laser-cut with finger joints
+ * (the cut edges are darker); a yellow PLA Braille cell set into the lid, black pins; four
+ * yellow buttons on the lid (pause on top, faster right, slower bottom, back one word on the
+ * left); the volume knob and a 3.5 mm headphone jack on the SIDE of the box; no built-in
+ * speaker (audio leaves through the jack).
  *
- * Controls follow prototype v2 (Arthur, 2026-09-29): a volume knob, then a cross of four
- * buttons (up back to the start, left slower, right faster, down pause/play, speed in the
- * middle). Divergences, for fit: the page column is at most 855px and v2's row needs ~944,
- * so desktop sizes are a little smaller than v2's, and narrower devices shrink in
- * container-query tiers instead of stacking (Arthur: word left, controls right, always);
- * the narrow tiers put the knob above the cross. The active letter is weight 500, not 600 — the site
- * ships Archivo 400/500 only, and 600 would be faux-bold. Pins also drop with a transition
- * now instead of instantly (Arthur), and the script waits for the drop before raising. */
+ * THE 3D CHAIN: .box > .lid > .word > .cell > .dots > .pos > .pin, .lid > .panel > .cross >
+ * .btn > .cap, and .box > .side > .knobwrap > .knob, all keep transform-style: preserve-3d.
+ * Nothing in that chain may get overflow other than visible, opacity below 1, or a filter:
+ * any of them flattens the whole thing silently. Opacity only ever changes on leaves
+ * (.pin > i, the cap icons). Only transform and opacity animate; box shadows are static.
+ *
+ * The box is turned (--yaw, about the vertical axis) so its right face shows, on top of the
+ * 20deg tilt that keeps the lid readable. The story's own table turn (rotateZ) would show that
+ * face about 7px wide at this tilt; a knob does not fit on that.
+ *
+ * Controls (prototype v2): a volume knob (click or arrow keys step off / low / high) and a
+ * cross of four buttons. Narrower devices shrink in container-query tiers instead of stacking
+ * (Arthur: word left, controls right, always). The active letter is weight 500, not 600: the
+ * site ships Archivo 400/500 only. Pins drop with a transition now instead of instantly
+ * (Arthur), and the script waits for the drop before raising. */
 .device {
-  --wood: #dbc59f;
-  --wood-tex: url('/textures/wood-medium.webp');
-  --pin: #1f4f66;
-  --pin-side: #173b4c;
-  --pin-head: #2c6683;
-  --hole: #c2a375;
-  --hole-rim: #6b4f2e;
+  --mdf: #c7a57e;
+  --mdf-tex: url('/textures/mdf.webp');
+  --mdf-edge: #8a6440; /* laser-cut edges: front and side faces */
+  --engrave: #6e4d2f; /* flat, slightly darker than the edge, no shadow */
+  --pla: #e9bc2a; /* the cell's insert */
+  --pla-hole: #b58c10; /* the recess: a darker yellow */
+  --pla-rim: #7a5a00; /* 3.6:1 on --pla (checked in progress.md) */
+  --pin: #1d1d1f;
+  --pin-side: #111113;
+  --pin-hi: #4a4a50;
+  --mark: #1f4f66; /* the active letter's underline */
+  --label: #23262a;
   --cap: #e8b93a;
   --cap-hi: #f5d677;
   --cap-lo: #d6a324;
   --cap-side: #a97d18;
   --cap-side-2: #c3931f;
+  --emb: rgb(255 246 205 / 0.85); /* the raised edge of a button symbol */
   --knob: #2a2b2d;
   --knob-hi: #4a4c50;
   --knob-side: #151617;
   --tilt: 20deg;
+  --yaw: -30deg;
   --pin-h: 7px;
   --cap-h: 8px;
-  --box-depth: 64px;
+  --box-depth: 72px;
   container-type: inline-size;
 }
 .device .stage {
   /* Sizes as variables so the container queries below can shrink the whole lid while
-   * keeping its layout: word on the left, knob + cross on the right, at every width.
-   * Row width here: 6 x 64 + 5 x 26 + 28 + (50 + 22 + 3 x 48 + 2 x 8) + 2 x 28 = 830px,
-   * inside the 855px column. */
+   * keeping its layout: word on the left, the cross on the right, at every width.
+   * Row width here: 6 x 64 + 5 x 26 + 28 + (3 x 48 + 2 x 8) + 2 x 28 = 758px, in the 855px
+   * column; turned by --yaw it is narrower on screen still (see .box). */
   --hole-size: 26px;
   --dot-gap: 11px 12px;
   --dot-gap-x: 12px;
@@ -54,9 +68,10 @@
   --cross-gap: 8px;
   --icon-size: 22px;
   --knob-size: 50px;
-  --panel-gap: 22px;
+  --panel-gap: 12px;
   --lid-gap: 28px;
   --lid-pad: 40px 28px 30px;
+  --shift: 8cqw;
   perspective: 2000px;
   perspective-origin: 50% 10%;
   position: relative;
@@ -66,7 +81,10 @@
   position: relative;
   transform-style: preserve-3d;
   transform-origin: 50% 100%;
-  transform: rotateX(var(--tilt));
+  /* the yaw swings the right edge (and the side face and knob) toward the reader and the left
+   * away, so the box sits right of centre: --shift puts it back. Measured per tier, since the
+   * side face and the knob's reach are a fixed number of pixels (progress.md). */
+  transform: translateX(calc(-1 * var(--shift))) rotateY(var(--yaw)) rotateX(var(--tilt));
 }
 /* soft contact shadow on the page under the box (not part of the 3D context) */
 .device .floor-shadow {
@@ -81,7 +99,7 @@
 .device .lid {
   position: relative;
   transform-style: preserve-3d;
-  background: var(--wood) var(--wood-tex) 0 0 / 512px 512px repeat;
+  background: var(--mdf) var(--mdf-tex) 0 0 / 512px 512px repeat;
   display: flex;
   align-items: center;
   gap: var(--lid-gap);
@@ -95,7 +113,8 @@
   pointer-events: none;
   background: linear-gradient(to bottom, rgb(255 250 240 / 0.18), transparent 55%, rgb(80 55 25 / 0.08));
 }
-/* front face = the thickness of the box, folded down from the lid's front edge */
+/* front face = the thickness of the box, folded down from the lid's front edge. Laser-cut
+ * edge: darker, flat. The engraving is flat too: a slightly darker ink, no shadow. */
 .device .front {
   position: absolute;
   left: 0;
@@ -104,13 +123,56 @@
   height: var(--box-depth);
   transform-origin: 50% 0;
   transform: rotateX(-90deg);
-  background: var(--wood) var(--wood-tex) 0 0 / 512px 512px repeat;
+  background: var(--mdf-edge);
+  display: grid;
+  place-items: center;
 }
-.device .front::after {
-  content: '';
+.device .engrave {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  color: var(--engrave);
+  line-height: 1;
+  user-select: none;
+}
+.device .front .engrave {
+  font-size: 34px;
+}
+/* right face: the knob and the jack. It hangs from the lid's right edge and folds back, like
+ * the front face from the near edge. */
+.device .side {
   position: absolute;
-  inset: 0;
-  background: rgb(70 48 22 / 0.3);
+  left: 100%;
+  top: 0;
+  bottom: 0;
+  width: var(--box-depth);
+  transform-origin: 0 50%;
+  transform: rotateY(90deg);
+  transform-style: preserve-3d;
+  background: var(--mdf-edge);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+}
+.device .side .engrave {
+  font-size: 15px;
+}
+/* 3.5 mm headphone jack: a metal ring round a dark hole, flat on the face */
+.device .jack {
+  position: relative;
+  width: calc(var(--knob-size) * 0.5);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, #a4a7ac 0 60%, #5d6065 62% 80%, transparent 82%);
+}
+.device .jack i {
+  position: absolute;
+  inset: 29%;
+  border-radius: 50%;
+  background: #0d0d0e;
+  box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.85);
 }
 
 .device .word {
@@ -126,12 +188,26 @@
   transform-style: preserve-3d;
 }
 .device .dots {
+  position: relative;
   display: grid;
   grid-template-columns: repeat(2, var(--hole-size));
   grid-template-rows: repeat(3, var(--hole-size));
   grid-auto-flow: column; /* dots 1,2,3 down the left column, 4,5,6 down the right */
   gap: var(--dot-gap);
   transform-style: preserve-3d;
+}
+/* the cell: a yellow PLA insert set into the lid, a hair of shadow round it where it sits in
+ * the MDF. It is the first child, so it paints under the holes (same plane). */
+.device .dots::before {
+  content: '';
+  position: absolute;
+  /* overhang: 10px at the desktop gap, always 6px less than the gap between cells */
+  inset: -9px calc(var(--cell-gap) / -2 + 3px);
+  border-radius: 4px;
+  background: var(--pla);
+  box-shadow:
+    0 0 0 1px rgb(70 45 15 / 0.5),
+    inset 0 1px 0 rgb(255 255 255 / 0.3);
 }
 .device .pos {
   position: relative;
@@ -143,10 +219,10 @@
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  background: var(--hole);
+  background: var(--pla-hole);
   box-shadow:
-    inset 0 0 0 1.5px var(--hole-rim),
-    inset 0 3px 4px rgb(70 48 22 / 0.45);
+    inset 0 0 0 1.5px var(--pla-rim),
+    inset 0 3px 4px rgb(80 50 0 / 0.4);
 }
 /* a pin is stacked discs: two side layers and a head, so it reads as a short cylinder */
 .device .pin {
@@ -166,7 +242,7 @@
 }
 .device .pin .shade {
   inset: -2px -4px -6px -1px;
-  background: radial-gradient(ellipse at 45% 60%, rgb(60 40 18 / 0.45), transparent 68%);
+  background: radial-gradient(ellipse at 45% 60%, rgb(40 25 0 / 0.5), transparent 68%);
 }
 .device .pin .s1,
 .device .pin .s2 {
@@ -174,7 +250,7 @@
   transform: translateZ(0);
 }
 .device .pin .head {
-  background: radial-gradient(circle at 38% 32%, var(--pin-head), var(--pin) 62%);
+  background: radial-gradient(circle at 38% 32%, var(--pin-hi), var(--pin) 62%);
   transform: translateZ(0);
 }
 .device .pos.up .pin > i {
@@ -190,18 +266,15 @@
   transform: translateZ(var(--pin-h));
 }
 
-/* inactive letters: solid colour, 4.5:1 on the darkest wood; no opacity (opacity also
- * flattens 3D children) */
+/* letters under the cells sit on the MDF: solid #23262a (6.6:1), no opacity (opacity also
+ * flattens 3D children). The active one keeps weight 500 and a blue underline (3.7:1). */
 .device .label {
   font-family: var(--font-sans);
   font-size: var(--label-size);
   line-height: 1;
   font-weight: 500;
-  color: #4b4842;
+  color: var(--label);
   position: relative;
-}
-.device .label.on {
-  color: var(--color-graphite);
 }
 .device .label.on::after {
   content: '';
@@ -210,14 +283,15 @@
   right: -4px;
   bottom: -8px;
   height: 3px;
-  background: var(--pin);
+  background: var(--mark);
 }
 
-/* right side: volume knob + cross of four buttons, like the real box. Absent without JS —
- * they would do nothing. */
+/* right of the word: the four buttons in a cross, and the volume readout under them (the knob
+ * itself is on the side face). Absent without JS: they would do nothing. */
 .device .panel {
   margin-left: auto;
   display: none;
+  flex-direction: column;
   align-items: center;
   gap: var(--panel-gap);
   transform-style: preserve-3d;
@@ -233,16 +307,18 @@
   place-items: center;
   transform-style: preserve-3d;
 }
-.device [data-back] {
+/* as on the real lid: pause on top, back one word on the left, faster on the right, slower at
+ * the bottom, the speed readout in the middle */
+.device [data-play] {
   grid-area: 1 / 2;
 }
-.device [data-slower] {
+.device [data-back] {
   grid-area: 2 / 1;
 }
 .device [data-faster] {
   grid-area: 2 / 3;
 }
-.device [data-play] {
+.device [data-slower] {
   grid-area: 3 / 2;
 }
 .device .btn {
@@ -290,14 +366,23 @@
   width: var(--icon-size);
   height: var(--icon-size);
   fill: none;
-  stroke: var(--color-graphite);
   stroke-width: 2.4;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
-.device .btn .cap svg .f {
-  fill: var(--color-graphite);
+/* dark symbol (a same-colour relief, like the real hot glue, would be unreadable on screen)
+ * over a light copy nudged up-left: a slight raised edge */
+.device .btn .cap svg .ink path {
   stroke: var(--color-graphite);
+}
+.device .btn .cap svg .ink .f {
+  fill: var(--color-graphite);
+}
+.device .btn .cap svg .emb path {
+  stroke: var(--emb);
+}
+.device .btn .cap svg .emb .f {
+  fill: var(--emb);
 }
 /* pause shows the bars; paused (data-paused, set by the script) shows play */
 .device .icon-play,
@@ -318,9 +403,13 @@
 .device .btn:disabled .cap svg {
   opacity: 0.35;
 }
-.device .btn:focus-visible,
-.device .knob:focus-visible {
+.device .btn:focus-visible {
   outline: 2px solid var(--color-graphite);
+  outline-offset: 6px;
+}
+/* the knob sits on the dark edge, where graphite is only 2.9:1: a light ring instead (4.9:1) */
+.device .knob:focus-visible {
+  outline: 2px solid var(--color-sheet);
   outline-offset: 6px;
 }
 .device .speed {
@@ -329,17 +418,18 @@
   font-size: 13px;
   line-height: 1;
   letter-spacing: 0.02em;
-  color: var(--color-graphite);
+  color: var(--label);
 }
 
 /* volume knob, like the potentiometer on the real box: click or arrow keys step
  * off / low / high. Only the top turns (transform); the body is static. */
 .device .knobwrap {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
+  display: none; /* a knob that does nothing without JS is left off, like the buttons */
+  justify-content: center;
   transform-style: preserve-3d;
+}
+.js .device .knobwrap {
+  display: flex;
 }
 .device .knob {
   position: relative;
@@ -356,7 +446,7 @@
   position: absolute;
   inset: -7px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgb(90 62 28 / 0.35) 55%, transparent 72%);
+  background: radial-gradient(circle, rgb(25 14 4 / 0.45) 55%, transparent 72%);
 }
 .device .knob .sd {
   position: absolute;
@@ -402,13 +492,16 @@
   font-size: 12px;
   line-height: 1;
   letter-spacing: 0.02em;
-  color: var(--color-graphite);
+  color: var(--label);
+}
+.device .vol::before {
+  content: 'volume ';
 }
 
 /* Narrower devices keep the same layout — word left, controls right (Arthur) — and shrink
  * instead of stacking. Each tier's row width is worked out against its own lower bound. */
 @container (max-width: 845px) {
-  /* 6 x 54 + 5 x 16 + 18 + (44 + 14 + 3 x 40 + 2 x 6) + 2 x 22 = 656px (tier is >= 670) */
+  /* 6 x 54 + 5 x 16 + 18 + (3 x 40 + 2 x 6) + 2 x 22 = 598px (tier is >= 670) */
   .device .stage {
     --hole-size: 22px;
     --dot-gap: 9px 10px;
@@ -420,19 +513,20 @@
     --cross-gap: 6px;
     --icon-size: 19px;
     --knob-size: 44px;
-    --panel-gap: 14px;
+    --panel-gap: 10px;
     --lid-gap: 18px;
     --lid-pad: 32px 22px 24px;
+    --shift: 8.3cqw;
   }
 }
 @container (max-width: 669px) {
-  /* The word breaks into two rows of three (EDU / BRA) and the knob sits above the cross:
+  /* The word breaks into two rows of three (EDU / BRA):
    * 3 x 54 + 2 x 16 + 18 + (3 x 40 + 2 x 6) + 2 x 22 = 388px (tier is >= 420) */
   .device .box {
     --tilt: 16deg;
   }
-  .device .panel {
-    flex-direction: column;
+  .device .stage {
+    --shift: 9.4cqw;
   }
   .device .word {
     flex-wrap: wrap;
@@ -453,9 +547,10 @@
     --cross-gap: 4px;
     --icon-size: 17px;
     --knob-size: 40px;
-    --panel-gap: 12px;
+    --panel-gap: 8px;
     --lid-gap: 12px;
     --lid-pad: 26px 10px 20px;
+    --shift: 10.8cqw;
   }
 }
 @container (max-width: 315px) {
@@ -471,6 +566,7 @@
     --knob-size: 36px;
     --lid-gap: 10px;
     --lid-pad: 22px 8px 18px;
+    --shift: 11.6cqw;
   }
 }
 /* "Try a word" (prototype v2): outside the 3D chain, under the box. Absent without JS —
