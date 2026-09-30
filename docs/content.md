@@ -240,8 +240,17 @@ question `docs/plans/step-03.md` left open. Only an entry with its own page need
 Final, in Arthur's words (2026-09-29). "what" is one sentence on purpose: it sits directly
 above the set-piece, and the system diagram below the cells carries how it works.
 
-- what: A device that teaches Braille. It reads a file letter by letter, raises the pins
-  for each one, and says it out loud.
+- what (rewritten 2026-09-30, verbatim from Arthur's brief): A low-cost device that helps
+  blind and visually impaired people learn Braille on their own. It reads a file letter by
+  letter: a voice says the letter, then six pins rise under your finger.
+- note (margin note beside `what`, the site's margin-note component with no label and no
+  marker): Screen readers didn't make Braille obsolete. For many blind adults, reading it is
+  still a big part of independence.
+- "How it works" captions (step titles unchanged): 1 Send a file: Drop in a .txt, .docx or
+  .pdf. Song lyrics, an article, anything. 2 Over Wi-Fi: The page splits it into words and
+  sends them to the Raspberry Pi inside the box. 3 Audio first: Before reading, the Pi
+  prepares a voice file for every word, so it doesn't stall mid-sentence. 4 Read: It says
+  the word, then each letter, raising the pins as it goes.
 - did: All of the software. A small upload page that pulls the text out of the file and
   sends it to the Pi over Wi-Fi, and the program on the Pi that turns each character into
   six pins, speaks it first, and keeps listening to the buttons and the volume knob while

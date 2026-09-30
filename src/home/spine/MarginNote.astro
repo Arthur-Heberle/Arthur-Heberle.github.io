@@ -1,6 +1,8 @@
 ---
 // One margin note: its rendered body from the `notes` collection, a back-link to the
 // spine marker that points at it, and a leader-line SVG in its own final, drawn state.
+// Without an `entry` it is a plain note: the slot's text, no label and no marker (a project
+// page's single note beside its intro, where a "1" would imply a sequence).
 // Step 10 adds motion (motion.ts's tier1Leaders scrubs both paths below) and the
 // marker<->note highlight: a second, --signal-coloured path stacked on the construction
 // line, crossfaded in on opacity when Spine.astro's script sets [data-linked] on this
@@ -10,21 +12,21 @@ import { render } from 'astro:content'
 import type { CollectionEntry } from 'astro:content'
 
 interface Props {
-  entry: CollectionEntry<'notes'>
-  marker: number
+  entry?: CollectionEntry<'notes'>
+  marker?: number
   /** Position among the notes sharing one rail margin (docs/motion-spec.md's 60ms sibling
    *  stagger, on top of the 200ms lag behind the paragraph). Defaults to 0 — a rail with
    *  only one note omits this prop entirely. */
   sibling?: number
 }
 const { entry, marker, sibling = 0 } = Astro.props
-const { Content } = await render(entry)
+const Content = entry ? (await render(entry)).Content : null
 // 0.2 + 0.06 * sibling, but toFixed keeps the rendered attribute clean: 0.2 + 0.06 * 2 is
 // 0.32000000000000006 in binary floating point.
 const delay = (0.2 + 0.06 * sibling).toFixed(2)
 ---
 
-<aside class="note" id={`note-${entry.id}`} data-anim data-delay={delay}>
+<aside class="note" id={entry ? `note-${entry.id}` : undefined} data-anim data-delay={delay}>
   <svg class="leader" viewBox="0 0 32 24" preserveAspectRatio="none" aria-hidden="true">
     <!-- Two identical paths: the construction line, and the highlight that crossfades
          over it when this note is [data-linked]. A duplicate rather than a stroke swap
@@ -54,10 +56,18 @@ const delay = (0.2 + 0.06 * sibling).toFixed(2)
     />
   </svg>
   <div class="note-text text-small text-graphite-2">
-    <a class="feedback marker" href={`#marker-${entry.id}`} aria-label={`back to reference ${marker}`}>
-      {marker}
-    </a>
-    <strong class="font-sans font-medium text-graphite">{entry.data.label}</strong> —
-    <Content />
+    {
+      entry && Content ? (
+        <>
+          <a class="feedback marker" href={`#marker-${entry.id}`} aria-label={`back to reference ${marker}`}>
+            {marker}
+          </a>
+          <strong class="font-sans font-medium text-graphite">{entry.data.label}</strong> —
+          <Content />
+        </>
+      ) : (
+        <slot />
+      )
+    }
   </div>
 </aside>

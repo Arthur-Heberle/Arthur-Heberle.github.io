@@ -45,7 +45,7 @@ team's paper, `public/docs/edubra-paper.pdf`.
 |---|---|---|---|
 | 1 | Accessibility | done | one `role="img"` with the brief's label; all drawn parts `aria-hidden`; the two "Pause" buttons told apart |
 | 2 | Hardware accuracy | done | MDF, yellow PLA cell, real button layout, knob and jack on the right face (yaw, not the story's rotateZ), no speaker; checked against the paper, contrast audited |
-| 3 | Copy | todo | |
+| 3 | Copy | done | intro, margin note and the four captions verbatim; captions moved to their own full-width row and sized by a grid cell |
 | 4 | New sections | todo | |
 | 5 | Final check | todo | |
 
@@ -1510,3 +1510,26 @@ the user's own headphones or speaker (3.4).
   - `astro check` clean.
 - **Not checked:** the story's wire endpoints after the recolour. No geometry changed, only colours
   and one label, but I didn't re-run the endpoint measurement.
+
+After step 14 — **EduBra stage 3: copy** (Arthur's brief, 2026-09-30).
+- **Verbatim:** the intro (`project.what`), the margin note (new optional `project.note`) and the
+  four "How it works" captions. Step titles unchanged. Each string appears exactly once in the
+  built HTML after whitespace and entity normalisation (checked by script). `docs/content.md` is
+  updated to match.
+- **The margin note** uses the site's existing `MarginNote.astro`, generalised: with no `entry`
+  it is a plain note (the slot's text, no label, no back-link marker). Arthur chose "no marker":
+  it is the page's only note, and a "1" would imply a sequence. `ProjectPage.astro` wraps the
+  intro in the home page's `.rail` (prose, gutter where the leader is drawn, margin) only when an
+  entry has a `note`; the leader is drawn by the same `tier1Leaders` as on the home page (one
+  `.leader` on this page, five on home, home's note markup unchanged).
+- **The captions needed a layout change.** The new ones are 65 to 95 characters, against about 57
+  before, and sat in a ~240px column beside the title and controls with a fixed `44px` (desktop)
+  or `76px` (phone) box. Measured: at 320px one caption was 93px tall in a 76px box. Now the
+  captions take their own full-width row under the title, ticks and controls (`order: 3`), and the
+  live crossfade slot is one grid cell, so it is always as tall as the tallest caption (26px at
+  768 and up, 48 to 93px on phones) with no magic number. The ticks are pushed right with
+  `margin-left: auto`. The static layout (no JS, reduced motion) gets the same row and stays a
+  stacked list.
+- **Checked:** at 1280 and 375 the intro, margin note (beside at 768 and up, stacked under on
+  phones) and caption row look right; caption height checked at 1280, 1024, 768, 767, 600, 375
+  and 320 against its box; `astro check` clean.

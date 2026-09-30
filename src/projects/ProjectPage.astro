@@ -18,6 +18,7 @@
 // `project` still renders correctly — Fill.astro's policy is unchanged.
 import type { CollectionEntry } from 'astro:content'
 import Fill from '../shared/components/Fill.astro'
+import MarginNote from '../home/spine/MarginNote.astro'
 import Tick from '../shared/components/Tick.astro'
 
 interface Props {
@@ -40,9 +41,23 @@ const hasLinks = Boolean(links.repo || links.live || links.pdf)
 
   <div class="flex flex-col gap-4">
     <h1 id="project-heading" class="text-h2 font-sans font-medium" data-anim>{title}</h1>
-    <p class="measure text-body" data-anim data-delay="0.06">
-      <Fill value={project.what} />
-    </p>
+    {
+      project.note ? (
+        // the home page's rail: prose, gutter (where the leader is drawn), margin
+        <div class="rail" data-anim-scope>
+          <p class="rail-prose text-body" data-anim data-delay="0.06">
+            <Fill value={project.what} />
+          </p>
+          <div class="rail-margin flex flex-col">
+            <MarginNote>{project.note}</MarginNote>
+          </div>
+        </div>
+      ) : (
+        <p class="measure text-body" data-anim data-delay="0.06">
+          <Fill value={project.what} />
+        </p>
+      )
+    }
     <slot />
   </div>
 

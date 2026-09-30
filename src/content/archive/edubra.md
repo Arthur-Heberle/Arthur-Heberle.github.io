@@ -11,8 +11,12 @@ blurb: >-
 pinned: true
 project:
   what: >-
-    A device that teaches Braille. It reads a file letter by letter, raises the pins for
-    each one, and says it out loud.
+    A low-cost device that helps blind and visually impaired people learn Braille on their own.
+    It reads a file letter by letter: a voice says the letter, then six pins rise under your
+    finger.
+  note: >-
+    Screen readers didn't make Braille obsolete. For many blind adults, reading it is still a big
+    part of independence.
   did: >-
     All of the software. A small upload page that pulls the text out of the file and sends
     it to the Pi over Wi-Fi, and the program on the Pi that turns each character into six

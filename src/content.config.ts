@@ -35,6 +35,7 @@ const archive = defineCollection({
     project: z
       .object({
         what: z.string().min(1), // one paragraph: what and why
+        note: z.string().min(1).optional(), // a margin note beside `what` (no label, no marker)
         did: z.string().min(1), // what he actually did
         team: z.string().min(1), // role and team
         differently: z.string().min(1), // what he'd do differently

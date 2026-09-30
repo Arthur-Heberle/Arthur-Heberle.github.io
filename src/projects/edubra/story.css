@@ -33,17 +33,19 @@
 .story .head {
   display: flex;
   align-items: center;
-  gap: 32px;
+  gap: 12px 32px;
   flex-wrap: wrap;
 }
 
-/* captions: stacked in the static layout */
+/* captions: on their own full-width row under the title, ticks and controls (they are a
+ * sentence or two each), stacked in the static layout */
 .story .caps {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  flex: 1;
-  min-width: 320px;
+  flex: 1 1 100%;
+  min-width: 0;
+  order: 3;
 }
 .story .cap {
   display: grid;
@@ -68,6 +70,7 @@
 .story .ticks {
   display: none;
   gap: 2px;
+  margin-left: auto;
 }
 /* a step tick: a real button with a roomy hit area around the 22x3 bar */
 .story .tickbtn {
@@ -204,15 +207,14 @@ html:not(.js) .story .hits,
   pointer-events: none;
 }
 
-/* the autoplay layout: natural height, captions crossfade in one slot */
+/* the autoplay layout: natural height, captions crossfade in one slot. The slot is one grid
+ * cell, so it is as tall as the tallest caption at any width (they are a sentence or two each)
+ * and nothing below it moves when the caption changes. */
 .story.is-live .caps {
-  position: relative;
-  display: block;
-  height: 44px;
+  display: grid;
 }
 .story.is-live .cap {
-  position: absolute;
-  inset: 0 0 auto 0;
+  grid-area: 1 / 1;
   display: flex;
   opacity: 0;
 }
@@ -236,7 +238,6 @@ html:not(.js) .story .hits,
 .story.is-cam .caps {
   flex: 1 1 100%;
   min-width: 0;
-  height: 76px;
   order: 3;
 }
 .story.is-cam .cap {
