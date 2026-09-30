@@ -148,6 +148,8 @@ interface Story {
   toggle: HTMLButtonElement
   again: HTMLButtonElement
   liveMsg: HTMLElement
+  sound: HTMLButtonElement
+  cdrive: HTMLElement
   tapeHtml: HTMLElement
   tbox: HTMLElement
   hNow: HTMLElement[]
@@ -227,6 +229,8 @@ function grab(): Story | null {
     toggle: $('[data-toggle]'),
     again: $('[data-again]'),
     liveMsg: $('[data-live]'),
+    sound: $('[data-sound]'),
+    cdrive: $('.cdrive'),
     tapeHtml: $('.tape-html'),
     tbox: $('.tape-html .tbox'),
     hNow: $$<HTMLElement>('.tape-html .now'),
@@ -562,6 +566,19 @@ const sceneAt = (p: number) => {
   return 0
 }
 
+// The read loop's items, in p: item i spans [itemStart(i), itemEnd(i)] of the read scene.
+const READ_N = ITEMS.length
+const itemIndex = (p: number) => (p < T.read[0] ? -1 : Math.min(READ_N - 1, Math.floor(seg(p, ...T.read) * READ_N)))
+const itemEnd = (i: number) => T.read[0] + ((i + 1) / READ_N) * (T.read[1] - T.read[0])
+// What the Pi says for an item: the whole word, or one letter in capitals ("H"), so an engine reads
+// the letter's name and not a word.
+const itemText = (i: number) => {
+  const it = ITEMS[i]
+  return it.w !== undefined ? TEXT.slice(it.from!, it.to! + 1) : TEXT[it.c!].toUpperCase()
+}
+const MIN_DWELL = 450 // ms an item stays up at least, so its pins finish rising
+const MAX_WAIT = 1500 // ms before the story stops waiting for an utterance that never ended
+
 /** The story, played by one tween of a proxy p from 0 to 1 (DURATION s, linear) that calls
  *  render(p). Called from inside motion.ts's matchMedia branches, so the tween is reverted
  *  with its branch; the returned cleanup puts the static final state back.
@@ -607,6 +624,7 @@ export function storyPlayer(opts: { autoplay: boolean; ease?: string | gsap.Ease
     s.again.hidden = !(done || (!opts.autoplay && !started))
     s.again.textContent = done ? 'Play again' : 'Play'
     s.again.setAttribute('aria-label', done ? 'Play the story again' : 'Play the story')
+    s.sound.hidden = !canSpeak || !(started || !opts.autoplay)
   }
 
   const tick = (announce: boolean) => {
@@ -616,6 +634,103 @@ export function storyPlayer(opts: { autoplay: boolean; ease?: string | gsap.Ease
     moveCam(sc, instantCam || !announce)
     s.tickBtns.forEach((b, i) => (i === sc ? b.setAttribute('aria-current', 'step') : b.removeAttribute('aria-current')))
     if (announce) s.liveMsg.textContent = capText[sc]
+  }
+
+  // ---- voice: the browser's speechSynthesis (en-US), off until the reader turns it on. With sound on
+  // the story waits at the end of each read item for that item's utterance (see itemStep).
+  const canSpeak = typeof speechSynthesis !== 'undefined' && typeof SpeechSynthesisUtterance !== 'undefined'
+  let soundOn = false
+  let speechHold = false // the tween is waiting for an utterance to end
+  let finishPending = false // the last item ended the tween: finish once its utterance has
+  let curItem = -1 // the read item on screen
+  let itemBegan = 0 // performance.now() when it began
+  let spoken = true // its utterance has ended (or there never was one)
+  let speaking = false
+  let needRespeak = false // speech was cut by a pause: say the item again on resume
+  let utt = 0 // the live utterance's token; handlers of older ones are ignored
+  let coneTw: gsap.core.Tween | null = null
+
+  // The speaker cone moves while an utterance runs: started, nudged and stopped by its events.
+  const coneStart = () => {
+    if (instantCam) return
+    coneTw?.kill()
+    coneTw = gsap.to(s.cdrive, { scale: 1.05, duration: 0.11, ease: 'sine.inOut', yoyo: true, repeat: -1 })
+  }
+  const coneKick = () => coneTw?.restart()
+  const coneStop = () => {
+    if (!coneTw) return
+    coneTw.kill()
+    coneTw = null
+    gsap.to(s.cdrive, { scale: 1, duration: 0.15, ease: camEase, overwrite: true })
+  }
+  const cancelSpeech = () => {
+    utt++
+    speaking = false
+    if (canSpeak) speechSynthesis.cancel()
+    coneStop()
+  }
+  const gateOpen = () => {
+    const dt = performance.now() - itemBegan
+    return dt >= MIN_DWELL && (spoken || dt >= MAX_WAIT)
+  }
+  const tryRelease = () => {
+    if (!speechHold || !gateOpen()) return
+    speechHold = false
+    if (finishPending) {
+      finishPending = false
+      done = true
+      ui()
+    }
+    sync()
+  }
+  const speakItem = (i: number) => {
+    curItem = i
+    itemBegan = performance.now()
+    needRespeak = false
+    spoken = true
+    if (!soundOn || !canSpeak) return
+    spoken = false
+    const my = ++utt
+    const u = new SpeechSynthesisUtterance(itemText(i))
+    u.lang = 'en-US'
+    u.onstart = () => my === utt && coneStart()
+    u.onboundary = () => my === utt && coneKick()
+    const over = () => {
+      if (my !== utt) return
+      speaking = false
+      spoken = true
+      coneStop()
+      tryRelease()
+    }
+    u.onend = over
+    u.onerror = over
+    speaking = true
+    speechSynthesis.cancel()
+    speechSynthesis.speak(u)
+    setTimeout(tryRelease, MIN_DWELL)
+    setTimeout(tryRelease, MAX_WAIT)
+  }
+  const resetSpeech = () => {
+    cancelSpeech()
+    curItem = -1
+    spoken = true
+    needRespeak = false
+    speechHold = false
+    finishPending = false
+  }
+  // Called after every frame of the story. A new read item starts its utterance; with sound on,
+  // an item that has not finished (or not been up for MIN_DWELL) holds the tween at its end.
+  const itemStep = () => {
+    const idx = itemIndex(pp)
+    if (soundOn && curItem >= 0 && idx > curItem && !gateOpen()) {
+      speechHold = true
+      pp = itemEnd(curItem) - 1e-5
+      tween.progress(pp, true)
+      render(pp)
+      sync()
+      return
+    }
+    if (idx >= 0 && idx !== curItem) speakItem(idx)
   }
 
   const tween = gsap.to(state, {
@@ -628,9 +743,16 @@ export function storyPlayer(opts: { autoplay: boolean; ease?: string | gsap.Ease
       pp = state.p
       render(pp)
       tick(true)
+      itemStep()
     },
     onComplete: () => {
       if (!alive) return
+      if (soundOn && curItem >= 0 && !gateOpen()) {
+        speechHold = true // the last letter is still being said
+        finishPending = true
+        sync()
+        return
+      }
       done = true
       ui()
       sync()
@@ -640,8 +762,12 @@ export function storyPlayer(opts: { autoplay: boolean; ease?: string | gsap.Ease
   // The one place that decides whether the tween is running.
   let hold = false // a callout is open: the story waits (and resumes by itself when it closes)
   const sync = () => {
-    const run = alive && s.live && started && onScreen && !userPaused && !done && !hold
-    tween.paused(!run)
+    const base = alive && s.live && started && onScreen && !userPaused && !done && !hold
+    if (!base) {
+      if (speaking) needRespeak = true // paused, off screen or a callout: no speech
+      cancelSpeech()
+    } else if (needRespeak && soundOn && curItem >= 0) speakItem(curItem)
+    tween.paused(!(base && !speechHold))
   }
 
   const seek = (p: number) => {
@@ -652,6 +778,7 @@ export function storyPlayer(opts: { autoplay: boolean; ease?: string | gsap.Ease
     tick(true)
   }
   const begin = (from: number | null) => {
+    resetSpeech()
     started = true
     userPaused = false
     if (!s.live) goLive()
@@ -665,7 +792,7 @@ export function storyPlayer(opts: { autoplay: boolean; ease?: string | gsap.Ease
   if (!opts.autoplay && started && !done) userPaused = true // reduced motion switched on mid-play: hold, don't run
   if (s.live) {
     s.p = pp
-    tween.progress(pp)
+    tween.progress(pp, true)
     relayout()
     tick(false)
   } else {
@@ -684,6 +811,27 @@ export function storyPlayer(opts: { autoplay: boolean; ease?: string | gsap.Ease
     { signal },
   )
   s.again.addEventListener('click', () => begin(0), { signal })
+  s.sound.setAttribute('aria-pressed', 'false')
+  s.sound.addEventListener(
+    'click',
+    () => {
+      soundOn = !soundOn
+      s.sound.setAttribute('aria-pressed', String(soundOn))
+      if (soundOn) {
+        // a silent utterance inside the tap unlocks speech on iOS Safari, which only speaks after a gesture
+        const u = new SpeechSynthesisUtterance(' ')
+        u.volume = 0
+        speechSynthesis.speak(u)
+      } else {
+        cancelSpeech()
+        needRespeak = false
+        spoken = true
+        tryRelease()
+      }
+      sync()
+    },
+    { signal },
+  )
   s.tickBtns.forEach((b, i) =>
     b.addEventListener('click', () => begin(i === 0 ? 0 : SCENES[i][0]), { signal }),
   )
@@ -792,6 +940,8 @@ export function storyPlayer(opts: { autoplay: boolean; ease?: string | gsap.Ease
 
   return () => {
     closeCallout()
+    resetSpeech()
+    s.sound.hidden = true
     alive = false
     ro.disconnect()
     ac.abort()

@@ -82,6 +82,7 @@ const holes = [1, 2, 3, 4, 5, 6].map((n) => ({
     <div class="controls">
       <button type="button" class="control feedback" data-toggle aria-pressed="false" hidden>Pause</button>
       <button type="button" class="control feedback" data-again hidden>Play again</button>
+      <button type="button" class="control feedback" data-sound aria-pressed="false" hidden>Sound</button>
     </div>
     <p class="sr-only" aria-live="polite" data-live></p>
   </div>
@@ -139,7 +140,7 @@ const holes = [1, 2, 3, 4, 5, 6].map((n) => ({
               </g>
             ))
           }
-          <text id="bank" class="mono s11 dim" x="478" y="146">a.mp3 … z.mp3  recorded in advance</text>
+          <text id="bank" class="mono s11 dim" x="478" y="146">a.mp3 … z.mp3  made in advance</text>
           <path id="w-cell" class="ln draw" d={WIRE_CELL}></path>
           <path id="w-spk" class="ln draw" d={WIRE_SPK}></path>
           <text class="t15 fade mid" x="597" y="372">Raspberry Pi 4</text>
@@ -273,8 +274,10 @@ const holes = [1, 2, 3, 4, 5, 6].map((n) => ({
                   <i class="screw" style="left:5px;bottom:5px"></i><i class="screw" style="right:5px;bottom:5px"></i>
                 </div>
                 <div class="surround"></div>
-                <div class="cone"></div>
-                <div class="dustz"><div class="dust"></div></div>
+                <div class="cdrive">
+                  <div class="cone"></div>
+                  <div class="dustz"><div class="dust"></div></div>
+                </div>
                 <i class="anchor" id="a-spk-in" style="left:0px;top:48px"></i>
                 <i class="anchor" id="a-spk-out" style="left:96px;top:48px"></i>
               </div>

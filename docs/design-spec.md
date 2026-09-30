@@ -201,9 +201,14 @@ word" field (file → web page → Wi-Fi → Raspberry Pi 4 → audio files → 
 Arthur's decision, 2026-09-30: it replaces the static system diagram he added on 2026-09-29.
 Rule of the section: hardware (Pi, Braille cell, speaker) is CSS 3D, software (web page,
 words, audio files, wires) is the 2D SVG, both in one fixed 1060x570 canvas scaled as a
-whole. It is the page's one pinned section; below 768px and under reduced motion it is the
-final state with the four captions stacked. Its "what and why" is one sentence, sitting
-directly above the set-piece.
+whole. It plays by itself, once, when 40% of it is in view (about 10 s, no pin, no scrub), holds
+the final state, and is replayed by a button. Arthur's decisions, 2026-09-30: Pause / Play again,
+four step ticks that jump to a scene, callouts on six parts (GPIO header, audio jack, ACT LED,
+processor, Braille cell, speaker) with the six servo pins lit on the header, and a Sound button
+(off by default) that speaks with the browser's own voice, not audio files. Below 768px a camera
+frames the canvas scene by scene and the reading tape is HTML text under it; under reduced
+motion it shows the final state and a Play button, and never starts alone. Its "what and why" is
+one sentence, sitting directly above the set-piece.
 
 ---
 

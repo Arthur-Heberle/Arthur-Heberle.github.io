@@ -34,7 +34,7 @@ Five sub-steps, in order; a stage starts only when the previous one passes. Comm
 | B | Mobile camera (<768px) | done | one translate + scale on the canvas, 0.6 s `EASE_OUT` between four framings; HTML reading tape under the canvas; `storyStatic` deleted |
 | C | Three-quarter view and a real speaker | done | table turned `rotateZ(+20deg)` (not -20: only a clockwise turn shows the right face); `.right` face on `Cub`; standing round driver; wires re-measured; transition bug fixed |
 | D | Callouts and real GPIO pins | done | six real-button hit targets + one shared leader/label; header pins 8/12/16/28/32/40 light per letter; story visibility now read from the rect, not an IntersectionObserver |
-| E | Voice (browser speechSynthesis) | todo | |
+| E | Voice (browser speechSynthesis) | done | sound button off by default; one utterance per read item; the tween waits for each utterance's end (min 450 ms, 1.5 s safety); cone driven by start/boundary/end |
 
 ---
 
@@ -891,6 +891,43 @@ Stage D — **callouts and real GPIO pins.**
   full run the lit pins equal the alphabet's pins for the on-screen letter at 127 samples
   (h e l o w r d), with none lit when no letter is shown; labels stay inside the frame at 1280 and
   375.
+
+Stage E — **voice.**
+- **Browser voice, no audio files.** `speechSynthesis` with `lang = 'en-US'`; the gTTS files from the
+  EduBra repository are not used. A "Sound" button (`aria-pressed`, off by default) sits with the
+  other controls; it is hidden where `speechSynthesis` does not exist. The caption "recorded in
+  advance" now reads "made in advance".
+- **What is said:** "hello" and "world" at their word items, each letter at its letter item,
+  spoken in capitals ("H") so an engine reads the letter's name and not a word.
+- **Pacing (Arthur's decision):** with sound on, the tween waits at the end of each read item
+  and resumes when that utterance's `end` fires, with a 450 ms minimum per item (so the pins
+  finish rising) and a 1.5 s safety timeout if `end` never arrives. The last item holds the end of
+  the story the same way. With sound off the story keeps its fixed ~10 s. The speech rate is left
+  at the engine's default rather than "following the timeline", because the timeline now follows the speech.
+- **Cancelled** on pause, when the section leaves the viewport, when a callout opens, on Play again,
+  on a tick jump, when sound is turned off and on cleanup. After a pause or a return the current item
+  is said again. A token per utterance makes stale `end` events harmless.
+- **Cone:** `.cdrive` (a wrapper around cone and dust cap, scaled about the cone's centre) loops a
+  small scale on the utterance's `start`, is nudged on each `boundary`, and eases back on `end`. It
+  stays still under reduced motion. Transform only; `render()`'s own cone push on `.dust` is untouched.
+- **iOS Safari:** turning the button on speaks a silent (volume 0) utterance inside the tap, the
+  usual unlock. **Not verified:** there is no iOS device here, so "works after a tap on iOS Safari"
+  is the standard pattern, not a test result (the open Safari item above still stands).
+- **Verified (headless Chromium over CDP, not Brave; `speechSynthesis` stubbed to record calls and
+  fire start/boundary/end):** silent through a full run by default; sequence `hello H E L L O world
+  W O R L D`; each item waits for a 700 ms utterance (min gap 749 ms); an instant engine still gives
+  a 465 ms minimum; an engine that never ends still finishes (22 s, 12 spoken); pause and leaving the
+  viewport cancel and nothing is spoken until return, then the item is said again; Play again
+  cancels; sound off stops speech; reduced motion shows Sound and Play, stays silent until asked,
+  and the cone stays still. The real (unstubbed) API gave no console errors. JS is about 75 KB gzip.
+
+Divergences from the brief's wording, recorded per its instruction:
+- **Autoplay instead of scroll-scrubbed.** The pinned `ScrollTrigger` scrub is gone; `render(p)`,
+  `T` and `ITEMS` are unchanged, driven by a 10 s linear tween of p (stage A).
+- **The section's rule is "hardware 3D, software 2D"** (Pi, Braille cell, speaker in CSS 3D; web page,
+  text, words, audio files, wires in SVG).
+- **Speech uses the browser voice instead of audio files.**
+- **Table turn is +20 deg, not -20** (stage C), and the phone tape is HTML (stage B).
 
 ## Notes for future sessions
 

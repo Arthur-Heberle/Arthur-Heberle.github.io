@@ -719,6 +719,11 @@ html:not(.js) .story .hits,
   background: radial-gradient(circle closest-side, #1a1b1d 0 74%, #2f3033 76% 88%, #151618 90% 100%);
   transform: translateZ(1px);
 }
+.story .drv .cdrive {
+  inset: 0;
+  transform-style: preserve-3d;
+  transform-origin: 48px 48px; /* the cone's centre: the speech push scales about it */
+}
 .story .drv .cone {
   left: 17px;
   top: 17px;
