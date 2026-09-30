@@ -132,13 +132,12 @@ Six values. The two chromatic ones have specific jobs and never decorate.
 --line:      #C3C8C6;  /* hairlines and construction lines */
 --signal:    #B3261E;  /* annotation terminations, active states, links */
 --measure:   #2F6F8F;  /* data traces inside set-pieces only */
---control:   #F2C230;  /* EduBra device-button fill only (added by Arthur, 2026-09-29) */
 ```
 
 Rules: `--signal` never fills a background, only strokes, marks and text. It should
 appear roughly eight times on the whole page. `--measure` appears only inside set-piece
-drawings, never in UI. `--control` fills the four EduBra pad buttons and nothing else, with
-`--graphite` icons on it (~9:1). No pure `#000`, no pure `#FFF`, no neutral grays outside the list.
+drawings, never in UI. The EduBra device's materials (wood, pins, yellow button caps) are
+scoped tokens on `.device`, not site palette. No pure `#000`, no pure `#FFF`, no neutral grays outside the list.
 
 ### Type
 
@@ -360,23 +359,31 @@ rule begins its descent. Session-scoped via `sessionStorage`: a visitor on their
 visit should not pay this tax. The first screen must still read correctly with the
 sequence disabled.
 
-### EduBra — the Braille cell
+### EduBra — the device
 
-**The strongest piece on the site.** A loop that works the way the device does, not scrubbed
-or pinned (changed by Arthur on 2026-09-29; it was a pinned scrub through step 14). The cells
-sit at the top of the page, directly under the title. Every cell's six outline circles are
-always visible. One character at a time, its pins rise out of their holes (scale 0→1 with
-opacity, 120ms, `--ease-out`, no translate). They hold for 600ms, drop, and the next
-character rises. After the last letter there's a 600ms pause, then it repeats. The text
-version renders alongside, and the letter whose pins are up is highlighted.
+**The strongest piece on the site.** A 3D model of the device itself, ported from Arthur's
+reference prototype (`edubra-device-3d.html`, 2026-09-29). It replaces the SVG Braille
+cell, which was a pinned scrub through step 14 and a GSAP loop earlier that day.
 
-Beside the word is a cross-shaped pad of the device's own buttons, filled yellow
-(`--control`): **up** ⏮ restarts the word, **left** − slower, **right** + faster (0.5×–2×),
-**down** ⏯ pause/play, and the current speed sits as a count in the middle. They are also what makes an endless,
-self-starting loop acceptable (WCAG 2.2.2), and the loop pauses itself while it's out of view.
-The controls exist only where the loop runs (≥768px, motion allowed, JS). Everywhere else the
-cell is a static, complete word. The device converts text to touch, and the set-piece
-performs exactly that conversion. It demonstrates the project rather than describing it.
+- **The box:** a wooden box tilted back in CSS 3D, with a textured lid
+  (`/textures/wood-medium.webp`) and a front face folded down.
+- **The pins:** six holes per letter spelling `EDUBRA`. One character at a time, its pins
+  rise (stacked discs translating in Z, with opacity, 120ms `--ease-out`). They hold for
+  ~900ms, then drop with the same transition, and only then does the next character rise.
+  After A there's a longer pause, then it repeats. The letter whose pins are up is marked
+  under its cell.
+- **The buttons:** four round, tactile yellow buttons in a 2×2 grid: ⏮ back to the start
+  of the word, ⏯ pause/play, − slower, + faster (0.5×–2×), with the speed as a count
+  beneath. A press sinks the cap, for the keyboard too.
+- **Why the controls matter:** they make the endless, self-starting loop acceptable
+  (WCAG 2.2.2). An IntersectionObserver also stops the loop while it's off screen.
+- **Exception to §8 (Arthur's decision):** the device stays 3D and animated below 768px,
+  stacking the letters and putting the buttons in a row. Under reduced motion the loop
+  still steps, with no transitions.
+- **Without JS:** the first letter is raised and the controls are absent.
+
+The device converts text to touch, and the set-piece performs exactly that conversion. It
+demonstrates the project rather than describing it.
 
 ### RP3 — the layer build-up
 

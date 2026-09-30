@@ -13,7 +13,7 @@ import type { CollectionEntry } from 'astro:content'
 import Base from '../../layouts/Base.astro'
 import Rule from '../../components/Rule.astro'
 import ProjectPage from '../../components/ProjectPage.astro'
-import BrailleCell from '../../components/BrailleCell.astro'
+import EdubraDevice from '../../components/EdubraDevice.astro'
 import EdubraDiagram from '../../components/EdubraDiagram.astro'
 import { PROJECT_PAGES } from '../../lib/projects'
 
@@ -36,7 +36,7 @@ const { entry } = Astro.props
   <main id="main" tabindex="-1" class="page-main">
     <Rule />
     <ProjectPage entry={entry}>
-      {entry.id === 'edubra' && <BrailleCell word="EDUBRA" />}
+      {entry.id === 'edubra' && <EdubraDevice word="EDUBRA" />}
       {entry.id === 'edubra' && <EdubraDiagram slot="after" />}
     </ProjectPage>
   </main>

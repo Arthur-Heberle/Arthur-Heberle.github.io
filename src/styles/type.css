@@ -292,11 +292,6 @@ body {
 .hero-pending [data-hero-display] {
   opacity: 0;
 }
-/* The same guard for the EduBra Braille dots (Base.astro adds `braille-pending` only at
- * >=768px with motion allowed; motion.ts removes it once GSAP owns the dots' opacity). */
-.braille-pending .braille-dot {
-  opacity: 0;
-}
 
 /* Archive rows. `.archive-row` is the exact selector motion-spec.md's Flip snippet
  * (`Flip.getState('.archive-row')`) targets in step 11 — defined now so that step adds
@@ -374,125 +369,325 @@ body {
   color: var(--color-graphite-2);
 }
 
-/* Step 13 — the Braille set-piece. The stage reserves its own box so its reveal never causes
- * layout shift (design-spec.md §10): the SVG's aspect-ratio holds the cell row's height
- * before any script runs, and the letter row beneath is ordinary text with no reserved
- * height of its own. Filled dots use --color-measure (tokens.css: "inside set-piece
- * drawings, never in UI") — the first thing on the site to use that token. */
-.braille-stage {
+/* EduBra device set-piece (EdubraDevice.astro), ported from Arthur's reference prototype
+ * edubra-device-3d.html (2026-09-29). Device colours are tokens scoped to .device — they
+ * are the object's materials (wood, pins, yellow caps), not site palette.
+ *
+ * THE 3D CHAIN: .box > .lid > .word > .cell > .dots > .pos > .pin, and .lid > .controls >
+ * .btn > .cap, all keep transform-style: preserve-3d. Nothing in that chain may get
+ * overflow other than visible, opacity below 1, or a filter — any of them flattens the
+ * whole thing silently. Opacity only ever changes on leaves (.pin > i, the cap icons).
+ * Only transform and opacity animate; box shadows are static.
+ *
+ * Divergences from the prototype, both for fit: the page column is at most 855px and the
+ * prototype's row needed ~910, so the cell gap is 26px (was 34) and the lid's side padding
+ * 36px (was 48); and the stacked layout switches on the device's own width (container
+ * query) instead of an 820px viewport. The active letter is weight 500, not 600 — the site
+ * ships Archivo 400/500 only, and 600 would be faux-bold. Pins also drop with a transition
+ * now instead of instantly (Arthur), and the script waits for the drop before raising. */
+.device {
+  --wood: #dbc59f;
+  --wood-tex: url('/textures/wood-medium.webp');
+  --pin: #1f4f66;
+  --pin-side: #173b4c;
+  --pin-head: #2c6683;
+  --hole: #c2a375;
+  --hole-rim: #6b4f2e;
+  --cap: #e8b93a;
+  --cap-hi: #f5d677;
+  --cap-lo: #d6a324;
+  --cap-side: #a97d18;
+  --cap-side-2: #c3931f;
+  --tilt: 20deg;
+  --pin-h: 7px;
+  --cap-h: 8px;
+  --box-depth: 64px;
+  container-type: inline-size;
+}
+.device .stage {
+  perspective: 2000px;
+  perspective-origin: 50% 10%;
+  position: relative;
+  padding-bottom: calc(var(--box-depth) * 0.6);
+}
+.device .box {
+  position: relative;
+  transform-style: preserve-3d;
+  transform-origin: 50% 100%;
+  transform: rotateX(var(--tilt));
+}
+/* soft contact shadow on the page under the box (not part of the 3D context) */
+.device .floor-shadow {
+  position: absolute;
+  left: 4%;
+  right: 4%;
+  bottom: -6px;
+  height: 40px;
+  background: radial-gradient(ellipse at 50% 50%, rgb(60 45 25 / 0.28), transparent 70%);
+  pointer-events: none;
+}
+.device .lid {
+  position: relative;
+  transform-style: preserve-3d;
+  background: var(--wood) var(--wood-tex) 0 0 / 512px 512px repeat;
   display: flex;
-  flex-direction: column;
-  gap: 1rem;
+  align-items: center;
+  gap: 56px;
+  padding: 44px 36px 30px;
 }
-.braille-cells {
-  width: 100%;
-  aspect-ratio: 4 / 1;
-  overflow: visible;
+/* light falls from above: the far edge of the lid is a touch brighter */
+.device .lid::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(to bottom, rgb(255 250 240 / 0.18), transparent 55%, rgb(80 55 25 / 0.08));
 }
-/* No transform-origin on .braille-dot, on purpose: GSAP owns it (transformOrigin in
- * motion.ts's tweens) and bakes it into the SVG `transform` attribute, and a CSS origin
- * would be applied on top of that — counted twice, so the pins flew in from the right. */
+/* front face = the thickness of the box, folded down from the lid's front edge */
+.device .front {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  height: var(--box-depth);
+  transform-origin: 50% 0;
+  transform: rotateX(-90deg);
+  background: var(--wood) var(--wood-tex) 0 0 / 512px 512px repeat;
+}
+.device .front::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgb(70 48 22 / 0.3);
+}
 
-/* The text row: one grid column per letter, so its centres land under the SVG's own cell
- * centres (braille.ts sizes every cell at the same 1/n fraction of the viewBox width —
- * grid-template-columns is set inline per word length). Base and highlight letters stack
- * on the same grid cell instead of needing absolute positioning — the same "duplicate
- * element, crossfade on opacity" technique step 10 used for .leader-hi, since a colour
- * swap alone can't transition (motion-spec.md's property rule). */
-.braille-letters {
-  display: grid;
-  text-align: center;
+.device .word {
+  display: flex;
+  gap: 26px;
+  transform-style: preserve-3d;
 }
-.braille-letter {
-  display: grid;
-  place-items: center;
-}
-.braille-letter-base,
-.braille-letter-hi {
-  grid-area: 1 / 1;
-}
-.braille-letter-hi {
-  opacity: 0;
-}
-/* The loop's controls: the device's own buttons (BrailleCell.astro), as a cross-shaped pad
- * beside the word — up restart, left slower, right faster, down pause/play, speed in the
- * middle. Only where the loop runs — the same three conditions as motion.ts's
- * setPieceBraille() branch, with `.js` set before first paint, so they never appear and
- * then vanish (the .filter-bar precedent). There the stage turns from a column into
- * word | pad; everywhere else it stays the static column. */
-.braille-word {
+.device .cell {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  min-width: 0;
+  align-items: center;
+  gap: 18px;
+  transform-style: preserve-3d;
 }
-.braille-controls {
-  display: none;
-  grid-template-columns: repeat(3, 2.5rem);
-  grid-template-rows: repeat(3, 2.5rem);
-  grid-template-areas:
-    '. up .'
-    'left centre right'
-    '. down .';
-  gap: 0.25rem;
-}
-@media (min-width: 768px) and (prefers-reduced-motion: no-preference) {
-  .js .braille-stage {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    align-items: center;
-    gap: var(--spacing-gutter);
-  }
-  .js .braille-controls {
-    display: grid;
-  }
-}
-/* The device's buttons are yellow (Arthur, 2026-09-29): --color-control fill, graphite
- * icons (~9:1). The only place --color-control appears. Icons: ⏮ restart, − slower,
- * + faster, ⏯ pause/play (fixed; its accessible name swaps instead). */
-.braille-controls .control {
+.device .dots {
   display: grid;
-  place-items: center;
-  width: 100%;
-  height: 100%;
-  padding: 0;
-  background: var(--color-control);
-  border-color: var(--color-control);
+  grid-template-columns: repeat(2, 30px);
+  grid-template-rows: repeat(3, 30px);
+  grid-auto-flow: column; /* dots 1,2,3 down the left column, 4,5,6 down the right */
+  gap: 14px 16px;
+  transform-style: preserve-3d;
+}
+.device .pos {
+  position: relative;
+  width: 30px;
+  height: 30px;
+  transform-style: preserve-3d;
+}
+.device .hole {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--hole);
+  box-shadow:
+    inset 0 0 0 1.5px var(--hole-rim),
+    inset 0 3px 4px rgb(70 48 22 / 0.45);
+}
+/* a pin is stacked discs: two side layers and a head, so it reads as a short cylinder */
+.device .pin {
+  position: absolute;
+  inset: 3px;
+  transform-style: preserve-3d;
+  pointer-events: none;
+}
+.device .pin > i {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  opacity: 0;
+  transition:
+    opacity var(--dur-feedback) var(--ease-out),
+    transform var(--dur-feedback) var(--ease-out);
+}
+.device .pin .shade {
+  inset: -2px -4px -6px -1px;
+  background: radial-gradient(ellipse at 45% 60%, rgb(60 40 18 / 0.45), transparent 68%);
+}
+.device .pin .s1,
+.device .pin .s2 {
+  background: var(--pin-side);
+  transform: translateZ(0);
+}
+.device .pin .head {
+  background: radial-gradient(circle at 38% 32%, var(--pin-head), var(--pin) 62%);
+  transform: translateZ(0);
+}
+.device .pos.up .pin > i {
+  opacity: 1;
+}
+.device .pos.up .pin .s1 {
+  transform: translateZ(calc(var(--pin-h) * 0.35));
+}
+.device .pos.up .pin .s2 {
+  transform: translateZ(calc(var(--pin-h) * 0.7));
+}
+.device .pos.up .pin .head {
+  transform: translateZ(var(--pin-h));
+}
+
+/* inactive letters: solid colour, 4.5:1 on the darkest wood; no opacity (opacity also
+ * flattens 3D children) */
+.device .label {
+  font-family: var(--font-sans);
+  font-size: 20px;
+  line-height: 1;
+  font-weight: 500;
+  color: #4b4842;
+  position: relative;
+}
+.device .label.on {
   color: var(--color-graphite);
 }
-.braille-controls .control svg {
-  width: 1rem;
-  height: 1rem;
+.device .label.on::after {
+  content: '';
+  position: absolute;
+  left: -4px;
+  right: -4px;
+  bottom: -8px;
+  height: 3px;
+  background: var(--pin);
+}
+
+/* controls: round tactile buttons like the box. Absent without JS — they'd do nothing. */
+.device .controls {
+  margin-left: auto;
+  display: none;
+  grid-template-columns: repeat(2, 56px);
+  gap: 18px 20px;
+  justify-items: center;
+  transform-style: preserve-3d;
+}
+.js .device .controls {
+  display: grid;
+}
+.device .btn {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  border: 0;
+  padding: 0;
+  background: none;
+  cursor: pointer;
+  border-radius: 50%;
+  transform-style: preserve-3d;
+  -webkit-tap-highlight-color: transparent;
+}
+.device .btn .well {
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgb(90 62 28 / 0.3) 55%, transparent 72%);
+}
+.device .btn .sd {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--cap-side);
+}
+.device .btn .sd2 {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--cap-side-2);
+  transform: translateZ(calc(var(--cap-h) * 0.5));
+}
+.device .btn .cap {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(circle at 36% 30%, var(--cap-hi), var(--cap) 55%, var(--cap-lo));
+  transform: translateZ(var(--cap-h));
+  transition: transform var(--dur-feedback) var(--ease-out);
+}
+.device .btn .cap svg {
+  width: 26px;
+  height: 26px;
   fill: none;
-  stroke: currentColor;
-  stroke-width: 1.5;
+  stroke: var(--color-graphite);
+  stroke-width: 2.4;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
-.braille-controls .control .solid {
-  fill: currentColor;
+.device .btn .cap svg .f {
+  fill: var(--color-graphite);
+  stroke: var(--color-graphite);
 }
-.dpad-up {
-  grid-area: up;
+/* pause shows the bars; paused (data-paused, set by the script) shows play */
+.device .icon-play,
+.device [data-paused] .icon-pause {
+  display: none;
 }
-.dpad-left {
-  grid-area: left;
+.device [data-paused] .icon-play {
+  display: inline;
 }
-.dpad-right {
-  grid-area: right;
+/* press = the cap sinks, transform only */
+.device .btn:active .cap,
+.device .btn.pressed .cap {
+  transform: translateZ(2px);
 }
-.dpad-down {
-  grid-area: down;
-}
-.dpad-centre {
-  grid-area: centre;
-  display: grid;
-  place-items: center;
-  margin: 0;
-}
-.braille-controls .control:disabled {
+.device .btn:disabled {
   cursor: default;
-  opacity: 0.4;
+}
+.device .btn:disabled .cap svg {
+  opacity: 0.35;
+}
+.device .btn:focus-visible {
+  outline: 2px solid var(--color-graphite);
+  outline-offset: 6px;
+}
+.device .speed {
+  grid-column: 1 / -1;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  color: var(--color-graphite);
+  margin-top: 2px;
+}
+
+@container (max-width: 845px) {
+  .device .box {
+    --tilt: 16deg;
+  }
+  .device .lid {
+    flex-direction: column;
+    gap: 28px;
+    padding: 32px 20px 24px;
+  }
+  .device .word {
+    flex-wrap: wrap;
+    justify-content: center;
+    row-gap: 26px;
+    max-width: 360px;
+  }
+  .device .controls {
+    margin: 0;
+    grid-template-columns: repeat(4, 56px);
+  }
+  .device .speed {
+    text-align: center;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .device .pin > i,
+  .device .btn .cap {
+    transition: none !important;
+  }
 }
 
 /* EduBra's static system diagram (EdubraDiagram.astro). Two drawings, one per layout: each

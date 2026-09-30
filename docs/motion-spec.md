@@ -214,9 +214,15 @@ character is everywhere now and reads as a default.
 
 At most one pinned ScrollTrigger per page, and only inside a set-piece.
 
-As of 2026-09-29 the site has **no pins**: EduBra's Braille set-piece, the only one, became
-a self-running loop with pause/speed controls at Arthur's request (design-spec.md §9). It is
-the site's only looping animation. Any other loop needs the same pause control (WCAG 2.2.2).
+As of 2026-09-29 the site has **no pins**: EduBra's set-piece, the only one, is now a CSS 3D
+device model with a self-running loop and pause/speed controls (design-spec.md §9). It is
+the site's only looping animation, and any other loop needs the same pause control (WCAG
+2.2.2).
+
+It runs on CSS transitions (transform/opacity) driven by its own small script
+(`EdubraDevice.astro`), not GSAP. By Arthur's choice it is an exception to the degradation
+table: it animates below 768px too, and under reduced motion it keeps stepping, with no
+transitions.
 
 Pinning eats scroll length, is the worst offender on touch devices, and causes scroll
 jumps when a page is refreshed mid-scroll. Below 768px, nothing is ever pinned.

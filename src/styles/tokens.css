@@ -33,7 +33,6 @@
   --color-line: #c3c8c6;        /* hairlines and construction lines */
   --color-signal: #b3261e;      /* annotation terminations, active states, links */
   --color-measure: #2f6f8f;     /* data traces inside set-pieces only */
-  --color-control: #f2c230;     /* EduBra device-button fill only, graphite icons (Arthur, 2026-09-29) */
 
   /* Type
    * One family, two widths. Monospace has exactly one job: dimensions, dates, counts,

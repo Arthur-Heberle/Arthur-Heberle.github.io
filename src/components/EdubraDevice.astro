@@ -1,0 +1,227 @@
+---
+// The EduBra device set-piece — design-spec.md §9, "the strongest piece on the site".
+// Ported from Arthur's reference prototype (edubra-device-3d.html, 2026-09-29), not
+// redesigned: a wooden box tilted back in CSS 3D, one Braille character at a time on six
+// pins, and four tactile yellow buttons (restart, pause/play, slower, faster).
+//
+// Markup is rendered here, not built by script, so the page reads without JavaScript: the
+// first letter's pins ship raised, and the controls are absent without `.js` (type.css).
+// The dot patterns come from braille.ts — the one table the site trusts — and each
+// position carries data-raised so the script never needs its own copy of the alphabet.
+//
+// The 3D only works while every element from .box down to the pins and caps keeps
+// transform-style: preserve-3d and has no overflow other than visible, no opacity below 1
+// and no filter; any of those flattens the whole chain silently (type.css repeats this).
+import { brailleCells } from '../lib/braille'
+
+interface Props {
+  word: string
+}
+const { word } = Astro.props
+const cells = brailleCells(word)
+---
+
+<section class="device" aria-label="EduBra device demo" data-device>
+  <div class="stage">
+    <div class="box">
+      <div class="lid">
+        <div
+          class="word"
+          role="img"
+          aria-label={`The word ${word.toUpperCase()} in Braille, shown one letter at a time`}
+        >
+          {
+            cells.map((cell, i) => (
+              <div class="cell" data-cell>
+                <div class="dots">
+                  {cell.dots.map((dot) => (
+                    <div
+                      class:list={['pos', { up: i === 0 && dot.raised }]}
+                      data-n={dot.dot}
+                      data-raised={dot.raised ? '' : undefined}
+                    >
+                      <span class="hole" />
+                      <span class="pin">
+                        <i class="shade" />
+                        <i class="s1" />
+                        <i class="s2" />
+                        <i class="head" />
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                <div class:list={['label', { on: i === 0 }]}>{cell.letter.toUpperCase()}</div>
+              </div>
+            ))
+          }
+        </div>
+        <div class="controls">
+          <button type="button" class="btn" data-back aria-label="Back to the start of the word">
+            <span class="well" /><span class="sd" /><span class="sd2" />
+            <span class="cap">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M6.5 6v12" />
+                <path
+                  class="f"
+                  d="M17.5 6.8v10.4a.8.8 0 0 1-1.2.7l-7.9-5.2a.8.8 0 0 1 0-1.4l7.9-5.2a.8.8 0 0 1 1.2.7z"
+                />
+              </svg>
+            </span>
+          </button>
+          <button type="button" class="btn" data-play aria-label="Pause" aria-pressed="false">
+            <span class="well" /><span class="sd" /><span class="sd2" />
+            <span class="cap">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path class="f icon-pause" d="M7.6 6h2.8v12H7.6zM13.6 6h2.8v12h-2.8z" stroke-width="1.4" />
+                <path
+                  class="f icon-play"
+                  d="M8.5 6.6v10.8a.8.8 0 0 0 1.2.7l8.4-5.4a.8.8 0 0 0 0-1.4L9.7 5.9a.8.8 0 0 0-1.2.7z"
+                />
+              </svg>
+            </span>
+          </button>
+          <button type="button" class="btn" data-slower aria-label="Slower">
+            <span class="well" /><span class="sd" /><span class="sd2" />
+            <span class="cap">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 12h12" /></svg>
+            </span>
+          </button>
+          <button type="button" class="btn" data-faster aria-label="Faster">
+            <span class="well" /><span class="sd" /><span class="sd2" />
+            <span class="cap">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 12h12M12 6v12" /></svg>
+            </span>
+          </button>
+          <div class="speed" aria-live="polite" data-speed>1×</div>
+        </div>
+      </div>
+      <div class="front" aria-hidden="true"></div>
+    </div>
+    <div class="floor-shadow" aria-hidden="true"></div>
+  </div>
+  <p class="sr-only" aria-live="polite" data-live></p>
+</section>
+
+<script>
+  // The prototype's loop, kept: one letter at a time, BASE_MS per letter and a longer
+  // pause after the last, scaled by the speed buttons. One change, asked for by Arthur:
+  // the current letter's pins drop with a transition first, and only then does the next
+  // letter rise (the prototype dropped them instantly). Only transform and opacity change;
+  // both are CSS transitions on the pin discs and the button caps (type.css).
+  const device = document.querySelector<HTMLElement>('[data-device]')
+  if (device) {
+    const SPEEDS = [0.5, 0.75, 1, 1.5, 2]
+    const BASE_MS = 900
+    const END_PAUSE_MS = 1400
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)')
+    // --dur-feedback: how long a drop takes. Zero under reduced motion, where the CSS
+    // transitions are off too, so letters simply swap.
+    const dropMs = () => (reduce.matches ? 0 : 120)
+
+    const cells = [...device.querySelectorAll<HTMLElement>('[data-cell]')].map((cell) => ({
+      ch: cell.querySelector('.label')?.textContent?.trim() ?? '',
+      label: cell.querySelector<HTMLElement>('.label')!,
+      pos: [...cell.querySelectorAll<HTMLElement>('.pos')],
+    }))
+    const live = device.querySelector<HTMLElement>('[data-live]')!
+    const playBtn = device.querySelector<HTMLButtonElement>('[data-play]')!
+    const backBtn = device.querySelector<HTMLButtonElement>('[data-back]')!
+    const slower = device.querySelector<HTMLButtonElement>('[data-slower]')!
+    const faster = device.querySelector<HTMLButtonElement>('[data-faster]')!
+    const speedEl = device.querySelector<HTMLElement>('[data-speed]')!
+
+    let i = 0
+    let speedIx = 2
+    let playing = true
+    let visible = true
+    let timer: number | undefined
+    let raiseTimer: number | undefined
+
+    const raisedDots = (k: number) => cells[k].pos.filter((p) => 'raised' in p.dataset).map((p) => p.dataset.n)
+    const drop = () =>
+      cells.forEach((c) => {
+        c.pos.forEach((p) => p.classList.remove('up'))
+        c.label.classList.remove('on')
+      })
+    const raise = (k: number, announce: boolean) => {
+      cells[k].pos.forEach((p) => p.classList.toggle('up', 'raised' in p.dataset))
+      cells[k].label.classList.add('on')
+      if (announce) live.textContent = `Letter ${cells[k].ch}: dots ${raisedDots(k).join(', ')}`
+    }
+    // Drop whatever is up, then raise letter k once the drop has finished.
+    const show = (k: number, announce = false) => {
+      window.clearTimeout(raiseTimer)
+      drop()
+      raiseTimer = window.setTimeout(() => raise(k, announce), dropMs())
+    }
+
+    const schedule = () => {
+      window.clearTimeout(timer)
+      if (!playing || !visible) return
+      const last = i === cells.length - 1
+      timer = window.setTimeout(
+        () => {
+          i = last ? 0 : i + 1
+          show(i)
+          schedule()
+        },
+        (last ? END_PAUSE_MS : BASE_MS) / SPEEDS[speedIx],
+      )
+    }
+
+    const renderPlay = () => {
+      playBtn.toggleAttribute('data-paused', !playing)
+      playBtn.setAttribute('aria-label', playing ? 'Pause' : 'Play')
+      playBtn.setAttribute('aria-pressed', String(!playing))
+    }
+    const renderSpeed = () => {
+      speedEl.textContent = `${SPEEDS[speedIx]}×`
+      slower.disabled = speedIx === 0
+      faster.disabled = speedIx === SPEEDS.length - 1
+    }
+
+    playBtn.addEventListener('click', () => {
+      playing = !playing
+      renderPlay()
+      if (!playing) live.textContent = `Letter ${cells[i].ch}: dots ${raisedDots(i).join(', ')}`
+      schedule()
+    })
+    backBtn.addEventListener('click', () => {
+      i = 0
+      show(i, true)
+      schedule()
+    })
+    slower.addEventListener('click', () => {
+      speedIx = Math.max(0, speedIx - 1)
+      renderSpeed()
+      schedule()
+    })
+    faster.addEventListener('click', () => {
+      speedIx = Math.min(SPEEDS.length - 1, speedIx + 1)
+      renderSpeed()
+      schedule()
+    })
+
+    // Keyboard presses get the same sinking cap as a mouse press.
+    device.querySelectorAll<HTMLButtonElement>('.btn').forEach((b) => {
+      b.addEventListener('keydown', (e) => {
+        if (e.key === ' ' || e.key === 'Enter') b.classList.add('pressed')
+      })
+      b.addEventListener('keyup', () => b.classList.remove('pressed'))
+      b.addEventListener('blur', () => b.classList.remove('pressed'))
+    })
+
+    // Only run while the device is on screen.
+    new IntersectionObserver(
+      ([e]) => {
+        visible = e.isIntersecting
+        schedule()
+      },
+      { threshold: 0.3 },
+    ).observe(device)
+
+    renderPlay()
+    renderSpeed()
+    schedule()
+  }
+</script>

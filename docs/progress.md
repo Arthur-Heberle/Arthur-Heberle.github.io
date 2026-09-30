@@ -634,6 +634,62 @@ the second token change in the project, after step 06's `--graphite-2`.
 - **Verified:** loop, pad and controls tests all pass unchanged, and Lighthouse desktop
   is 100/100/100, CLS 0.
 
+After step 14 — **the EduBra set-piece is now a CSS 3D device**, ported from Arthur's
+reference prototype `edubra-device-3d.html` (repo root, untracked, with
+`edubra-device-3d-preview.png`). It supersedes everything above about the SVG cell, the
+GSAP loop and the pad.
+- **Removed:**
+  - `BrailleCell.astro`
+  - all Braille code in `motion.ts`: `setPieceBraille`, its branch wiring and the
+    reduced-motion `clearProps`
+  - the `braille-pending` guard in Base.astro and type.css
+  - the `.braille-*` CSS
+  - the `--color-control` token (Arthur: remove it; the yellow now lives in `.device`'s
+    scoped `--cap*` tokens)
+- **Added:**
+  - `EdubraDevice.astro`: server-rendered from `braille.ts`, with each position carrying
+    `data-raised`, so the script needs no alphabet of its own
+  - a `.device` section in type.css
+  - `public/textures/wood-medium.webp`, which replaces the prototype's data URI. Arthur
+    dropped it in `public/`; it was moved to `public/textures/` per the brief.
+- **Kept from the prototype:**
+  - the scoped device tokens
+  - the preserve-3d chain
+  - static box shadows
+  - transform/opacity-only CSS transitions
+  - the reduced-motion rule
+  - the keyboard press state
+  - the IntersectionObserver pause
+  - the aria-live letter announcement
+- **Diverged, for the site:**
+  - **Fit:** the article column tops out at 855px and the prototype's row needs ~910px.
+    The cell gap became 26px (was 34) and the lid side padding 36px (was 48). The stacked
+    layout switches on a container query at 845px instead of an 820px viewport query.
+  - **Fonts:** the active letter is weight 500, not 600, because the site ships Archivo
+    400/500 only and 600 would be faux-bold. The speed count is Plex Mono 400.
+  - **No JS:** markup is server-rendered with E raised and the controls hidden, where the
+    prototype built its cells in JS.
+- **Arthur's decisions:**
+  - 2×2 buttons, as in the prototype.
+  - Animated on mobile too, an exception to §8.
+  - Pins **drop with a transition**, and the next letter rises only after the drop
+    (`show()` waits `--dur-feedback`; 0 under reduced motion). The prototype dropped them
+    instantly.
+- **Verified headless:**
+  - All 96 elements of the 3D chain are preserve-3d, overflow visible, opacity 1, filter
+    none.
+  - At 1280 the row fits exactly (lid 855/855, no overflow).
+  - Sequence E→A at ~900ms, with a longer pause after A, and **zero frames with two
+    letters visible**.
+  - Pause/play (aria-label, aria-pressed, live text) and back → E work. Speed bounds
+    0.5×/2× disable at the ends. The keyboard press class is set and cleared.
+  - The loop stays frozen while off screen.
+  - 375px is stacked, animated, with no horizontal overflow.
+  - Reduced motion: transitions 0s, letters still step. No-JS: E raised, controls hidden.
+  - The console is clean.
+  - Lighthouse EduBra: mobile 99/100/100 CLS 0.0014, desktop 100/100/100 CLS 0. JS is
+    67.6KB gzip.
+
 ---
 
 ## Notes for future sessions
