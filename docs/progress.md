@@ -949,6 +949,8 @@ Stage E — **voice.**
 
 - **Fixed after stage E (Arthur saw it):** the speaker's vibrating part was off-centre. Wrapping cone and dust cap in `.cdrive` (stage E) took them out of the `.drv > *` rule that gave them `position: absolute`, so their `left`/`top` were ignored. `.drv .cdrive > *` now has the same rule. Lesson: a new wrapper inside `.drv` needs the same absolute-children rule.
 
+- **Fixed after stage E (Arthur saw it):** hovering a part while a letter was being said cut it and said it again from the start. An open callout paused the story through the same path as Pause, which cancels speech. A callout now only holds the animation; Pause and leaving the viewport still cancel. Checked with a stubbed engine: hover then leave mid-word leaves the speak and cancel counts unchanged. This supersedes the stage E line that listed "when a callout opens" among the cancels.
+
 Divergences from the brief's wording, recorded per its instruction:
 - **Autoplay instead of scroll-scrubbed.** The pinned `ScrollTrigger` scrub is gone; `render(p)`,
   `T` and `ITEMS` are unchanged, driven by a 10 s linear tween of p (stage A).

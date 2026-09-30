@@ -763,12 +763,13 @@ export function storyPlayer(opts: { autoplay: boolean; ease?: string | gsap.Ease
   // The one place that decides whether the tween is running.
   let hold = false // a callout is open: the story waits (and resumes by itself when it closes)
   const sync = () => {
-    const base = alive && s.live && started && onScreen && !userPaused && !done && !hold
-    if (!base) {
-      if (speaking) needRespeak = true // paused, off screen or a callout: no speech
+    const playing = alive && s.live && started && onScreen && !userPaused && !done
+    if (!playing) {
+      if (speaking) needRespeak = true // paused or off screen: no speech
       cancelSpeech()
     } else if (needRespeak && soundOn && curItem >= 0) speakItem(curItem)
-    tween.paused(!(base && !speechHold))
+    // an open callout only holds the animation: it must not cut or restart the word being said
+    tween.paused(!(playing && !hold && !speechHold))
   }
 
   const seek = (p: number) => {
