@@ -214,6 +214,9 @@ character is everywhere now and reads as a default.
 
 At most one pinned ScrollTrigger per page, and only inside a set-piece.
 
+As of 2026-09-29 the site has **no pins**: EduBra's Braille set-piece, the only one, became
+a triggered sequence at Arthur's request (design-spec.md §9).
+
 Pinning eats scroll length, is the worst offender on touch devices, and causes scroll
 jumps when a page is refreshed mid-scroll. Below 768px, nothing is ever pinned.
 

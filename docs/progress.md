@@ -32,9 +32,9 @@ Blocking or near-blocking. Add to this list rather than guessing.
 - [x] Opening line: rewritten in his words as "I make technical things make sense to
       people who didn't build them." Supporting line, mono identity line, the three spine
       paragraphs and all five margin notes are also final now — see `docs/content.md`.
-- [ ] **10 `[FILL]` markers remain, deliberately open** (`grep -rho "\[FILL" src/content/
-      src/components/Contact.astro | wc -l` → 10; EduBra's `date` and `project.what` resolved
-      after step 14 from the `Oficinas_1` repo). Step 14 resolved 4 of 16: Agente H's date
+- [ ] **6 `[FILL]` markers remain, deliberately open** (`grep -rho "\[FILL" src/content/
+      src/components/Contact.astro | wc -l` → 6; all six of EduBra's resolved after step 14,
+      from the `Oficinas_1` repo and Arthur's own copy). Step 14 resolved 4 of 16: Agente H's date
       (`2026-06`, from `docs/projects/agent-h.md`'s build window), the contact invitation, and
       both changelog notes. The rest wait for their own project brief, which is the order
       Arthur is working in (`docs/projects/README.md`). **Render policy, decided:** an
@@ -43,14 +43,13 @@ Blocking or near-blocking. Add to this list rather than guessing.
 
       | Marker(s) | Field | Unblocked by |
       |---|---|---|
-      | `edubra.md` ×4 | `role`, `project.did/team/differently` | Arthur, directly (repo doesn't say who did what) |
       | `rp3.md` | `role` | RP3 brief |
       | `eletron-energia.md` | `role` | ELETRON brief |
       | `brasilore.md` ×2 | `date`, `role` | Brasilore brief |
       | `calculus-ii.md`, `programming-techniques.md` | `role` (`taught ~[FILL]`, student count) | Arthur, directly |
 
       Re-run the grep after each brief and update this count; when it hits zero this bullet
-      closes. **Do the EduBra ones first** — see the set-piece note under Divergences.
+      closes.
 - [ ] **`docs/projects/` is untracked on purpose (decision for Arthur).** Step 14's plan said
       to commit it; on reading it, it holds the deployed Agent H app's live URL next to a
       list of its known security gaps (open CORS, guessable public image URLs, in-memory OTP),
@@ -59,17 +58,16 @@ Blocking or near-blocking. Add to this list rather than guessing.
       `docs/projects/` to `.gitignore`, or commit a redacted copy. `progress.md`, `content.md`
       and the step-14 plan refer to it by path, so a fresh clone won't have it.
 - [ ] **Firefox, desktop Safari and iOS Safari are untested.** None is installed on the dev
-      machine and step 14 chose not to download any. Named risks: the EduBra pinned
-      `ScrollTrigger` on iOS Safari (toolbar show/hide resizes the viewport, the classic
-      pin-breaker) and Lenis against iOS momentum scrolling ("scroll fighting"). Step 14's two
-      acceptance lines that depend on them — "iOS Safari: no pinned-section breakage, no
-      scroll fighting" — are **not met**, not ticked. Needs a real iPhone and a desktop Firefox.
+      machine and step 14 chose not to download any. Named risk: Lenis against iOS momentum
+      scrolling ("scroll fighting"). The other named risk, EduBra's pinned `ScrollTrigger` on
+      iOS Safari, is gone: the site has had no pins since 2026-09-29. Step 14's acceptance line
+      "iOS Safari: no scroll fighting" is still **not met**, not ticked. Needs a real iPhone and
+      a desktop Firefox.
 - [ ] **Changelog wording is a draft, not Arthur's own.** Both entries and the contact
       invitation were drafted by Claude and approved by Arthur with the step-14 plan. The
       acceptance line asks for "first changelog entry written by Arthur, in his voice" —
       replace them with his own words whenever he likes (`changelog.yaml`, `Contact.astro`).
-      Note the first entry sends readers to the EduBra page, which still shows its four
-      `[FILL]` prose fields; reword or resolve before pointing anyone at it.
+      The first entry sends readers to the EduBra page, whose prose is now all final.
 - [x] The word the EduBra Braille set-piece spells: `EDUBRA`, decided at step 13.
 - [x] Contact section: publish WhatsApp number or email only? **Both**, decided at step 14:
       email first (the one the drawing points at), then `+55 49 99194-2504` linked as
@@ -538,6 +536,39 @@ completes at max scroll (see the 75svh note above). From the `Oficinas_1` repo: 
 `2025-12` → `2025-06` (last commit 2025-06-25, confirmed by Arthur), `project.what` written,
 and the blurb's "simultaneous audio feedback" corrected — the Pi speaks each word *before*
 the pins rise.
+
+After step 14 — EduBra page rework, from Arthur's brief (2026-09-29), superseding the pin
+change just above:
+- **The Braille set-piece is no longer pinned or scrubbed.** It fires once when it enters
+  view, one letter at a time, with all of a letter's dots together (scale 0.85→1 +
+  opacity, 120ms `FADE_FEEDBACK`, `EASE_OUT`, no translate). The site now has zero pins.
+- **Every cell draws all six outline wells**, raised or not, and the filled dots sit on top.
+  Before this, raised positions had no outline.
+- **The 75svh stage is gone.** It only existed so the pin could finish. The cells now sit
+  directly under the title and a one-sentence `what`.
+- **Removed from `braille.ts`:** `lastDotIndex` and `brailleDotCount`. Only the pin timeline
+  used them.
+- **New `EdubraDiagram.astro`**, static and in the `after` slot of `ProjectPage.astro`. This is a
+  new element and it is recorded in design-spec.md §6 as Arthur's decision. It ships two
+  drawings, horizontal at ≥768px and vertical below, because one horizontal drawing
+  squeezed to 343px would shrink its labels to ~9px.
+- **Found live and fixed, the same classes of bug as the hero at step 12:**
+  - Dots flashed filled and then vanished. The fix is a new `braille-pending` guard in
+    Base.astro's inline script, the hero-pending pattern: ≥768px with motion allowed only,
+    not session-scoped, with a 1.5s failsafe.
+  - The first three letters landed in the same frame, because the sequence triggered
+    during the ~350ms load stall. The fix: it now waits for `load` + `document.fonts.ready`
+    + two frames before playing.
+- **Verified headless over CDP (step 14's method), since the Chrome extension's tab reported
+  `visibilityState: hidden` and froze rAF:**
+  - 1280×900: letters cross 50% at 411/476/609/725/842/958ms, all dots and highlights end
+    at 1, and there is no pin-spacer.
+  - Reduced motion and 375px: final state from the first frame.
+  - No horizontal overflow, and the console is clean.
+  - Lighthouse mobile on EduBra: 100/100/100, CLS 0.0016.
+- **Role and team:** Arthur said he did all the software and almost all the hardware, so
+  that sentence and the archive `role` say so. His pasted "What I did" was kept verbatim,
+  and it mentions only the software.
 
 ---
 

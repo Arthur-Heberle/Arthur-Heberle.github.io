@@ -166,7 +166,7 @@ believes `taught ~40`.
 
 ### 1. EduBra — Braille teaching device `pinned: true`
 - date: `2025-06` (month of the repo's last commit, confirmed by Arthur)
-- role: `[FILL: solo, or team of N and what Arthur owned]`
+- role: `team of 3, wrote the software, built most of the hardware` (Arthur, 2026-09-29)
 - tags: `[hardware, teaching]`
 - repo: `github.com/Arthur-Heberle/Oficinas_1`
 - blurb: Converts digital text to tactile Braille. Python on a Raspberry Pi 4, Wi-Fi,
@@ -237,16 +237,20 @@ object on the archive entry, not markdown body prose — decided at step 13, clo
 question `docs/plans/step-03.md` left open. Only an entry with its own page needs one.
 
 ### EduBra
-- what: EduBra is a Braille teaching device for people who have lost their sight and want
-  to learn or practise Braille. You upload a text file (.txt, .docx or .pdf) to a small web
-  page; the text travels over Wi-Fi to a Raspberry Pi 4, which works through it one letter
-  at a time. Six servo-driven pins raise each Braille cell while a speaker says the word or
-  letter first, four buttons let the reader pause, repeat a word, or go faster or slower,
-  and a knob sets the volume. (Drafted from the repo's README, code and code notes; every
-  claim is traceable to `Oficinas_1`.)
-- did: `[FILL: what Arthur actually did]`
-- team: `[FILL: role and team]`
-- differently: `[FILL: what he'd do differently]`
+Final, in Arthur's words (2026-09-29). "what" is one sentence on purpose: it sits directly
+above the set-piece, and the system diagram below the cells carries how it works.
+
+- what: A device that teaches Braille. It reads a file letter by letter, raises the pins
+  for each one, and says it out loud.
+- did: All of the software. A small upload page that pulls the text out of the file and
+  sends it to the Pi over Wi-Fi, and the program on the Pi that turns each character into
+  six pins, speaks it first, and keeps listening to the buttons and the volume knob while
+  it reads.
+- team: Team of three for Oficina de Integração 1 at UTFPR, 2025, with Luiz Correia and
+  Rafael Fernandes. I wrote the software and built most of the hardware.
+- differently: Run everything on the Pi, so it's one device instead of a laptop and a Pi.
+  And make the speech work offline: right now the spoken words need an internet connection,
+  which is a strange dependency for an assistive device.
 
 ---
 

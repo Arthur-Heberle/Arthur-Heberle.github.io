@@ -1,8 +1,9 @@
 ---
 // The project page template — design-spec.md §6, "one per set-piece project": title,
 // one-paragraph what and why, the set-piece, what he actually did, role and team, links,
-// what he'd do differently, in that order. This is the whole template; adding an eighth
-// field isn't this step's call to make.
+// what he'd do differently, in that order. The set-piece (default slot) sits in the header
+// group, tight under the one-line what; the optional `after` slot holds a project's static
+// system diagram (EduBra's, added by Arthur 2026-09-29 — design-spec.md §6).
 //
 // One <article>, not several sibling <section>s like the home page — a project page is
 // one self-contained document, not a set of independent page sections. type.css extends
@@ -41,9 +42,10 @@ const hasLinks = Boolean(links.repo || links.live || links.pdf)
     <p class="measure text-body" data-anim data-delay="0.06">
       <Fill value={project.what} />
     </p>
+    <slot />
   </div>
 
-  <slot />
+  <slot name="after" />
 
   <section class="flex flex-col gap-3" aria-labelledby="project-did-heading">
     <h2 id="project-did-heading" class="text-h3 font-sans font-medium" data-anim>What I did</h2>

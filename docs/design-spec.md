@@ -195,6 +195,11 @@ time. Template: title, one-paragraph what and why, the set-piece, what he actual
 role and team, links, what he'd do differently. That last field is unusual and worth
 keeping.
 
+EduBra also carries a **static system diagram** after the set-piece (file → web page →
+Wi-Fi → Raspberry Pi 4 → six servos + speaker, with four buttons and a volume knob as
+inputs). Added by Arthur on 2026-09-29. Drawn in the drawing's own language, not animated.
+Its "what and why" is one sentence, sitting directly above the set-piece.
+
 ---
 
 ## 7. Content
@@ -355,10 +360,13 @@ sequence disabled.
 
 ### EduBra — the Braille cell
 
-**The strongest piece on the site.** Scrubbed, and the one pinned section on its page.
-A Braille cell fills dot by dot as the reader scrolls, spelling a word, with the text
-version rendering alongside. The device converts text to touch; the set-piece performs
-exactly that conversion, and the reader controls the translation. It demonstrates the
+**The strongest piece on the site.** Triggered, not scrubbed or pinned (changed by Arthur on
+2026-09-29; it was a pinned scrub through step 14). The cells sit at the top of the page,
+directly under the title. Every cell's six outline circles are always visible. When the
+cells enter view, the raised dots appear in place, one letter at a time, with all dots of a
+letter together: scale 0.85→1 with opacity, 120ms, `--ease-out`, no translate. The text
+version renders alongside, each letter highlighting as its dots land. The device converts
+text to touch, and the set-piece performs exactly that conversion. It demonstrates the
 project rather than describing it.
 
 ### RP3 — the layer build-up

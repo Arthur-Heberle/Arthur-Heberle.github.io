@@ -1,7 +1,7 @@
 ---
 date: "2025-06"
 title: EduBra — Braille teaching device
-role: "[FILL: solo, or team of N and what Arthur owned]"
+role: "team of 3, wrote the software, built most of the hardware"
 tags: [hardware, teaching]
 links:
   repo: https://github.com/Arthur-Heberle/Oficinas_1
@@ -11,13 +11,18 @@ blurb: >-
 pinned: true
 project:
   what: >-
-    EduBra is a Braille teaching device for people who have lost their sight and want to
-    learn or practise Braille. You upload a text file (.txt, .docx or .pdf) to a small web
-    page; the text travels over Wi-Fi to a Raspberry Pi 4, which works through it one
-    letter at a time. Six servo-driven pins raise each Braille cell while a speaker says
-    the word or letter first, four buttons let the reader pause, repeat a word, or go
-    faster or slower, and a knob sets the volume.
-  did: "[FILL: what Arthur actually did]"
-  team: "[FILL: role and team]"
-  differently: "[FILL: what he'd do differently]"
+    A device that teaches Braille. It reads a file letter by letter, raises the pins for
+    each one, and says it out loud.
+  did: >-
+    All of the software. A small upload page that pulls the text out of the file and sends
+    it to the Pi over Wi-Fi, and the program on the Pi that turns each character into six
+    pins, speaks it first, and keeps listening to the buttons and the volume knob while it
+    reads.
+  team: >-
+    Team of three for Oficina de Integração 1 at UTFPR, 2025, with Luiz Correia and Rafael
+    Fernandes. I wrote the software and built most of the hardware.
+  differently: >-
+    Run everything on the Pi, so it's one device instead of a laptop and a Pi. And make the
+    speech work offline: right now the spoken words need an internet connection, which is a
+    strange dependency for an assistive device.
 ---

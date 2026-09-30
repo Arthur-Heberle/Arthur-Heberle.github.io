@@ -14,6 +14,7 @@ import Base from '../../layouts/Base.astro'
 import Rule from '../../components/Rule.astro'
 import ProjectPage from '../../components/ProjectPage.astro'
 import BrailleCell from '../../components/BrailleCell.astro'
+import EdubraDiagram from '../../components/EdubraDiagram.astro'
 import { PROJECT_PAGES } from '../../lib/projects'
 
 export async function getStaticPaths() {
@@ -36,6 +37,7 @@ const { entry } = Astro.props
     <Rule />
     <ProjectPage entry={entry}>
       {entry.id === 'edubra' && <BrailleCell word="EDUBRA" />}
+      {entry.id === 'edubra' && <EdubraDiagram slot="after" />}
     </ProjectPage>
   </main>
 </Base>
