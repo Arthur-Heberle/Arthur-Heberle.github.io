@@ -109,6 +109,16 @@
   display: none; /* nothing to show (no JS, or static below 768px) */
 }
 
+/* the hint above the drawing, like the device's: quiet, and only where the callouts work */
+.story .hint {
+  display: none;
+  margin: 0;
+  color: var(--color-graphite-2);
+}
+.js .story .hint {
+  display: block;
+}
+
 /* the canvas: .fit is sized by CSS alone (aspect-ratio, plus a max-height when live), and
  * story.ts reads the scale back from it, so applying the scale never shifts the layout */
 .story .frame {
