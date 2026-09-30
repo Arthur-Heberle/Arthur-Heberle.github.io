@@ -28,6 +28,7 @@ const cells = brailleCells(word)
       <div class="lid">
         <div
           class="word"
+          data-word={word.toUpperCase()}
           role="img"
           aria-label={`The word ${word.toUpperCase()} in Braille, shown one letter at a time`}
         >
@@ -108,6 +109,19 @@ const cells = brailleCells(word)
     </div>
     <div class="floor-shadow" aria-hidden="true"></div>
   </div>
+  <div class="try">
+    <label for="tryword">Try a word</label>
+    <input
+      id="tryword"
+      maxlength="6"
+      value={word.toUpperCase()}
+      autocomplete="off"
+      spellcheck="false"
+      aria-describedby="tryword-hint"
+      data-try
+    />
+    <small id="tryword-hint">letters A–Z, up to 6</small>
+  </div>
   <p class="sr-only" aria-live="polite" data-live></p>
 </section>
 
@@ -117,6 +131,8 @@ const cells = brailleCells(word)
   // the current letter's pins drop with a transition first, and only then does the next
   // letter rise (the prototype dropped them instantly). Only transform and opacity change;
   // both are CSS transitions on the pin discs and the button caps (type.css).
+  import { brailleCells } from './braille'
+
   const device = document.querySelector<HTMLElement>('[data-device]')
   if (device) {
     const SPEEDS = [0.5, 0.75, 1, 1.5, 2]
@@ -127,11 +143,15 @@ const cells = brailleCells(word)
     // transitions are off too, so letters simply swap.
     const dropMs = () => (reduce.matches ? 0 : 120)
 
-    const cells = [...device.querySelectorAll<HTMLElement>('[data-cell]')].map((cell) => ({
-      ch: cell.querySelector('.label')?.textContent?.trim() ?? '',
-      label: cell.querySelector<HTMLElement>('.label')!,
-      pos: [...cell.querySelectorAll<HTMLElement>('.pos')],
-    }))
+    const wordEl = device.querySelector<HTMLElement>('.word')!
+    const readCells = () =>
+      [...wordEl.querySelectorAll<HTMLElement>('[data-cell]')].map((cell) => ({
+        ch: cell.querySelector('.label')?.textContent?.trim() ?? '',
+        label: cell.querySelector<HTMLElement>('.label')!,
+        pos: [...cell.querySelectorAll<HTMLElement>('.pos')],
+      }))
+    // Starts from the server-rendered word; "Try a word" swaps it (build(), below).
+    let cells = readCells()
     const live = device.querySelector<HTMLElement>('[data-live]')!
     const playBtn = device.querySelector<HTMLButtonElement>('[data-play]')!
     const backBtn = device.querySelector<HTMLButtonElement>('[data-back]')!
@@ -284,6 +304,53 @@ const cells = brailleCells(word)
       },
       { threshold: 0.3 },
     ).observe(device)
+
+    // "Try a word" (prototype v2): the reader's word replaces the cells, with the exact
+    // markup the server renders and dot patterns from the same braille.ts table. Accents
+    // are stripped (é → E), anything outside A–Z dropped, six letters at most; an empty
+    // field falls back to the original word.
+    const fallback = wordEl.dataset.word ?? 'EDUBRA'
+    const PIN = '<span class="hole"></span><span class="pin"><i class="shade"></i><i class="s1"></i><i class="s2"></i><i class="head"></i></span>'
+    const build = (w: string) => {
+      wordEl.replaceChildren(
+        ...brailleCells(w).map((c) => {
+          const cell = document.createElement('div')
+          cell.className = 'cell'
+          cell.dataset.cell = ''
+          const dots = document.createElement('div')
+          dots.className = 'dots'
+          c.dots.forEach((d) => {
+            const p = document.createElement('div')
+            p.className = 'pos'
+            p.dataset.n = String(d.dot)
+            if (d.raised) p.dataset.raised = ''
+            p.innerHTML = PIN
+            dots.appendChild(p)
+          })
+          const label = document.createElement('div')
+          label.className = 'label'
+          label.textContent = c.letter.toUpperCase()
+          cell.append(dots, label)
+          return cell
+        }),
+      )
+      wordEl.setAttribute('aria-label', `The word ${w} in Braille, shown one letter at a time`)
+      cells = readCells()
+      i = 0
+      show(0)
+      schedule()
+    }
+    const input = device.querySelector<HTMLInputElement>('[data-try]')!
+    input.addEventListener('input', () => {
+      const clean = input.value
+        .normalize('NFD')
+        .replace(/[̀-ͯ]/g, '')
+        .toUpperCase()
+        .replace(/[^A-Z]/g, '')
+        .slice(0, 6)
+      if (input.value !== clean) input.value = clean
+      build(clean || fallback)
+    })
 
     renderPlay()
     renderSpeed()

@@ -473,6 +473,46 @@
     --lid-pad: 22px 8px 18px;
   }
 }
+/* "Try a word" (prototype v2): outside the 3D chain, under the box. Absent without JS —
+ * it would do nothing. */
+.device .try {
+  display: none;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px 14px;
+  margin-top: 34px;
+}
+.js .device .try {
+  display: flex;
+}
+.device .try label {
+  font-size: 15px;
+  color: var(--color-graphite-2);
+}
+.device .try input {
+  font-family: var(--font-mono);
+  font-size: 20px;
+  line-height: 1.2;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  width: 11ch;
+  border: 0;
+  border-bottom: 1.5px solid var(--color-graphite-2);
+  border-radius: 0;
+  background: transparent;
+  color: var(--color-graphite);
+  padding: 4px 2px;
+}
+/* focus is the underline turning --signal (v2), not a second ring around the field */
+.device .try input:focus {
+  outline: none;
+  border-bottom-color: var(--color-signal);
+}
+.device .try small {
+  font-size: 13px;
+  color: var(--color-graphite-2);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .device .pin > i,
   .device .btn .cap,

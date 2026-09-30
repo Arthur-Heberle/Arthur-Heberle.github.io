@@ -746,6 +746,23 @@ After step 14 — **EduBra controls follow prototype v2** (`edubra-device-3d.htm
   - Controls, off-screen pause, reduced motion and no-JS all pass. The console is clean.
   - Lighthouse EduBra: mobile 99/100/100 CLS 0.0015, desktop 100/100/100 CLS 0.
 
+After step 14 — **"Try a word" added, from prototype v2** (Arthur asked for it).
+- **Behaviour:**
+  - The field sits under the device.
+  - Accents are stripped (é → E), anything outside A–Z is dropped, and the word is capped
+    at 6 letters. An empty field falls back to EDUBRA.
+  - The cells are rebuilt with the exact server markup, and the patterns come from
+    `braille.ts`, so the script still carries no alphabet of its own.
+  - The field is hidden without JS; the server still renders EDUBRA.
+  - Focus is the underline turning `--signal`, per v2.
+- **Verified headless with real typed input:**
+  - hello → HELLO, olá! → OLA, açaí 2 → ACAI, braillebox → BRAILL, empty or 123 → EDUBRA.
+  - Every rebuilt pattern matches an independent Braille table, and the aria-label follows
+    the word.
+  - The 3D chain holds on rebuilt cells, with one letter up at a time.
+  - At 375px with "AB", nothing overflows.
+  - The full device suite is unchanged. JS is 69.6KB gzip.
+
 ---
 
 ## Notes for future sessions

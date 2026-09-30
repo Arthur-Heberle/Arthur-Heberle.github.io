@@ -386,7 +386,9 @@ cell, which was a pinned scrub through step 14 and a GSAP loop earlier that day.
   devices shrink the holes and buttons. Below ~670px the word wraps into EDU / BRA and the
   knob moves above the cross.
   Under reduced motion the loop still steps, with no transitions.
-- **Without JS:** the first letter is raised and the controls are absent.
+- **Try a word** (prototype v2, Arthur): a field under the device swaps EDUBRA for the
+  reader's own word, A–Z and up to 6 letters, with accents stripped.
+- **Without JS:** the first letter is raised and the controls and the field are absent.
 
 The device converts text to touch, and the set-piece performs exactly that conversion. It
 demonstrates the project rather than describing it.
