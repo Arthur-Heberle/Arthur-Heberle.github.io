@@ -86,6 +86,8 @@ const holes = [1, 2, 3, 4, 5, 6].map((n) => ({
     </div>
     <p class="sr-only" aria-live="polite" data-live></p>
   </div>
+  <!-- a nudge that the drawing is playable; absent without JS, where the parts are not clickable -->
+  <p class="hint text-small">Tap a part of the hardware to see what it does, or turn on the sound.</p>
   <!-- One labelled image for the whole drawing: everything drawn inside is aria-hidden, and the
        controls and callout buttons sit outside the image so they stay reachable. The frame is a
        focus stop only while it scrolls sideways (the static layout); story.ts takes the three

@@ -1616,3 +1616,8 @@ After the EduBra brief — **a one-line hint above the device demo** (Arthur, 20
 buttons, turn the knob on its side, or type your own word below." Small text, `--graphite-2`
 (4.59:1 on the ground), shown only with JS since nothing on the demo works without it. The wording is
 mine, not from the brief: change it in `EdubraDevice.astro`.
+
+After the EduBra brief — **the same hint above "How it works"** (Arthur): "Tap a part of the hardware
+to see what it does, or turn on the sound." Same style as the device's, JS only. Wording is mine.
+It names the callouts and the Sound button because those exist in every layout; the step ticks
+don't on phones or under reduced motion.
