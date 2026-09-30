@@ -21,20 +21,25 @@
   width: fit-content;
   align-items: center;
   gap: 0.5em;
-  padding-block: 0.4em;
+  padding-block: 0.3em;
   text-decoration: none;
-  color: var(--color-graphite-2);
-  font-family: var(--font-sans);
-  font-size: var(--text-small);
+  /* the word is strong: the display face (Archivo Expanded 500, already preloaded for the hero)
+   * in graphite, at body size. Arthur's call; design-spec.md §5 keeps that face for display
+   * lines, and this is the one other place it is used. */
+  color: var(--color-graphite);
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: var(--text-body);
+  letter-spacing: 0.01em;
 }
 .home svg {
-  /* the house is the point of the link, so it is larger than the word, and graphite (the site's
-   * black) rather than the word's secondary grey; the stroke is kept near 1.3px at this size */
-  width: 1.9em;
-  height: 1.9em;
+  /* the house is the point of the link: much larger than the word, in graphite (the site's black),
+   * with a bold stroke (about 2.6px at this size) */
+  width: 2.5em;
+  height: 2.5em;
   fill: none;
   stroke: var(--color-graphite);
-  stroke-width: 0.75;
+  stroke-width: 1;
   stroke-linecap: round;
   stroke-linejoin: round;
 }

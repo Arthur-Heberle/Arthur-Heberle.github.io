@@ -1624,6 +1624,8 @@ don't on phones or under reduced motion.
 
 After the EduBra brief — **a "Home" link at the top of every project page** (Arthur, 2026-09-30).
 `HomeLink.astro` (shared): a real `<a href="/">` with a hairline house icon and the text "Home",
-written straight on the page (no button chrome: Arthur asked for that right after the first version),
-in `--graphite-2` (4.59:1 on the ground), first child of `ProjectPage.astro`'s article. Static (not sticky), no motion,
+written straight on the page (no button chrome: Arthur asked for that right after the first version).
+Then, at his request: the icon is 2.5em (~42px) with a ~2.6px graphite stroke, and the word is graphite in
+the display face (Archivo Expanded 500, body size) to be eye-catching. That is a second use of the display
+face, which design-spec.md §5 reserves for display lines: Arthur's call, logged here, first child of `ProjectPage.astro`'s article. Static (not sticky), no motion,
 no token or library change. Recorded in design-spec.md §6.
