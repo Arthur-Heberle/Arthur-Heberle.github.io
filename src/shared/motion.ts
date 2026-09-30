@@ -9,7 +9,7 @@ import { SplitText } from 'gsap/SplitText'
 import { Flip } from 'gsap/Flip'
 import { CustomEase } from 'gsap/CustomEase'
 import Lenis from 'lenis'
-import { storyLive, storyStatic } from '../projects/edubra/story'
+import { storyPlayer, storyStatic } from '../projects/edubra/story'
 
 gsap.registerPlugin(ScrollTrigger, DrawSVGPlugin, SplitText, Flip, CustomEase)
 
@@ -474,9 +474,8 @@ function heroSequence(withDrawing: boolean) {
 const mm = gsap.matchMedia()
 
 mm.add('(min-width: 768px) and (prefers-reduced-motion: no-preference)', (ctx) => {
-  // EduBra's pinned "How it works" story goes first, so its pin-spacer is in the page
-  // before the rule, ticks and leaders below measure it (also refreshPriority: 1 there).
-  const offStory = storyLive(SCRUB)
+  // EduBra's "How it works" story: autoplays once when 40% visible (no pin, no scrub)
+  const offStory = storyPlayer({ autoplay: true })
   tier2Reveals(true)
   if (rulePath && pageMain) {
     tier1Rule(rulePath, pageMain)
@@ -520,7 +519,7 @@ mm.add('(max-width: 767px) and (prefers-reduced-motion: no-preference)', (ctx) =
 })
 
 mm.add('(prefers-reduced-motion: reduce)', (ctx) => {
-  const offStory = storyStatic() // no pin, no scrub: the story's final state, captions stacked
+  const offStory = storyPlayer({ autoplay: false }) // never autoplays: final state plus a Play button
   // Final states, nothing animates. toArray guards the empty selector — gsap.set on a
   // selector matching nothing logs a "target not found" warning, and step 06's gate
   // expects a clean console. Also clears any inline style left behind if the reader

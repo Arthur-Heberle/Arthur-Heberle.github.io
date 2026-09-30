@@ -13,7 +13,7 @@
  *
  * Default = the static layout: every caption on the page, the drawing at its final state,
  * scrolling sideways in its frame when the column is narrower than 763px. That is what
- * no-JS, reduced motion and phones get. story.ts adds .is-live for the pinned layout. */
+ * no-JS, reduced motion and phones get. story.ts adds .is-live for the autoplay layout. */
 .story {
   --st-line: #6b7075;
   --st-pin: #1f4f66;
@@ -63,20 +63,43 @@
 }
 .story .ticks {
   display: none;
-  gap: 6px;
+  gap: 2px;
 }
-.story .ticks i {
+/* a step tick: a real button with a roomy hit area around the 22x3 bar */
+.story .tickbtn {
   position: relative;
+  width: 30px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+.story .tickbtn::before {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 12.5px;
   width: 22px;
   height: 3px;
   background: var(--color-line);
 }
-.story .ticks u {
+.story .tickbtn u {
   position: absolute;
-  inset: 0;
+  left: 4px;
+  top: 12.5px;
+  width: 22px;
+  height: 3px;
   background: var(--st-pin);
   opacity: 0;
   text-decoration: none;
+}
+.story .controls {
+  display: flex;
+  gap: 8px;
+}
+.story .controls:not(:has(:not([hidden]))) {
+  display: none; /* nothing to show (no JS, or static below 768px) */
 }
 
 /* the canvas: .fit is sized by CSS alone (aspect-ratio, plus a max-height when live), and
@@ -115,13 +138,7 @@ html:not(.js) .story .fit {
   pointer-events: none;
 }
 
-/* the pinned layout */
-.story.is-live {
-  height: 100vh;
-  box-sizing: border-box;
-  padding: 28px 0;
-  justify-content: center;
-}
+/* the autoplay layout: natural height, captions crossfade in one slot */
 .story.is-live .caps {
   position: relative;
   display: block;
@@ -134,7 +151,7 @@ html:not(.js) .story .fit {
   opacity: 0;
 }
 .story.is-live .cap strong {
-  white-space: normal;
+  flex: none;
 }
 .story.is-live .ticks {
   display: flex;
@@ -144,7 +161,6 @@ html:not(.js) .story .fit {
 }
 .story.is-live .fit {
   width: 100%;
-  max-height: calc(100vh - 150px);
 }
 
 /* ---------- 2D drawing language ---------- */

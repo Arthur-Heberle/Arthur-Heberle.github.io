@@ -23,6 +23,19 @@ Status values: `todo`, `in progress`, `done`, `blocked`.
 | 14 | Final QA and ship v1 | done | **Chromium-verified only; Firefox/Safari/iOS Safari untested, open risk.** Found and fixed a real bug: `clamp(top 85%)` left every above-the-fold reveal at `opacity: 0` until the first pixel of scroll (`onRefresh` fix in `motion.ts`). `/type-test` deleted; reduced motion finally verified live via CDP; 16 → 12 `[FILL]` markers, the rest waiting on their project briefs (Lighthouse mobile: perf 99, a11y 100, best-practices 100 on both routes; CLS 0.0003 home, 0.0255 EduBra while its placeholder prose is mono — 0.000–0.003 with real prose; 66KB JS gzip) |
 | 15 | Later months, one at a time | todo | not part of v1 |
 
+### EduBra "How it works" upgrade (2026-09-30, Arthur's brief)
+
+Five sub-steps, in order; a stage starts only when the previous one passes. Commit message
+`edubra: stage X - <summary>`.
+
+| Stage | Step | Status | Notes |
+|---|---|---|---|
+| A | Autoplay (no pin, no scrub) | done | `storyPlayer()` replaces `storyLive()`; one 10 s linear tween of a proxy p drives `render(p)`; controls, tick buttons and a live region added; mobile still static until B |
+| B | Mobile camera (<768px) | todo | |
+| C | Three-quarter view and a real speaker | todo | |
+| D | Callouts and real GPIO pins | todo | |
+| E | Voice (browser speechSynthesis) | todo | |
+
 ---
 
 ## Open questions for Arthur
@@ -764,6 +777,27 @@ After step 14 — **"Try a word" added, from prototype v2** (Arthur asked for it
   - The full device suite is unchanged. JS is 69.6KB gzip.
 
 ---
+
+After step 14 — **EduBra "How it works" upgrade, stage A: autoplay** (Arthur's brief, 2026-09-30).
+- **Set-piece is now autoplay instead of scroll-scrubbed.** The pin, the scrub and
+  `PIN_SCREENS` are gone; the section takes its natural height. `render(p)`, `T`, `SCENES` and
+  `ITEMS` are untouched. `storyPlayer({ autoplay })` replaces `storyLive(scrub)`.
+- **Section rule, recorded:** hardware is CSS 3D, software is 2D SVG.
+- **Start and pause:** starts once when 40% of the section (or of the viewport, if the section
+  is taller than that) is visible; pauses when it leaves the viewport and resumes on return
+  unless the reader paused. At the end it holds the final state and shows "Play again".
+- **State outlives a matchMedia rebuild:** `started`, `userPaused`, `done` and progress are
+  module-level, so crossing 768px or toggling reduced motion neither replays nor restarts.
+- **Controls:** Pause (`aria-pressed`, constant label), Play again / Play, and four step ticks
+  that are now real buttons (`aria-label`, `aria-current="step"`) which jump to the start of
+  their scene and keep playing. A visually-hidden `aria-live="polite"` line announces each
+  scene; the opacity-stacked captions are `aria-hidden` while live.
+- **Reduced motion:** no autoplay, final state, a "Play" button. Play is reader-initiated.
+  Below 768px the story is still the static frame until stage B.
+- **Verified headless over CDP:** no pin-spacer; waits off screen; plays on arrival; pause,
+  resume, tick jump (+ announcement), off-screen pause/resume, end state, replay from 0;
+  reduced motion holds still and Play plays; 375 and 767 give no overflow and no controls;
+  no-JS hides the controls; focus ring is 2px; console clean.
 
 ## Notes for future sessions
 

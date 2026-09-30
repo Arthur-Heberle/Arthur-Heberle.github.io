@@ -1,8 +1,8 @@
-// EduBra's "How it works" scroll story (EdubraStory.astro), ported from Arthur's reference
-// prototype (edubra-story.html, 2026-09-30). render(p) is a pure function of scroll progress
-// p in [0, 1]; the live mode drives it from ONE GSAP timeline under ScrollTrigger
-// { pin: true, scrub }, and the static mode (reduced motion, below 768px) calls render(1).
-// motion.ts owns the matchMedia branches and calls storyLive() / storyStatic() from them.
+// EduBra's "How it works" story (EdubraStory.astro), ported from Arthur's reference
+// prototype (edubra-story.html, 2026-09-30). render(p) is a pure function of progress p in
+// [0, 1]; storyPlayer() drives it from ONE GSAP tween of a proxy p (autoplay, ~10 s, linear,
+// no pin, no scrub), and the static mode (below 768px for now) calls render(1).
+// motion.ts owns the matchMedia branches and calls storyPlayer() / storyStatic() from them.
 //
 // The timeline fractions (T, SCENES, DROP) and the item sequence (ITEMS) are the
 // prototype's, kept exactly. Only transform, opacity and stroke-dashoffset change, so a few
@@ -15,7 +15,7 @@ import { BRAILLE_ALPHABET } from './braille'
 
 const W = 1060
 const H = 570
-const PIN_SCREENS = 5.2 // scroll distance in viewport heights: the prototype's 620vh story less its 100vh stage
+const DURATION = 10 // seconds, linear: render(p) is driven by a tween of p from 0 to 1
 const TEXT = 'hello world'
 const PIN_H = 8
 
@@ -124,6 +124,11 @@ interface Story {
   actLit: HTMLElement
   caps: HTMLElement[]
   ticks: HTMLElement[]
+  tickBtns: HTMLButtonElement[]
+  capsBox: HTMLElement
+  toggle: HTMLButtonElement
+  again: HTMLButtonElement
+  liveMsg: HTMLElement
   live: boolean
   k: number
   p: number
@@ -178,6 +183,11 @@ function grab(): Story | null {
     actLit: $('#act-lit'),
     caps: $$<HTMLElement>('.cap'),
     ticks: $$<HTMLElement>('.ticks u'),
+    tickBtns: $$<HTMLButtonElement>('.ticks button'),
+    capsBox: $('.caps'),
+    toggle: $('[data-toggle]'),
+    again: $('[data-again]'),
+    liveMsg: $('[data-live]'),
     live: false,
     k: 1,
     p: 1,
@@ -372,48 +382,171 @@ function relayout() {
   wire()
 }
 
-/** >=768px, motion allowed: the pinned, scrubbed story. One timeline, one ScrollTrigger.
- *  Called from inside motion.ts's matchMedia branch, so the timeline and trigger are
- *  reverted with it; the returned cleanup puts the static final state back. */
-export function storyLive(scrub: number): () => void {
+// Player state lives at module level so it survives a gsap.matchMedia branch rebuild
+// (crossing 768px, toggling reduced motion): the story then resumes where it was instead of
+// autoplaying a second time. Same reasoning as data-anim-played in motion.ts.
+let started = false // the story has begun (autoplay reached 40% visible, or the reader pressed Play)
+let userPaused = false // the reader pressed Pause
+let done = false // it reached the end and is holding the final state
+let pp = 0 // last progress
+
+const sceneAt = (p: number) => {
+  for (let i = SCENES.length - 1; i > 0; i--) if (p >= SCENES[i][0]) return i
+  return 0
+}
+
+/** The story, played by one tween of a proxy p from 0 to 1 (DURATION s, linear) that calls
+ *  render(p). Called from inside motion.ts's matchMedia branches, so the tween is reverted
+ *  with its branch; the returned cleanup puts the static final state back.
+ *    autoplay: true  -> starts once, the first time the section is 40% visible
+ *    autoplay: false -> reduced motion: shows the final state and a Play button, never starts alone
+ *  Pauses while off screen and resumes on return (unless the reader paused). */
+export function storyPlayer(opts: { autoplay: boolean }): () => void {
   const s = grab()
   if (!s) return () => {}
-  s.live = true
-  s.root.classList.add('is-live')
-  s.frame.removeAttribute('tabindex') // nothing to scroll in the pinned layout
-  s.p = 0
-  relayout()
-
-  // One timeline, scrubbed to the pin. Its one tween moves a proxy from 0 to 1 and render()
-  // draws the frame for that progress.
+  let onScreen = false
+  let scene = -1
+  let alive = true
+  const ac = new AbortController()
+  const { signal } = ac
   const state = { p: 0 }
-  const tl = gsap.timeline({
-    scrollTrigger: {
-      trigger: s.root,
-      pin: true,
-      pinSpacing: true, // explicit: ScrollTrigger defaults it off when the parent is display:flex, and the article is
-      start: 'top top',
-      end: () => '+=' + PIN_SCREENS * innerHeight,
-      scrub,
-      invalidateOnRefresh: true,
-      refreshPriority: 1, // measured before the rule, ticks and leaders, which sit below the pin-spacer
-      onRefresh: relayout, // every resize and refresh: rescale, re-hang the wires, re-measure the strokes
+  const capText = s.caps.map((c) => {
+    const part = (sel: string) => c.querySelector(sel)?.textContent?.trim() ?? ''
+    return `Step ${part('b')}, ${part('strong')}. ${part('span')}`
+  })
+
+  const goLive = () => {
+    s.live = true
+    s.root.classList.add('is-live')
+    s.capsBox.setAttribute('aria-hidden', 'true') // the opacity-stacked captions are not announced; s.liveMsg is
+    s.frame.removeAttribute('tabindex') // nothing to scroll in the live layout
+    relayout()
+  }
+
+  const ui = () => {
+    s.toggle.hidden = !(s.live && started && !done)
+    s.toggle.setAttribute('aria-pressed', String(userPaused))
+    s.again.hidden = !(done || (!opts.autoplay && !started))
+    s.again.textContent = done ? 'Play again' : 'Play'
+    s.again.setAttribute('aria-label', done ? 'Play the story again' : 'Play the story')
+  }
+
+  const tick = (announce: boolean) => {
+    const sc = sceneAt(pp)
+    if (sc === scene) return
+    scene = sc
+    s.tickBtns.forEach((b, i) => (i === sc ? b.setAttribute('aria-current', 'step') : b.removeAttribute('aria-current')))
+    if (announce) s.liveMsg.textContent = capText[sc]
+  }
+
+  const tween = gsap.to(state, {
+    p: 1,
+    duration: DURATION,
+    ease: 'none',
+    paused: true,
+    onUpdate: () => {
+      if (!alive) return
+      pp = state.p
+      render(pp)
+      tick(true)
+    },
+    onComplete: () => {
+      if (!alive) return
+      done = true
+      ui()
+      sync()
     },
   })
-  tl.to(state, { p: 1, ease: 'none', duration: 1, onUpdate: () => render(state.p) })
+
+  // The one place that decides whether the tween is running.
+  const sync = () => {
+    const run = alive && s.live && started && onScreen && !userPaused && !done
+    tween.paused(!run)
+  }
+
+  const seek = (p: number) => {
+    pp = p
+    done = p >= 1
+    tween.progress(p)
+    render(p)
+    tick(true)
+  }
+  const begin = (from: number | null) => {
+    started = true
+    userPaused = false
+    if (!s.live) goLive()
+    if (from !== null) seek(from)
+    ui()
+    sync()
+  }
+
+  if (opts.autoplay || started) goLive()
+  else s.live = false
+  if (!opts.autoplay && started && !done) userPaused = true // reduced motion switched on mid-play: hold, don't run
+  if (s.live) {
+    s.p = pp
+    tween.progress(pp)
+    relayout()
+    tick(false)
+  } else {
+    s.p = 1
+    relayout()
+  }
+  ui()
+
+  s.toggle.addEventListener(
+    'click',
+    () => {
+      userPaused = !userPaused
+      ui()
+      sync()
+    },
+    { signal },
+  )
+  s.again.addEventListener('click', () => begin(0), { signal })
+  s.tickBtns.forEach((b, i) =>
+    b.addEventListener('click', () => begin(i === 0 ? 0 : SCENES[i][0]), { signal }),
+  )
+
+  const steps = Array.from({ length: 21 }, (_, i) => i / 20)
+  const io = new IntersectionObserver(
+    ([e]) => {
+      onScreen = e.isIntersecting
+      // 40% of the section, or 40% of the viewport when the section is taller than that
+      const need = Math.min(0.4 * e.boundingClientRect.height, 0.4 * innerHeight)
+      if (opts.autoplay && !started && e.isIntersecting && e.intersectionRect.height >= need) {
+        started = true
+        ui()
+      }
+      sync()
+    },
+    { threshold: steps },
+  )
+  io.observe(s.root)
+  const ro = new ResizeObserver(() => relayout())
+  ro.observe(s.fit)
 
   return () => {
+    alive = false
+    io.disconnect()
+    ro.disconnect()
+    ac.abort()
+    tween.kill()
     s.live = false
     s.root.classList.remove('is-live')
+    s.capsBox.removeAttribute('aria-hidden')
     s.frame.setAttribute('tabindex', '0')
     s.caps.forEach((c) => c.style.removeProperty('opacity'))
     s.ticks.forEach((t) => t.style.removeProperty('opacity'))
+    s.toggle.hidden = true
+    s.again.hidden = true
+    s.liveMsg.textContent = ''
     s.p = 1
     relayout()
   }
 }
 
-/** Reduced motion, or below 768px: no pin, no scrub. The final state, captions stacked, in
+/** Below 768px (until stage B): no animation. The final state, captions stacked, in
  *  a frame that scrolls sideways when the column is narrower than the drawing. */
 export function storyStatic(): () => void {
   const s = grab()
