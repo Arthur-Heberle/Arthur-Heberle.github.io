@@ -3,8 +3,9 @@
 // footprint, h the height. A top face lifted by translateZ(h) plus a front face folded
 // down from its near edge — the prototype's cub() helper (edubra-story.html), rendered on
 // the server so the hardware is in the markup without JavaScript. Children of the default
-// slot sit on the top face (so nested cuboids stack on it); the `front` slot fills the
-// front face. Every ancestor down to here keeps transform-style: preserve-3d (story.css).
+// slot sit on the top face (so nested cuboids stack on it); the `front` and `right` slots
+// fill the two side faces the three-quarter camera shows (the right face hangs from the top
+// face's right edge, like the front face from its near edge). Every ancestor down to here keeps transform-style: preserve-3d (story.css).
 interface Props {
   x: number
   y: number
@@ -19,6 +20,9 @@ const { x, y, w, d, h, cls = '' } = Astro.props
 <div class={`cub ${cls}`} style={`left:${x}px;top:${y}px;width:${w}px;height:${d}px`}>
   <div class="front" style={`top:${d}px;height:${h}px;transform:translateZ(${h}px) rotateX(-90deg)`}>
     <slot name="front" />
+  </div>
+  <div class="right" style={`left:${w}px;width:${h}px;height:${d}px;transform:translateZ(${h}px) rotateY(90deg)`}>
+    <slot name="right" />
   </div>
   <div class="top" style={`transform:translateZ(${h}px)`}>
     <slot />

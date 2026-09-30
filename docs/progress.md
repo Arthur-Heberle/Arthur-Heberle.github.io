@@ -32,7 +32,7 @@ Five sub-steps, in order; a stage starts only when the previous one passes. Comm
 |---|---|---|---|
 | A | Autoplay (no pin, no scrub) | done | `storyPlayer()` replaces `storyLive()`; one 10 s linear tween of a proxy p drives `render(p)`; controls, tick buttons and a live region added; mobile still static until B |
 | B | Mobile camera (<768px) | done | one translate + scale on the canvas, 0.6 s `EASE_OUT` between four framings; HTML reading tape under the canvas; `storyStatic` deleted |
-| C | Three-quarter view and a real speaker | todo | |
+| C | Three-quarter view and a real speaker | done | table turned `rotateZ(+20deg)` (not -20: only a clockwise turn shows the right face); `.right` face on `Cub`; standing round driver; wires re-measured; transition bug fixed |
 | D | Callouts and real GPIO pins | todo | |
 | E | Voice (browser speechSynthesis) | todo | |
 
@@ -820,6 +820,43 @@ Stage B — **mobile camera** (below 768px; Arthur's decisions on the framings a
   overflow, the framing follows a jump from scene 4 back to 1, console clean; reduced-motion
   phone is static until Play. Desktop's small SVG text (8.9–9.7px at 0.8 scale) is
   pre-existing and outside this stage.
+
+Stage C — **three-quarter view, real speaker.**
+- **Camera:** `.bench` is `rotateX(50deg) rotateZ(20deg)` (`--st-tilt` / `--st-turn`). The brief
+  said -20deg for the turn; with CSS's clockwise-positive `rotateZ`, -20deg shows the LEFT face
+  and +20deg shows the right, which is the face the brief wants (port openings on the side). Put
+  in the commit; adjust `--st-turn` if Arthur wants the other side.
+- **Faces:** `Cub.astro` gains a `.right` face (hangs from the top face's right edge, like
+  `.front`) and a `right` slot. Shading is by orientation: top lightest, right medium, front
+  darkest, per material (PCB, silver, black, GPIO, wood).
+- **Pi 4:** board thickness 3 to 5 px; faint copper traces (a static SVG background); openings on
+  the right faces (Ethernet; two USB stacks with blue inserts in the USB 3 pair, dark in the USB
+  2 pair); apertures on the near-edge USB-C and micro-HDMI fronts and a hole on the AV jack. No
+  logo, silkscreen text only. **Unverified:** the order of the right-edge connectors (Ethernet
+  at the top end, then USB 3 blue, then USB 2) and which stack is blue were kept from the
+  prototype; neither the official specifications page nor the docs page states the physical
+  order, and the mechanical drawing was not readable as text. Pin order of the header was
+  checked against pinout.xyz (pins 8/12/16/28/32/40 = BCM 14/18/23/1/12/21, odd pins inner
+  row, even pins outer row, pin 1 at the corner end).
+- **Speaker:** the box is replaced by a standing round driver (a 96x96 plane stood on its near
+  edge, turned 14 deg more than the table): metal frame with four screws, rubber surround,
+  ribbed cone (repeating radial gradient), dust cap, and a magnet drawn as ten stacked discs
+  behind the frame so its side shows. The cone push still scales `.dust` (now inside a
+  translateZ wrapper so the scale does not overwrite the lift).
+- **Braille cell:** same wood block, now with its right face.
+- **Shadows:** a static dark ellipse with a fixed blur under each object. A radial-gradient plane
+  rendered as a pale sheet with hard edges under 3D in headless Chromium, so it was replaced.
+  The blur is static and on a leaf, never animated.
+- **Bug found and fixed (real, not cosmetic):** `tokens.css` gives every element a 0.01ms
+  transition under reduced motion, and a transform set from script then starts one, so
+  `getBoundingClientRect` kept answering with the old scale for that frame. `wire()` measured
+  the anchors at the wrong scale (wires ended ~90px off). `.story .canvas *` now has
+  `transition: none !important`.
+- **Verified headless (Playwright Chromium over CDP, not Brave):** the wire endpoints coincide
+  with the five anchors at 1280, 1024, 768 and 375, static and after a live run; 290+ frames
+  while playing at 1280 and 375 have median 16.7 ms and p95 about 17 ms (60 fps), with one 116 ms
+  hitch at page load; stage A and B suites still pass; `astro check` clean. Face flicker was
+  judged from repeated screenshots only (no automated detector).
 
 ## Notes for future sessions
 

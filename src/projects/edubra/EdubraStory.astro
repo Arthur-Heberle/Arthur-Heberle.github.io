@@ -161,27 +161,49 @@ const holes = [1, 2, 3, 4, 5, 6].map((n) => ({
           <circle id="dotSpk" r="5" class="fill-pin" opacity="0"></circle>
         </svg>
 
-        <!-- 3D: hardware on a table, one camera angle for all three parts -->
+        <!-- 3D: hardware on a table, one three-quarter camera for all three parts -->
         <div class="scene" aria-hidden="true">
-          <div class="obj" id="o-pi" style="left:462px;top:165px;width:270px;height:190px">
-            <div class="bench" style="width:250px;height:160px;left:10px">
-              <!-- Raspberry Pi 4: board 240x160 (85x56 mm at ~2.85 px/mm), ports on the right edge, GPIO along the far edge -->
-              <Cub x={0} y={0} w={240} d={160} h={3} cls="pcb">
+          <div class="obj" id="o-pi" style="left:452px;top:150px;width:290px;height:210px">
+            <div class="bench" style="width:250px;height:160px;left:20px;bottom:10px">
+              <div class="shadow" style="left:-14px;top:0px;width:284px;height:194px"></div>
+              <!-- Raspberry Pi 4: board 240x160 (85x56 mm at ~2.85 px/mm). GPIO along the far edge, pin 1 at its
+                   left end (inner row odd, edge row even); Ethernet, the USB 3 pair and the USB 2 pair on the
+                   right edge; USB-C, two micro-HDMI and the AV jack on the near edge. -->
+              <Cub x={0} y={0} w={240} d={160} h={5} cls="pcb">
                 {[[10, 10], [178, 10], [10, 150], [178, 150]].map(([x, y]) => <i class="hole" style={`left:${x}px;top:${y}px`}></i>)}
                 <Cub x={24} y={4} w={144} d={15} h={9} cls="gpio">
-                  {Array.from({ length: 40 }, () => <i />)}
+                  {Array.from({ length: 40 }, (_, i) => <i />)}
                   <i class="anchor" id="a-gpio" style="left:144px;top:7px"></i>
                 </Cub>
                 <Cub x={86} y={58} w={46} d={46} h={4} cls="silver" />
                 <Cub x={144} y={60} w={30} d={42} h={3} cls="black" />
-                <Cub x={200} y={4} w={48} d={48} h={24} cls="silver" />
-                <Cub x={200} y={58} w={48} d={44} h={28} cls="silver" />
-                <Cub x={200} y={108} w={48} d={44} h={28} cls="silver" />
-                <Cub x={16} y={146} w={18} d={16} h={6} cls="silver" />
-                <Cub x={50} y={148} w={14} d={13} h={5} cls="silver" />
-                <Cub x={76} y={148} w={14} d={13} h={5} cls="silver" />
+                <Cub x={200} y={4} w={48} d={48} h={24} cls="silver">
+                  <Fragment slot="right"><i class="aper eth"></i></Fragment>
+                </Cub>
+                <Cub x={200} y={58} w={48} d={44} h={28} cls="silver">
+                  <Fragment slot="right">
+                    <i class="aper usb a"></i><i class="aper usb b"></i><i class="ins blue a"></i><i class="ins blue b"></i>
+                  </Fragment>
+                </Cub>
+                <Cub x={200} y={108} w={48} d={44} h={28} cls="silver">
+                  <Fragment slot="right">
+                    <i class="aper usb a"></i><i class="aper usb b"></i><i class="ins dark a"></i><i class="ins dark b"></i>
+                  </Fragment>
+                </Cub>
+                <Cub x={16} y={146} w={18} d={16} h={6} cls="silver">
+                  <Fragment slot="front"><i class="aper" style="left:3px;top:1.4px;width:12px;height:3.2px"></i></Fragment>
+                </Cub>
+                <Cub x={50} y={148} w={14} d={13} h={5} cls="silver">
+                  <Fragment slot="front"><i class="aper" style="left:2.5px;top:1.2px;width:9px;height:2.6px"></i></Fragment>
+                </Cub>
+                <Cub x={76} y={148} w={14} d={13} h={5} cls="silver">
+                  <Fragment slot="front"><i class="aper" style="left:2.5px;top:1.2px;width:9px;height:2.6px"></i></Fragment>
+                </Cub>
                 <Cub x={108} y={144} w={15} d={18} h={11} cls="black">
-                  <i class="anchor" id="a-jack" slot="front" style="left:7.5px;top:5.5px"></i>
+                  <Fragment slot="front">
+                    <i class="jackhole"></i>
+                    <i class="anchor" id="a-jack" style="left:7.5px;top:5.5px"></i>
+                  </Fragment>
                 </Cub>
                 <span class="silk" style="left:30px;top:118px">Raspberry Pi 4 Model B</span>
                 <i class="led pwr" style="left:4px;top:28px"></i>
@@ -191,8 +213,9 @@ const holes = [1, 2, 3, 4, 5, 6].map((n) => ({
             </div>
           </div>
 
-          <div class="obj" id="o-cell" style="left:820px;top:136px;width:150px;height:170px">
-            <div class="bench" style="width:120px;height:170px;left:15px">
+          <div class="obj" id="o-cell" style="left:810px;top:126px;width:170px;height:190px">
+            <div class="bench" style="width:120px;height:170px;left:20px;bottom:10px">
+              <div class="shadow" style="left:-14px;top:-2px;width:150px;height:198px"></div>
               <!-- Braille cell: a wood block with six holes; each pin is stacked discs that rise -->
               <Cub x={0} y={0} w={120} d={170} h={26} cls="woodblk">
                 {
@@ -214,17 +237,23 @@ const holes = [1, 2, 3, 4, 5, 6].map((n) => ({
             </div>
           </div>
 
-          <div class="obj" id="o-spk" style="left:835px;top:350px;width:120px;height:130px">
-            <div class="bench" style="width:86px;height:56px;left:17px">
-              <!-- speaker: a small box standing on the table, cone facing the viewer -->
-              <Cub x={0} y={0} w={86} d={56} h={86} cls="spkbox">
-                <Fragment slot="front">
-                  <div class="cone"></div>
-                  <div class="dust"></div>
-                  <i class="anchor" id="a-spk-in" style="left:0px;top:43px"></i>
-                  <i class="anchor" id="a-spk-out" style="left:86px;top:43px"></i>
-                </Fragment>
-              </Cub>
+          <div class="obj" id="o-spk" style="left:825px;top:340px;width:140px;height:150px">
+            <div class="bench" style="width:96px;height:30px;left:22px;bottom:14px">
+              <div class="shadow" style="left:-18px;top:-24px;width:130px;height:64px"></div>
+              <!-- speaker: a round driver standing on the table, turned to face the viewer. Frame with four
+                   screws, rubber surround, ribbed cone, dust cap; the magnet stacks up behind it -->
+              <div class="drv">
+                {[40, 36, 32, 28, 24, 20, 16, 12, 8, 4].map((z, i) => <i class={`mag ${i % 2 ? 'odd' : ''}`} style={`transform:translateZ(-${z}px)`}></i>)}
+                <div class="plate">
+                  <i class="screw" style="left:5px;top:5px"></i><i class="screw" style="right:5px;top:5px"></i>
+                  <i class="screw" style="left:5px;bottom:5px"></i><i class="screw" style="right:5px;bottom:5px"></i>
+                </div>
+                <div class="surround"></div>
+                <div class="cone"></div>
+                <div class="dustz"><div class="dust"></div></div>
+                <i class="anchor" id="a-spk-in" style="left:0px;top:48px"></i>
+                <i class="anchor" id="a-spk-out" style="left:96px;top:48px"></i>
+              </div>
             </div>
           </div>
         </div>
