@@ -360,14 +360,20 @@ sequence disabled.
 
 ### EduBra — the Braille cell
 
-**The strongest piece on the site.** Triggered, not scrubbed or pinned (changed by Arthur on
-2026-09-29; it was a pinned scrub through step 14). The cells sit at the top of the page,
-directly under the title. Every cell's six outline circles are always visible. When the
-cells enter view, the raised dots appear in place, one letter at a time, with all dots of a
-letter together: scale 0.85→1 with opacity, 120ms, `--ease-out`, no translate. The text
-version renders alongside, each letter highlighting as its dots land. The device converts
-text to touch, and the set-piece performs exactly that conversion. It demonstrates the
-project rather than describing it.
+**The strongest piece on the site.** A loop that works the way the device does, not scrubbed
+or pinned (changed by Arthur on 2026-09-29; it was a pinned scrub through step 14). The cells
+sit at the top of the page, directly under the title. Every cell's six outline circles are
+always visible. One character at a time, its pins rise out of their holes (scale 0→1 with
+opacity, 120ms, `--ease-out`, no translate). They hold for 600ms, drop, and the next
+character rises. After the last letter there's a 600ms pause, then it repeats. The text
+version renders alongside, and the letter whose pins are up is highlighted.
+
+Under the letters are the device's own buttons: **Pause/Play, Slower, Faster** (0.5×–2×),
+with the current speed shown as a count. They are also what makes an endless,
+self-starting loop acceptable (WCAG 2.2.2), and the loop pauses itself while it's out of view.
+The controls exist only where the loop runs (≥768px, motion allowed, JS). Everywhere else the
+cell is a static, complete word. The device converts text to touch, and the set-piece
+performs exactly that conversion. It demonstrates the project rather than describing it.
 
 ### RP3 — the layer build-up
 

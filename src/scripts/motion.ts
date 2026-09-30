@@ -470,75 +470,123 @@ function heroSequence(withDrawing: boolean) {
   clearHeroPending()
 }
 
+const BRAILLE_RISE = FADE_FEEDBACK // pins rise and drop in 120ms (--dur-feedback)
+const BRAILLE_HOLD = 0.6 // a raised letter holds for --dur-reveal before dropping
+const BRAILLE_RATES = [0.5, 0.75, 1, 1.5, 2] // Slower/Faster steps, applied as timeScale
+
 /** Tier 3: the EduBra Braille set-piece (design-spec.md §9, "the strongest piece").
- *  Triggered, not pinned or scrubbed (Arthur, 2026-09-29): when the stage enters view, the
- *  raised dots of each cell (`.braille-cell`, BrailleCell.astro) arrive together, one letter
- *  at a time, and that letter's --signal highlight crossfades on with them. Scale 0.85→1 +
- *  opacity, 120ms (--dur-feedback), EASE_OUT, no translate. The outline wells never
- *  animate, so every cell's six positions are always visible.
+ *  A loop that works the way the device does (Arthur, 2026-09-29): one character at a
+ *  time, its raised pins (`.braille-cell`'s `.braille-dot`s, BrailleCell.astro) grow out of
+ *  their holes together — scale 0→1 about each dot's own centre + opacity, no translate —
+ *  hold, drop, and the next character rises. The letter's --signal highlight is on exactly
+ *  while its pins are up. After the last letter, one hold's pause, then it starts over.
+ *  The outline wells never animate, so every cell's six positions are always visible.
+ *
+ *  Controls (BrailleCell.astro) are the device's buttons: Pause/Play, Slower, Faster
+ *  (timeScale through BRAILLE_RATES). They're also what makes an endless, self-starting
+ *  loop acceptable — WCAG 2.2.2 requires a way to pause motion that runs past 5s. The loop
+ *  also pauses itself whenever the stage is out of view, and resumes on return unless the
+ *  reader paused it.
  *
  *  Sets data-anim-played on the stage before tier2Reveals() runs, below, so the generic
- *  tier-2 reveal (y travel) skips it — this sequence is the stage's reveal. Its own
- *  "already played" state is data-braille-played, separate from that flag, so a
- *  matchMedia revert (crossing 768px) doesn't hide the dots a second time. Below 768px this
+ *  tier-2 reveal (y travel) skips it — this loop is the stage's reveal. Below 768px this
  *  function is never called (design-spec.md §8: set-pieces render static there); the stage
- *  gets the ordinary single tier-2 reveal instead, over already-final markup.
+ *  gets the ordinary single tier-2 reveal instead, over already-final markup, and the
+ *  controls are display:none (type.css). Returns a cleanup for the matchMedia branch: the
+ *  timeline and trigger are reverted by the branch's Context, the click listeners are not.
  *
  *  Bails silently if the stage isn't on this page — motion.ts runs on every route via
  *  Base.astro, and only /projects/edubra has one today. */
-function setPieceBraille() {
+function setPieceBraille(): (() => void) | undefined {
   const stage = document.querySelector<HTMLElement>('[data-braille]')
   if (!stage) return
   stage.dataset.animPlayed = '1'
-  if (stage.dataset.braillePlayed) return
 
   const cells = gsap.utils.toArray<SVGGElement>('.braille-cell', stage)
   const letters = gsap.utils.toArray<HTMLElement>('.braille-letter-hi', stage)
+  const toggle = stage.querySelector<HTMLButtonElement>('[data-braille-toggle]')
+  const speedButtons = gsap.utils.toArray<HTMLButtonElement>('[data-braille-speed]', stage)
+  const rateOut = stage.querySelector<HTMLElement>('[data-braille-rate]')
 
-  const tl = gsap.timeline({
-    paused: true,
-    onComplete: () => {
-      stage.dataset.braillePlayed = '1'
-    },
-  })
-  // Letter i starts as letter i-1 finishes: back to back, 6 × 120ms for EDUBRA.
+  const tl = gsap.timeline({ paused: true, repeat: -1, repeatDelay: BRAILLE_HOLD })
+  const letterSpan = BRAILLE_RISE + BRAILLE_HOLD + BRAILLE_RISE
   cells.forEach((cell, i) => {
-    const at = i * FADE_FEEDBACK
-    tl.from(
-      cell.querySelectorAll('.braille-dot'),
-      { scale: 0.85, opacity: 0, duration: FADE_FEEDBACK, ease: EASE_OUT, immediateRender: true },
-      at,
-    )
-    if (letters[i]) tl.to(letters[i], { opacity: 1, duration: FADE_FEEDBACK, ease: EASE_OUT }, at)
+    const up = i * letterSpan
+    const down = up + BRAILLE_RISE + BRAILLE_HOLD
+    const pins = cell.querySelectorAll('.braille-dot')
+    // fromTo's immediateRender hides every pin at creation, before the first paint the
+    // braille-pending guard (Base.astro) was covering for.
+    tl.fromTo(pins, { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: BRAILLE_RISE, ease: EASE_OUT }, up)
+    tl.to(pins, { scale: 0, opacity: 0, duration: BRAILLE_RISE, ease: EASE_OUT }, down)
+    if (letters[i]) {
+      tl.to(letters[i], { opacity: 1, duration: BRAILLE_RISE, ease: EASE_OUT }, up)
+      tl.to(letters[i], { opacity: 0, duration: BRAILLE_RISE, ease: EASE_OUT }, down)
+    }
   })
 
-  // The stage is above the fold, so it usually triggers during page load, while the main
-  // thread is still busy (measured headless: ~350ms with no frames). GSAP's clock keeps
-  // running through that gap, and the first three letters landed in the same frame. Wait
-  // for load + fonts, then two frames, so the sequence starts on a settled page.
-  let started = false
-  const start = () => {
-    if (started) return
-    started = true
-    const loaded =
-      document.readyState === 'complete'
-        ? Promise.resolve()
-        : new Promise((r) => window.addEventListener('load', r, { once: true }))
-    Promise.all([loaded, document.fonts.ready]).then(() =>
-      requestAnimationFrame(() => requestAnimationFrame(() => tl.play())),
-    )
-  }
+  // Three things decide whether it runs: the page has settled (below), the stage is in
+  // view, and the reader hasn't paused it.
+  let settled = false
+  let inView = false
+  let userPaused = false
+  const sync = () => (settled && inView && !userPaused ? tl.play() : tl.pause())
 
-  // Same trigger and the same step-14 already-in-view fix as tier2Reveals(), above.
+  // The stage is above the fold, so it usually comes into view during page load, while the
+  // main thread is still busy (measured headless: ~350ms with no frames). GSAP's clock keeps
+  // running through that gap and the first letters were skipped. Start on a settled page:
+  // load + fonts, then two frames.
+  const loaded =
+    document.readyState === 'complete'
+      ? Promise.resolve()
+      : new Promise((r) => window.addEventListener('load', r, { once: true }))
+  Promise.all([loaded, document.fonts.ready]).then(() =>
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() => {
+        settled = true
+        sync()
+      }),
+    ),
+  )
+
   ScrollTrigger.create({
     trigger: stage,
-    start: 'clamp(top 85%)',
-    once: true,
-    onEnter: start,
-    onRefresh: (self) => {
-      if (self.start <= self.scroll()) start()
+    start: 'top bottom',
+    end: 'bottom top',
+    onToggle: (self) => {
+      inView = self.isActive
+      sync()
     },
   })
+
+  let rateIndex = BRAILLE_RATES.indexOf(1)
+  const showRate = () => {
+    const rate = BRAILLE_RATES[rateIndex]
+    tl.timeScale(rate)
+    if (rateOut) rateOut.textContent = `${rate}× speed`
+    speedButtons.forEach((b) => {
+      const step = Number(b.dataset.brailleSpeed)
+      b.disabled = !BRAILLE_RATES[rateIndex + step]
+    })
+  }
+  const onToggle = () => {
+    userPaused = !userPaused
+    if (toggle) toggle.textContent = userPaused ? 'Play' : 'Pause'
+    sync()
+  }
+  const onSpeed = (e: Event) => {
+    const step = Number((e.currentTarget as HTMLButtonElement).dataset.brailleSpeed)
+    if (BRAILLE_RATES[rateIndex + step] === undefined) return
+    rateIndex += step
+    showRate()
+  }
+  showRate()
+  toggle?.addEventListener('click', onToggle)
+  speedButtons.forEach((b) => b.addEventListener('click', onSpeed))
+
+  return () => {
+    toggle?.removeEventListener('click', onToggle)
+    speedButtons.forEach((b) => b.removeEventListener('click', onSpeed))
+  }
 }
 
 /** Base.astro's flash guard for the Braille dots. Removed in every matchMedia branch, after
@@ -553,7 +601,7 @@ mm.add('(min-width: 768px) and (prefers-reduced-motion: no-preference)', (ctx) =
   // step 13: must run before tier2Reveals() below — it marks the Braille stage
   // data-anim-played so the generic reveal system doesn't also claim it (see
   // setPieceBraille()'s own comment).
-  setPieceBraille()
+  const stopBraille = setPieceBraille()
   clearBraillePending()
   tier2Reveals(true)
   if (rulePath && pageMain) {
@@ -566,7 +614,11 @@ mm.add('(min-width: 768px) and (prefers-reduced-motion: no-preference)', (ctx) =
   // every tween it creates at click time is tracked by this branch's Context and
   // reverted with it if the branch stops matching mid-flight.
   heroSequence(true)
-  return registerFilterTransition('motion', ctx.add('archiveFilter', flipFilter) as FilterTransition)
+  const unregister = registerFilterTransition('motion', ctx.add('archiveFilter', flipFilter) as FilterTransition)
+  return () => {
+    stopBraille?.()
+    unregister()
+  }
 })
 
 mm.add('(max-width: 767px) and (prefers-reduced-motion: no-preference)', (ctx) => {

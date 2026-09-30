@@ -570,6 +570,28 @@ change just above:
   that sentence and the archive `role` say so. His pasted "What I did" was kept verbatim,
   and it mentions only the software.
 
+After step 14 — the Braille set-piece becomes a loop (Arthur, same day, superseding the
+one-shot sequence just above):
+- **One character at a time, like the device.** Its pins grow out of their holes (scale
+  0→1 + opacity, 120ms), hold 600ms, then drop, and the next character rises. After A, a
+  600ms pause, then repeat. The letter is highlighted while its pins are up. Scale is about
+  each dot's centre, so there's no translate.
+- **Controls chosen by Arthur, mirroring the device's own buttons:** Pause/Play, Slower,
+  Faster (timeScale 0.5/0.75/1/1.5/2; the ends disable) and a mono speed count
+  (`aria-live`). They also satisfy WCAG 2.2.2 for a self-starting endless loop. The loop
+  also pauses itself out of view. The controls reuse `.control feedback` and `.filter-count`
+  and exist only where the loop runs (`.js` + ≥768px + motion allowed), following the
+  `.filter-bar` no-flash pattern. `setPieceBraille()` now returns a cleanup for its click
+  listeners, composed into the ≥768px branch's return.
+- **Verified headless over CDP:**
+  - Letters rise E→A about 833ms apart for two full cycles, with exactly one letter up at
+    a time.
+  - Pause freezes the loop, and Play resumes it.
+  - At 2×, letters rise about 417ms apart.
+  - Reduced motion and 375px show all 15 dots static, with no controls.
+  - The console is clean.
+  - Lighthouse EduBra is 100/100/100 on mobile (CLS 0) and on desktop (CLS 0.0003).
+
 ---
 
 ## Notes for future sessions

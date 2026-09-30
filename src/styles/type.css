@@ -418,6 +418,29 @@ body {
 .braille-letter-hi {
   opacity: 0;
 }
+/* The loop's controls: the device's own buttons (BrailleCell.astro). Only where the loop
+ * runs — the same three conditions as motion.ts's setPieceBraille() branch, with `.js` set
+ * before first paint, so they never appear and then vanish (the .filter-bar precedent). */
+.braille-controls {
+  display: none;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+@media (min-width: 768px) and (prefers-reduced-motion: no-preference) {
+  .js .braille-controls {
+    display: flex;
+  }
+}
+/* Pause <-> Play swaps its label; a fixed width keeps the buttons beside it still. */
+[data-braille-toggle] {
+  min-width: 5.5em;
+  text-align: center;
+}
+.braille-controls .control:disabled {
+  cursor: default;
+  opacity: 0.4;
+}
 
 /* EduBra's static system diagram (EdubraDiagram.astro). Two drawings, one per layout: each
  * SVG reserves its own box via viewBox + aspect-ratio, so neither shifts layout. Capped at

@@ -4,9 +4,15 @@
 // six positions as an outline well, raised or not — the empty ones are the
 // annotated-technical-drawing concept doing its job, and they never animate. The raised
 // dots sit on top of their wells, grouped per letter (`.braille-cell`), and motion.ts's
-// setPieceBraille() hides them at load and brings them in one letter at a time when the
-// stage enters view; a failed GSAP load leaves this already-complete diagram, the same
-// pattern Rule.astro/Tick.astro/MarginNote.astro already use.
+// setPieceBraille() hides them at load and then loops them the way the device works: one
+// character at a time, its pins rising out of their holes, holding, dropping, then the
+// next. A failed GSAP load leaves this already-complete diagram, the same pattern
+// Rule.astro/Tick.astro/MarginNote.astro already use.
+//
+// The controls under the letters (pause/play, slower, faster) are the device's own
+// buttons, and they are what makes a looping animation acceptable (WCAG 2.2.2: anything
+// moving for more than 5s needs a way to pause it). Shown only where the loop runs (JS,
+// >=768px, motion allowed — type.css); absent everywhere else, where the cell is static.
 //
 // The dot pattern is never hand-drawn: brailleCells() (src/lib/braille.ts) derives every
 // circle's position from the word itself, so this component cannot render anything but
@@ -38,7 +44,7 @@ const viewWidth = cells.length * 6
   >
     <title id="braille-title">Braille cell spelling {word}</title>
     <desc id="braille-desc">
-      A six-dot Braille cell for each letter of "{word}", its raised dots appearing one letter at a time.
+      A six-dot Braille cell for each letter of "{word}", its pins rising one letter at a time, on a loop.
     </desc>
     {
       cells.map((cell) => (
@@ -76,5 +82,11 @@ const viewWidth = cells.length * 6
         </span>
       ))
     }
+  </div>
+  <div class="braille-controls" role="group" aria-label="Braille animation">
+    <button type="button" class="control feedback" data-braille-toggle>Pause</button>
+    <button type="button" class="control feedback" data-braille-speed="-1">Slower</button>
+    <button type="button" class="control feedback" data-braille-speed="1">Faster</button>
+    <p class="filter-count" aria-live="polite" data-braille-rate>1× speed</p>
   </div>
 </div>
