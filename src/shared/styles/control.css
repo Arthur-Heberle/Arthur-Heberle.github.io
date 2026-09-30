@@ -28,11 +28,13 @@
   font-size: var(--text-small);
 }
 .home svg {
-  width: 1.1em;
-  height: 1.1em;
+  /* the house is the point of the link, so it is larger than the word, and graphite (the site's
+   * black) rather than the word's secondary grey; the stroke is kept near 1.3px at this size */
+  width: 1.9em;
+  height: 1.9em;
   fill: none;
-  stroke: currentColor;
-  stroke-width: 1;
+  stroke: var(--color-graphite);
+  stroke-width: 0.75;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
