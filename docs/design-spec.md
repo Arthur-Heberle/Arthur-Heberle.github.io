@@ -196,10 +196,14 @@ time. Template: title, one-paragraph what and why, the set-piece, what he actual
 role and team, links, what he'd do differently. That last field is unusual and worth
 keeping.
 
-EduBra also carries a **static system diagram** after the set-piece (file → web page →
-Wi-Fi → Raspberry Pi 4 → six servos + speaker, with four buttons and a volume knob as
-inputs). Added by Arthur on 2026-09-29. Drawn in the drawing's own language, not animated.
-Its "what and why" is one sentence, sitting directly above the set-piece.
+EduBra also carries a **"How it works" scroll story** after the set-piece and its "Try a
+word" field (file → web page → Wi-Fi → Raspberry Pi 4 → audio files → six servos + speaker).
+Arthur's decision, 2026-09-30: it replaces the static system diagram he added on 2026-09-29.
+Rule of the section: hardware (Pi, Braille cell, speaker) is CSS 3D, software (web page,
+words, audio files, wires) is the 2D SVG, both in one fixed 1060x570 canvas scaled as a
+whole. It is the page's one pinned section; below 768px and under reduced motion it is the
+final state with the four captions stacked. Its "what and why" is one sentence, sitting
+directly above the set-piece.
 
 ---
 

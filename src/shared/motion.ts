@@ -9,6 +9,7 @@ import { SplitText } from 'gsap/SplitText'
 import { Flip } from 'gsap/Flip'
 import { CustomEase } from 'gsap/CustomEase'
 import Lenis from 'lenis'
+import { storyLive, storyStatic } from '../projects/edubra/story'
 
 gsap.registerPlugin(ScrollTrigger, DrawSVGPlugin, SplitText, Flip, CustomEase)
 
@@ -473,6 +474,9 @@ function heroSequence(withDrawing: boolean) {
 const mm = gsap.matchMedia()
 
 mm.add('(min-width: 768px) and (prefers-reduced-motion: no-preference)', (ctx) => {
+  // EduBra's pinned "How it works" story goes first, so its pin-spacer is in the page
+  // before the rule, ticks and leaders below measure it (also refreshPriority: 1 there).
+  const offStory = storyLive(SCRUB)
   tier2Reveals(true)
   if (rulePath && pageMain) {
     tier1Rule(rulePath, pageMain)
@@ -484,10 +488,15 @@ mm.add('(min-width: 768px) and (prefers-reduced-motion: no-preference)', (ctx) =
   // every tween it creates at click time is tracked by this branch's Context and
   // reverted with it if the branch stops matching mid-flight.
   heroSequence(true)
-  return registerFilterTransition('motion', ctx.add('archiveFilter', flipFilter) as FilterTransition)
+  const offFilter = registerFilterTransition('motion', ctx.add('archiveFilter', flipFilter) as FilterTransition)
+  return () => {
+    offFilter()
+    offStory()
+  }
 })
 
 mm.add('(max-width: 767px) and (prefers-reduced-motion: no-preference)', (ctx) => {
+  const offStory = storyStatic() // no pin below 768px: the story's final state, captions stacked
   tier2Reveals(false)
   // design-spec.md §8: below 768px the drawing layer keeps the scrubbed rule only — no
   // ticks (.tick is display:none there anyway, so tier1Ticks is skipped, not just hidden)
@@ -503,10 +512,15 @@ mm.add('(max-width: 767px) and (prefers-reduced-motion: no-preference)', (ctx) =
   // step 11: Flip runs at this width too — motion-spec.md's degradation contract strips
   // pinning, leader lines and set-pieces below 768px, not the filter transition, and the
   // filter is a click-triggered interaction, not a scroll-linked one.
-  return registerFilterTransition('motion', ctx.add('archiveFilter', flipFilter) as FilterTransition)
+  const offFilter = registerFilterTransition('motion', ctx.add('archiveFilter', flipFilter) as FilterTransition)
+  return () => {
+    offFilter()
+    offStory()
+  }
 })
 
 mm.add('(prefers-reduced-motion: reduce)', (ctx) => {
+  const offStory = storyStatic() // no pin, no scrub: the story's final state, captions stacked
   // Final states, nothing animates. toArray guards the empty selector — gsap.set on a
   // selector matching nothing logs a "target not found" warning, and step 06's gate
   // expects a clean console. Also clears any inline style left behind if the reader
@@ -534,5 +548,9 @@ mm.add('(prefers-reduced-motion: reduce)', (ctx) => {
   heroSplit?.revert()
   heroSplit = null
   clearHeroPending()
-  return registerFilterTransition('reduce', ctx.add('archiveFilter', crossfadeFilter) as FilterTransition)
+  const offFilter = registerFilterTransition('reduce', ctx.add('archiveFilter', crossfadeFilter) as FilterTransition)
+  return () => {
+    offFilter()
+    offStory()
+  }
 })

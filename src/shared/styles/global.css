@@ -20,9 +20,9 @@
 @import "./control.css";
 /* home: archive rows, tag filter, count */
 @import "../../home/archive/archive.css";
-/* projects/edubra: the 3D device and the system diagram */
+/* projects/edubra: the 3D device and the "How it works" scroll story */
 @import "../../projects/edubra/device.css";
-@import "../../projects/edubra/diagram.css";
+@import "../../projects/edubra/story.css";
 
 /* Lenis's required stylesheet, shipped by the package. Every rule in it is gated on the
  * `lenis` class Lenis puts on <html> at runtime, so it is inert with JS disabled. Last,

@@ -1178,3 +1178,51 @@ gotchas, things that looked right and weren't.
   animation can be sampled there. Use headless Playwright Chromium over raw CDP
   (`Emulation.setDeviceMetricsOverride` + `Page.addScriptToEvaluateOnNewDocument` with a
   per-frame rAF logger) to measure motion.
+
+---
+
+After step 14 — EduBra "How it works" scroll story, from Arthur's prototype `edubra-story.html`
+(2026-09-30). Replaces the static system diagram (`EdubraDiagram.astro`, `diagram.css`, both
+deleted). Page order: device, "Try a word", How it works, then the text sections.
+- **Ported, not redesigned.** `T`, `SCENES`, `DROP`, `ITEMS`, the geometry and the copy are the
+  prototype's. `render(p)` is a pure function of progress in `src/projects/edubra/story.ts`;
+  live mode drives it from one GSAP timeline under ScrollTrigger `{ pin: true, scrub: 0.8 }`,
+  `end` = 5.2 viewport heights (the prototype's 620vh less its stage).
+- **Files:** `EdubraStory.astro` (markup, rendered in its final state, so no-JS reads),
+  `Cub.astro` (the prototype's `cub()` on the server), `story.ts`, `story.css`; hooked up in
+  `motion.ts` (`storyLive` in the ≥768px branch, first, `refreshPriority: 1`; `storyStatic` in the
+  <768px and reduced-motion branches).
+- **Hardware is CSS 3D, wires are hung on anchors.** `wire()` measures the anchor elements inside
+  the 3D parts at rest, rewrites the three wire paths and re-measures stroke lengths; it runs on
+  every ScrollTrigger refresh (resize included). The no-JS fallback paths in the markup are what
+  it measured. Pins rise with `translateZ` on stacked discs; the Pi's ACT LED and the speaker
+  cone are driven by `render(p)`. Wood is `/textures/wood-medium.webp`. No Raspberry Pi logo.
+- **Only transform, opacity, stroke-dashoffset.** Prototype effects that changed anything else
+  became an opacity crossfade between two stacked elements: lit Wi-Fi arcs, highlighted audio
+  card, "already read" characters, the big letter (one `<text>` per letter), the ACT LED, the step
+  ticks. The read cursor is four paths (two rounded ends, two lines) that move and scale.
+  Braille dot patterns come from `braille.ts`, not a second copy of the alphabet.
+- **Divergences from the prototype:** caption/silkscreen weight 600 → 500 (the site ships Archivo
+  400/500 only); the stage's 24px side padding dropped (the page column already has gutters);
+  caption grey is the token `--color-graphite-2`; the canvas scale is read back from a `.fit`
+  box that CSS sizes (aspect-ratio, plus a max-height when live), so applying it never shifts
+  layout; the static frame scrolls sideways below 763px and gets `tabindex="0"`.
+- **The device component needed no change.** `EdubraDevice.astro` had no pulses, two-way highlight
+  or front LED (its `.front` is just the box's wood edge; git history has none either). Arthur
+  was told; nothing was removed.
+- **Verified (headless Chromium over raw CDP):** 1280×900 pins over 5.2 viewport heights, the
+  captions and ticks switch at the SCENES fractions, the wires land on the anchors, the text
+  sections follow and the pin completes (max scroll is past its end); 375px, 767px, reduced motion
+  and no JS all give the final state with captions stacked and no page-level horizontal
+  overflow; 768px pins; crossing 768px and toggling reduced motion both ways swaps modes cleanly;
+  console clean; motion bundle ~70KB gzip.
+- **Lessons:**
+  - **Tailwind utility names are global.** The prototype's 3D "table" class is Tailwind's
+    `.table { display: table }`; in the page it changed the layout of everything inside it. It is
+    `.bench` now. Check any borrowed prototype class name against Tailwind's utilities.
+  - **ScrollTrigger turns `pinSpacing` off when the pin's parent is `display: flex`** (the project
+    article is). Set `pinSpacing: true` explicitly or the pin adds no scroll distance.
+  - **Headless screenshots can drop 3D faces.** After one `Page.captureScreenshot`, later frames
+    of this page sometimes lack the speaker's front face until anything on the page is touched;
+    the untouched prototype does not do it, and no style change of mine explains it. Take one
+    screenshot per fresh page load when checking the 3D parts.

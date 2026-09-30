@@ -1,0 +1,222 @@
+---
+// EduBra's "How it works" scroll story, ported from Arthur's reference prototype
+// (edubra-story.html, 2026-09-30), not redesigned. Rule of the section: hardware is CSS 3D
+// (Raspberry Pi 4, Braille cell, speaker), software is the 2D SVG (web page, words, audio
+// files, wires). Both live in one fixed 1060x570 canvas that is scaled as a whole, so they
+// share coordinates; story.ts hangs the SVG wires on anchor elements inside the 3D parts.
+//
+// Rendered in the FINAL state (progress 1 of story.ts's render()), so the section reads
+// without JavaScript and is already the right picture for reduced motion and below 768px.
+// The wire paths below are what story.ts measures at rest, pasted in as the no-JS fallback.
+// Pins for the last letter ('d') are shipped raised; the dot pattern comes from braille.ts,
+// the one table the site trusts.
+import Cub from './Cub.astro'
+import { BRAILLE_ALPHABET } from './braille'
+
+const TEXT = 'hello world'
+const LAST = TEXT[TEXT.length - 1]
+const RAISED = BRAILLE_ALPHABET[LAST]
+const PIN_H = 8
+const PIN_LAYERS = [0.35, 0.7, 1]
+const LETTERS = ['h', 'e', 'l', 'o', 'w', 'r', 'd']
+const NBSP = ' '
+
+// The three wires, as story.ts's wire() measures them at rest (canvas scale independent).
+const WIRE_ARC = 'M340 255 C 380 150, 409 150, 479 282.5'
+const WIRE_CELL = 'M635.8 227.4 C 705.8 227.4, 777.7 215, 837.7 215'
+const WIRE_SPK = 'M587.4 341.6 C 587.4 442.2, 740.5 442.2, 850.5 442.2'
+const WAVES_AT = 'translate(943.5 442.2)'
+
+const WAVE0 =
+  'M490.0 82.6V97.4M493.5 78.7V101.3M497.0 78.8V101.2M500.6 81.7V98.3M504.1 84.9V95.1M507.6 85.9V94.1M511.1 84.2V95.8M514.6 80.3V99.7M518.2 76.9V103.1M521.7 76.4V103.6M525.2 80.1V99.9M528.7 85.1V94.9M532.2 77.9V102.1M535.8 73.4V106.6M539.3 73.2V106.8M542.8 77.2V102.8M546.3 82.9V97.1M549.8 84.4V95.6M553.4 82.8V97.2M556.9 84.3V95.7M560.4 84.8V95.2M563.9 83.3V96.7M567.4 84.9V95.1M571.0 82.6V97.4M574.5 77.0V103.0M578.0 73.3V106.7'
+const WAVE1 =
+  'M610.0 72.6V107.4M613.5 76.3V103.7M617.0 82.3V97.7M620.6 84.2V95.8M624.1 81.6V98.4M627.6 82.5V97.5M631.1 85.3V94.7M634.6 84.5V95.5M638.2 85.1V94.9M641.7 83.3V96.7M645.2 78.1V101.9M648.7 74.3V105.7M652.2 74.2V105.8M655.8 78.5V101.5M659.3 85.7V94.3M662.8 79.2V100.8M666.3 75.1V104.9M669.8 75.2V104.8M673.4 78.8V101.2M676.9 83.5V96.5M680.4 85.5V94.5M683.9 85.6V94.4M687.4 83.8V96.2M691.0 81.0V99.0M694.5 80.4V99.6M698.0 83.4V96.6'
+
+// Final state of the read cursor: the last letter's cell (story.ts: cx(i) = 440 + i * 30).
+const CUR_X0 = 440 + (TEXT.length - 1) * 30 - 12
+const CUR_X1 = 440 + (TEXT.length - 1) * 30 + 12
+
+const cards = [
+  { id: 0, x: 478, name: 'hello.mp3', wave: WAVE0 },
+  { id: 1, x: 598, name: 'world.mp3', wave: WAVE1 },
+]
+const holes = [1, 2, 3, 4, 5, 6].map((n) => ({
+  n,
+  left: n <= 3 ? 36 : 84,
+  top: 45 + ((n - 1) % 3) * 40,
+  up: RAISED.includes(n),
+}))
+---
+
+<section class="story" data-story aria-labelledby="how">
+  <div class="head">
+    <h2 id="how" class="text-h2 font-sans font-medium">How it works</h2>
+    <div class="caps">
+      <p class="cap"><b>1</b><strong>Send a file</strong><span>A .txt, .docx or .pdf goes into a small web page.</span></p>
+      <p class="cap"><b>2</b><strong>Over Wi-Fi</strong><span>The text, split into words, travels to the Raspberry Pi.</span></p>
+      <p class="cap"><b>3</b><strong>Audio first</strong><span>The Pi makes one audio file per word before it starts.</span></p>
+      <p class="cap"><b>4</b><strong>Read</strong><span>It speaks each word, then raises the pins letter by letter.</span></p>
+    </div>
+    <div class="ticks" aria-hidden="true"><i><u></u></i><i><u></u></i><i><u></u></i><i><u></u></i></div>
+  </div>
+  <div
+    class="frame"
+    role="img"
+    tabindex="0"
+    aria-label="A file is uploaded to a web page, split into the words hello and world, sent over Wi-Fi to a Raspberry Pi 4, which creates hello.mp3 and world.mp3, then reads the text: it plays each word, then raises the six pins for each letter while the speaker says it."
+  >
+    <div class="fit">
+      <div class="canvas">
+        <svg id="story-svg" viewBox="0 -10 1060 570" width="1060" height="570" aria-hidden="true">
+          <!-- 2D: software. The web page, the text, the words, the audio files, the wires. -->
+          <g id="browser">
+            <rect class="ln draw" x="40" y="110" width="300" height="300" rx="4"></rect>
+            <path class="ln fade" d="M40 138H340"></path>
+            <text class="mono s12 fade" x="56" y="129">localhost:8000</text>
+            <rect class="ln dash fade" x="64" y="158" width="252" height="108" rx="3"></rect>
+            <text class="t14 dim fade mid" x="190" y="206">drop a file</text>
+            <text class="mono s11 dim fade mid" x="190" y="229">.txt   .docx   .pdf</text>
+            <rect class="ln fade" x="64" y="280" width="252" height="6" rx="1"></rect>
+            <rect id="bar" x="0" y="0" width="252" height="6" rx="1" class="fill-pin" transform="translate(64 280) scale(1 1)"></rect>
+            <text id="rawtext" class="mono s18" x="64" y="324" opacity="0">hello world</text>
+            <text class="mono s12 fade" x="64" y="379">interval  0.5 s</text>
+            <g id="runbtn" class="fade" transform="translate(0 0)">
+              <rect x="246" y="358" width="70" height="30" rx="3" class="fill-cap"></rect>
+              <text class="t14 mid" x="281" y="378">Run</text>
+            </g>
+          </g>
+          <g id="file" opacity="0" transform="translate(168 184)">
+            <path class="ln doc" d="M0 0H30L44 14V56H0Z M30 0V14H44"></path>
+            <path class="ln" d="M8 24H36M8 32H36M8 40H26"></path>
+            <text class="mono s11" x="22" y="72" text-anchor="middle">hello.txt</text>
+          </g>
+          <path id="arc" class="ln draw" d={WIRE_ARC}></path>
+          <g id="wifi" class="fade" transform="translate(405 150)">
+            <g class="wf">
+              <path class="ln" d="M-16 -2 A 22 22 0 0 1 16 -2"></path>
+              <path class="ln" d="M-10 5 A 14 14 0 0 1 10 5"></path>
+              <circle r="2.4" cy="11" class="fill-line"></circle>
+            </g>
+            <!-- the lit copy: crossfaded in on opacity, since a stroke colour is not animatable here -->
+            <g class="wf-hi" opacity="0">
+              <path class="lit" d="M-16 -2 A 22 22 0 0 1 16 -2"></path>
+              <path class="lit" d="M-10 5 A 14 14 0 0 1 10 5"></path>
+            </g>
+          </g>
+          {
+            cards.map((c) => (
+              <g id={`card${c.id}`} opacity="1" transform="translate(0 0)">
+                <rect class="ln card" x={c.x} y="36" width="112" height="84" rx="3"></rect>
+                <rect class="card-hi" x={c.x} y="36" width="112" height="84" rx="3" opacity="0"></rect>
+                <text class="mono s12" x={c.x + 12} y="56">{c.name}</text>
+                <path class="wave" d={c.wave}></path>
+                <path id={`play${c.id}`} class="playhead" d={`M${c.x + 12} 70V110`} opacity="0" transform="translate(0 0)"></path>
+              </g>
+            ))
+          }
+          <text id="bank" class="mono s11 dim" x="478" y="146">a.mp3 … z.mp3  recorded in advance</text>
+          <path id="w-cell" class="ln draw" d={WIRE_CELL}></path>
+          <path id="w-spk" class="ln draw" d={WIRE_SPK}></path>
+          <text class="t15 fade mid" x="597" y="372">Raspberry Pi 4</text>
+          <text class="t15 fade mid" x="895" y="322">six servos</text>
+          <text class="t15 fade mid" x="895" y="497">speaker</text>
+          {LETTERS.map((l) => <text class="bigletter mono s44" data-l={l} x="1000" y="216" opacity={l === LAST ? 1 : 0}>{l}</text>)}
+          <g id="waves" opacity="0.55" transform={WAVES_AT}>
+            <path class="ln wv" d="M8 -22 A 30 30 0 0 1 8 22"></path>
+            <path class="ln wv" d="M20 -32 A 44 44 0 0 1 20 32"></path>
+          </g>
+          <g id="tape">
+            <text class="mono s11 dim" x="415" y="500">reading</text>
+            <rect class="ln" x="415" y="505" width="350" height="40" rx="3"></rect>
+            {
+              TEXT.split('').map((c, i) => (
+                <g class="ch" data-i={i}>
+                  <text class="now" x={440 + i * 30} y="531" opacity={i === TEXT.length - 1 ? 1 : 0}>{c === ' ' ? NBSP : c}</text>
+                  <text class="was" x={440 + i * 30} y="531" opacity={i === TEXT.length - 1 ? 0 : 1}>{c === ' ' ? NBSP : c}</text>
+                </g>
+              ))
+            }
+            <!-- the read cursor: two rounded ends and two lines, so only transforms move it -->
+            <path id="cur-l" class="cursor" d="M3 509A3 3 0 0 0 0 512V538A3 3 0 0 0 3 541" transform={`translate(${CUR_X0} 0)`}></path>
+            <path id="cur-r" class="cursor" d="M-3 509A3 3 0 0 1 0 512V538A3 3 0 0 1 -3 541" transform={`translate(${CUR_X1} 0)`}></path>
+            <path id="cur-t" class="cursor line" d="M0 509H1" transform={`translate(${CUR_X0 + 3} 0) scale(${CUR_X1 - CUR_X0 - 6} 1)`}></path>
+            <path id="cur-b" class="cursor line" d="M0 541H1" transform={`translate(${CUR_X0 + 3} 0) scale(${CUR_X1 - CUR_X0 - 6} 1)`}></path>
+          </g>
+          <g id="chip0" opacity="0"><rect x="-34" y="-14" width="68" height="28" rx="3" class="fill-pin"></rect><text class="mono s15 chip mid" y="5">hello</text></g>
+          <g id="chip1" opacity="0"><rect x="-36" y="-14" width="72" height="28" rx="3" class="fill-pin"></rect><text class="mono s15 chip mid" y="5">world</text></g>
+          <circle id="dotRun" r="5" class="fill-pin" opacity="0"></circle>
+          <circle id="dotCell" r="5" class="fill-pin" opacity="0"></circle>
+          <circle id="dotSpk" r="5" class="fill-pin" opacity="0"></circle>
+        </svg>
+
+        <!-- 3D: hardware on a table, one camera angle for all three parts -->
+        <div class="scene" aria-hidden="true">
+          <div class="obj" id="o-pi" style="left:462px;top:165px;width:270px;height:190px">
+            <div class="bench" style="width:250px;height:160px;left:10px">
+              <!-- Raspberry Pi 4: board 240x160 (85x56 mm at ~2.85 px/mm), ports on the right edge, GPIO along the far edge -->
+              <Cub x={0} y={0} w={240} d={160} h={3} cls="pcb">
+                {[[10, 10], [178, 10], [10, 150], [178, 150]].map(([x, y]) => <i class="hole" style={`left:${x}px;top:${y}px`}></i>)}
+                <Cub x={24} y={4} w={144} d={15} h={9} cls="gpio">
+                  {Array.from({ length: 40 }, () => <i />)}
+                  <i class="anchor" id="a-gpio" style="left:144px;top:7px"></i>
+                </Cub>
+                <Cub x={86} y={58} w={46} d={46} h={4} cls="silver" />
+                <Cub x={144} y={60} w={30} d={42} h={3} cls="black" />
+                <Cub x={200} y={4} w={48} d={48} h={24} cls="silver" />
+                <Cub x={200} y={58} w={48} d={44} h={28} cls="silver" />
+                <Cub x={200} y={108} w={48} d={44} h={28} cls="silver" />
+                <Cub x={16} y={146} w={18} d={16} h={6} cls="silver" />
+                <Cub x={50} y={148} w={14} d={13} h={5} cls="silver" />
+                <Cub x={76} y={148} w={14} d={13} h={5} cls="silver" />
+                <Cub x={108} y={144} w={15} d={18} h={11} cls="black">
+                  <i class="anchor" id="a-jack" slot="front" style="left:7.5px;top:5.5px"></i>
+                </Cub>
+                <span class="silk" style="left:30px;top:118px">Raspberry Pi 4 Model B</span>
+                <i class="led pwr" style="left:4px;top:28px"></i>
+                <i class="led act" style="left:4px;top:40px"><b class="lit" id="act-lit" style="opacity:0"></b></i>
+                <i class="anchor" id="a-pi-in" style="left:0px;top:82px"></i>
+              </Cub>
+            </div>
+          </div>
+
+          <div class="obj" id="o-cell" style="left:820px;top:136px;width:150px;height:170px">
+            <div class="bench" style="width:120px;height:170px;left:15px">
+              <!-- Braille cell: a wood block with six holes; each pin is stacked discs that rise -->
+              <Cub x={0} y={0} w={120} d={170} h={26} cls="woodblk">
+                {
+                  holes.map((h) => (
+                    <div class="bhole" data-n={h.n} style={`left:${h.left}px;top:${h.top}px`}>
+                      <span class="bpin">
+                        {PIN_LAYERS.map((f, i) => (
+                          <i
+                            class={i === 2 ? 'h' : 's'}
+                            style={h.up ? `opacity:1;transform:translateZ(${PIN_H * f}px)` : 'opacity:0;transform:translateZ(0px)'}
+                          />
+                        ))}
+                      </span>
+                    </div>
+                  ))
+                }
+                <i class="anchor" id="a-cell" style="left:0px;top:85px"></i>
+              </Cub>
+            </div>
+          </div>
+
+          <div class="obj" id="o-spk" style="left:835px;top:350px;width:120px;height:130px">
+            <div class="bench" style="width:86px;height:56px;left:17px">
+              <!-- speaker: a small box standing on the table, cone facing the viewer -->
+              <Cub x={0} y={0} w={86} d={56} h={86} cls="spkbox">
+                <Fragment slot="front">
+                  <div class="cone"></div>
+                  <div class="dust"></div>
+                  <i class="anchor" id="a-spk-in" style="left:0px;top:43px"></i>
+                  <i class="anchor" id="a-spk-out" style="left:86px;top:43px"></i>
+                </Fragment>
+              </Cub>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,432 @@
+/* EduBra's "How it works" scroll story (EdubraStory.astro, story.ts), ported from Arthur's
+ * reference prototype edubra-story.html (2026-09-30). Rule of the section: hardware is CSS 3D
+ * (Raspberry Pi 4, Braille cell, speaker), software is the 2D SVG; both sit in one fixed
+ * 1060x570 canvas that is scaled as a whole, so they share coordinates.
+ *
+ * Colours below are the objects' materials (board, metal, wood, pins), scoped to .story like
+ * .device's, not site palette; ground, graphite and signal come from the tokens.
+ *
+ * THE 3D CHAIN: .obj (perspective) > .bench > .cub > .top / .front > nested .cub ... keeps
+ * transform-style: preserve-3d. Nothing from .bench down may get overflow other than
+ * visible, opacity below 1 or a filter — any of them flattens the chain silently. Opacity
+ * only ever changes on .obj (above the 3D context) and on leaves (pin discs, the ACT LED).
+ *
+ * Default = the static layout: every caption on the page, the drawing at its final state,
+ * scrolling sideways in its frame when the column is narrower than 763px. That is what
+ * no-JS, reduced motion and phones get. story.ts adds .is-live for the pinned layout. */
+.story {
+  --st-line: #6b7075;
+  --st-pin: #1f4f66;
+  --st-cap: #e8b93a;
+  --st-paper: #f2efe8;
+  --st-wood: #dbc59f;
+  --st-wood-tex: url('/textures/wood-medium.webp');
+  --st-tilt: 45deg;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.story .head {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+
+/* captions: stacked in the static layout */
+.story .caps {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+  min-width: 320px;
+}
+.story .cap {
+  display: grid;
+  grid-template-columns: 18px 104px 1fr;
+  gap: 12px;
+  align-items: baseline;
+  margin: 0;
+}
+.story .cap b {
+  font: 500 13px var(--font-mono);
+  color: var(--st-pin);
+}
+.story .cap strong {
+  font-weight: 500;
+  font-size: 17px;
+  white-space: nowrap;
+}
+.story .cap span {
+  font-size: 15px;
+  color: var(--color-graphite-2);
+}
+.story .ticks {
+  display: none;
+  gap: 6px;
+}
+.story .ticks i {
+  position: relative;
+  width: 22px;
+  height: 3px;
+  background: var(--color-line);
+}
+.story .ticks u {
+  position: absolute;
+  inset: 0;
+  background: var(--st-pin);
+  opacity: 0;
+  text-decoration: none;
+}
+
+/* the canvas: .fit is sized by CSS alone (aspect-ratio, plus a max-height when live), and
+ * story.ts reads the scale back from it, so applying the scale never shifts the layout */
+.story .frame {
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+.story .fit {
+  position: relative;
+  width: max(100%, 763px);
+  aspect-ratio: 1060 / 570;
+  min-height: 0;
+}
+html:not(.js) .story .fit {
+  width: 763px; /* the canvas is at its fixed 0.72 scale without JavaScript */
+}
+.story .canvas {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1060px;
+  height: 570px;
+  transform-origin: 0 0;
+  transform: scale(0.72);
+}
+.story #story-svg {
+  position: absolute;
+  left: 0;
+  top: 0;
+  overflow: visible;
+}
+.story .scene {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* the pinned layout */
+.story.is-live {
+  height: 100vh;
+  box-sizing: border-box;
+  padding: 28px 0;
+  justify-content: center;
+}
+.story.is-live .caps {
+  position: relative;
+  display: block;
+  height: 44px;
+}
+.story.is-live .cap {
+  position: absolute;
+  inset: 0 0 auto 0;
+  display: flex;
+  opacity: 0;
+}
+.story.is-live .cap strong {
+  white-space: normal;
+}
+.story.is-live .ticks {
+  display: flex;
+}
+.story.is-live .frame {
+  overflow: visible;
+}
+.story.is-live .fit {
+  width: 100%;
+  max-height: calc(100vh - 150px);
+}
+
+/* ---------- 2D drawing language ---------- */
+.story .ln {
+  fill: none;
+  stroke: var(--st-line);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.story .dash {
+  stroke-dasharray: 5 5;
+}
+.story .doc,
+.story .card {
+  fill: var(--st-paper);
+}
+.story .card-hi {
+  fill: none;
+  stroke: var(--st-pin);
+  stroke-width: 2;
+}
+.story .mono {
+  font-family: var(--font-mono);
+}
+.story .s11 {
+  font-size: 11px;
+}
+.story .s12 {
+  font-size: 12px;
+}
+.story .s15 {
+  font-size: 15px;
+}
+.story .s18 {
+  font-size: 18px;
+}
+.story .s44 {
+  font-size: 44px;
+  font-weight: 500;
+}
+.story .t14 {
+  font-size: 14px;
+}
+.story .t15 {
+  font-size: 15px;
+}
+.story svg text {
+  fill: var(--color-graphite);
+}
+.story svg .dim {
+  fill: var(--color-graphite-2);
+}
+.story .mid {
+  text-anchor: middle;
+}
+.story svg .chip {
+  fill: var(--st-paper);
+}
+.story .fill-pin {
+  fill: var(--st-pin);
+}
+.story .fill-cap {
+  fill: var(--st-cap);
+}
+.story .fill-line {
+  fill: var(--st-line);
+}
+.story .wave {
+  fill: none;
+  stroke: var(--st-pin);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+.story .playhead {
+  fill: none;
+  stroke: var(--color-signal);
+  stroke-width: 2;
+}
+.story .wv {
+  stroke: var(--st-pin);
+  stroke-width: 2;
+}
+.story .lit {
+  fill: none;
+  stroke: var(--st-pin);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+}
+.story .ch text {
+  font: 500 20px var(--font-mono);
+  text-anchor: middle;
+}
+.story .ch .was {
+  fill: var(--color-graphite-2);
+}
+.story .cursor {
+  fill: none;
+  stroke: var(--st-pin);
+  stroke-width: 2;
+}
+.story .cursor.line {
+  vector-effect: non-scaling-stroke;
+}
+.story svg .bigletter {
+  fill: var(--st-pin);
+}
+
+/* ---------- 3D: hardware on a table, one camera angle for all three ---------- */
+.story .obj {
+  position: absolute;
+  perspective: 900px;
+  perspective-origin: 50% 20%;
+}
+.story .bench {
+  position: absolute;
+  bottom: 0;
+  transform-style: preserve-3d;
+  transform-origin: 50% 100%;
+  transform: rotateX(var(--st-tilt));
+}
+.story .cub {
+  position: absolute;
+  transform-style: preserve-3d;
+}
+.story .cub > .top {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+}
+.story .cub > .front {
+  position: absolute;
+  left: 0;
+  right: 0;
+  transform-origin: 50% 0;
+}
+.story .anchor {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  margin: -1px 0 0 -1px;
+}
+
+/* Raspberry Pi 4 */
+.story .pcb > .top {
+  background: linear-gradient(160deg, #23834b, #18693a);
+  border-radius: 6px;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.06);
+}
+.story .pcb > .front {
+  background: #0f4a28;
+  border-radius: 0 0 3px 3px;
+}
+.story .hole {
+  position: absolute;
+  width: 11px;
+  height: 11px;
+  margin: -5.5px;
+  border-radius: 50%;
+  background: var(--color-ground);
+  box-shadow: 0 0 0 2.5px #c9a24a;
+}
+.story .silk {
+  position: absolute;
+  font: 500 8px/1 var(--font-sans);
+  color: #e9f2ea;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+.story .silver > .top {
+  background: linear-gradient(135deg, #eef0f2, #b9bdc2);
+}
+.story .silver > .front {
+  background: linear-gradient(#a8adb2, #8d9297);
+}
+.story .black > .top {
+  background: #222326;
+}
+.story .black > .front {
+  background: #111214;
+}
+.story .gpio > .top {
+  background: #1c1d1f;
+  display: grid;
+  grid-template-columns: repeat(20, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  padding: 3px 2px;
+  box-sizing: border-box;
+  gap: 2px 3px;
+}
+.story .gpio > .top i {
+  background: #caa64e;
+  border-radius: 1px;
+}
+.story .led {
+  position: absolute;
+  width: 5px;
+  height: 7px;
+  border-radius: 1px;
+}
+.story .led.pwr {
+  background: #e2483e;
+  box-shadow: 0 0 6px 2px rgb(226 72 62 / 0.55);
+}
+.story .led.act {
+  background: #1e5a33;
+}
+/* the ACT LED's lit copy: the same LED, crossfaded in on opacity */
+.story .led.act .lit {
+  position: absolute;
+  inset: 0;
+  border-radius: 1px;
+  background: #8dff9f;
+  box-shadow: 0 0 8px 3px rgb(120 255 150 / 0.65);
+}
+
+/* Braille cell block, same wood as the device box */
+.story .woodblk > .top {
+  background: var(--st-wood) var(--st-wood-tex) 0 0 / 256px 256px;
+  border-radius: 3px;
+}
+.story .woodblk > .front {
+  background: var(--st-wood) var(--st-wood-tex) 0 0 / 256px 256px;
+}
+.story .woodblk > .front::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgb(70 48 22 / 0.3);
+}
+.story .bhole {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  margin: -14px;
+  border-radius: 50%;
+  background: #c2a375;
+  box-shadow:
+    inset 0 0 0 1.5px #6b4f2e,
+    inset 0 3px 4px rgb(70 48 22 / 0.45);
+  transform-style: preserve-3d;
+}
+.story .bpin {
+  position: absolute;
+  inset: 3px;
+  transform-style: preserve-3d;
+}
+.story .bpin > i {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+}
+.story .bpin .s {
+  background: #173b4c;
+}
+.story .bpin .h {
+  background: radial-gradient(circle at 38% 32%, #2c6683, #1f4f66 62%);
+}
+
+/* speaker */
+.story .spkbox > .top {
+  background: #3a3b3e;
+  border-radius: 3px;
+}
+.story .spkbox > .front {
+  background: #2a2b2d;
+  display: grid;
+  place-items: center;
+}
+.story .cone {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #1b1c1e 52%, #3b3c40 54%, #2e2f32 68%, #46474b 70%, #2e2f32 76%);
+}
+.story .dust {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 22px;
+  height: 22px;
+  margin: -11px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 34%, #5a5c61, #2a2b2e 70%);
+}

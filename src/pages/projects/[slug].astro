@@ -14,7 +14,7 @@ import Base from '../../shared/layouts/Base.astro'
 import Rule from '../../shared/components/Rule.astro'
 import ProjectPage from '../../projects/ProjectPage.astro'
 import EdubraDevice from '../../projects/edubra/EdubraDevice.astro'
-import EdubraDiagram from '../../projects/edubra/EdubraDiagram.astro'
+import EdubraStory from '../../projects/edubra/EdubraStory.astro'
 import { PROJECT_PAGES } from '../../projects/projects'
 
 export async function getStaticPaths() {
@@ -37,7 +37,7 @@ const { entry } = Astro.props
     <Rule />
     <ProjectPage entry={entry}>
       {entry.id === 'edubra' && <EdubraDevice word="EDUBRA" />}
-      {entry.id === 'edubra' && <EdubraDiagram slot="after" />}
+      {entry.id === 'edubra' && <EdubraStory slot="after" />}
     </ProjectPage>
   </main>
 </Base>
