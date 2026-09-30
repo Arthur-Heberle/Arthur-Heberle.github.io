@@ -377,9 +377,10 @@ cell, which was a pinned scrub through step 14 and a GSAP loop earlier that day.
   beneath. A press sinks the cap, for the keyboard too.
 - **Why the controls matter:** they make the endless, self-starting loop acceptable
   (WCAG 2.2.2). An IntersectionObserver also stops the loop while it's off screen.
-- **Exception to §8 (Arthur's decision):** the device stays 3D and animated below 768px,
-  stacking the letters and putting the buttons in a row. Under reduced motion the loop
-  still steps, with no transitions.
+- **Exception to §8 (Arthur's decision):** the device stays 3D and animated below 768px.
+  At every width the word stays on the left and the 2×2 buttons on the right. Narrower
+  devices shrink the holes and buttons, and below ~640px the word wraps into EDU / BRA.
+  Under reduced motion the loop still steps, with no transitions.
 - **Without JS:** the first letter is raised and the controls are absent.
 
 The device converts text to touch, and the set-piece performs exactly that conversion. It

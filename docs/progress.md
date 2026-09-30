@@ -690,6 +690,24 @@ GSAP loop and the pad.
   - Lighthouse EduBra: mobile 99/100/100 CLS 0.0014, desktop 100/100/100 CLS 0. JS is
     67.6KB gzip.
 
+After step 14 — **the device no longer stacks (Arthur): 2×2 buttons on the right at every
+width.**
+- **What changed:** the prototype's fixed sizes became variables on `.device .stage`
+  (container queries can't style the container itself). Instead of switching to a column,
+  three container-query tiers shrink the lid:
+  - **≤845px:** holes 24px, buttons 48px.
+  - **≤640px:** holes 20px, buttons 42px, and the word wraps 3+3, EDU / BRA.
+  - **≤315px:** holes 18px, buttons 38px.
+- **Tier widths:** each tier's row width is worked out in type.css against its own lower
+  bound.
+- **Verified headless at 1280/768/600/375/320:**
+  - The lid never overflows, the buttons are always right of the word, and the page never
+    scrolls sideways.
+  - The word is on one row down to 768 and on two rows below.
+  - The buttons stay ≥38px.
+  - The full device suite still passes: 3D chain, controls, off-screen pause, reduced
+    motion, no-JS.
+
 ---
 
 ## Notes for future sessions

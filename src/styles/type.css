@@ -405,6 +405,18 @@ body {
   container-type: inline-size;
 }
 .device .stage {
+  /* Sizes as variables so the container queries below can shrink the whole lid while
+   * keeping its layout: word on the left, 2x2 buttons on the right, at every width. */
+  --hole-size: 30px;
+  --dot-gap: 14px 16px;
+  --cell-gap: 26px;
+  --cell-inner-gap: 18px;
+  --label-size: 20px;
+  --btn-size: 56px;
+  --btn-gap: 18px 20px;
+  --icon-size: 26px;
+  --lid-gap: 56px;
+  --lid-pad: 44px 36px 30px;
   perspective: 2000px;
   perspective-origin: 50% 10%;
   position: relative;
@@ -432,8 +444,8 @@ body {
   background: var(--wood) var(--wood-tex) 0 0 / 512px 512px repeat;
   display: flex;
   align-items: center;
-  gap: 56px;
-  padding: 44px 36px 30px;
+  gap: var(--lid-gap);
+  padding: var(--lid-pad);
 }
 /* light falls from above: the far edge of the lid is a touch brighter */
 .device .lid::before {
@@ -463,28 +475,28 @@ body {
 
 .device .word {
   display: flex;
-  gap: 26px;
+  gap: var(--cell-gap);
   transform-style: preserve-3d;
 }
 .device .cell {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 18px;
+  gap: var(--cell-inner-gap);
   transform-style: preserve-3d;
 }
 .device .dots {
   display: grid;
-  grid-template-columns: repeat(2, 30px);
-  grid-template-rows: repeat(3, 30px);
+  grid-template-columns: repeat(2, var(--hole-size));
+  grid-template-rows: repeat(3, var(--hole-size));
   grid-auto-flow: column; /* dots 1,2,3 down the left column, 4,5,6 down the right */
-  gap: 14px 16px;
+  gap: var(--dot-gap);
   transform-style: preserve-3d;
 }
 .device .pos {
   position: relative;
-  width: 30px;
-  height: 30px;
+  width: var(--hole-size);
+  height: var(--hole-size);
   transform-style: preserve-3d;
 }
 .device .hole {
@@ -542,7 +554,7 @@ body {
  * flattens 3D children) */
 .device .label {
   font-family: var(--font-sans);
-  font-size: 20px;
+  font-size: var(--label-size);
   line-height: 1;
   font-weight: 500;
   color: #4b4842;
@@ -565,8 +577,8 @@ body {
 .device .controls {
   margin-left: auto;
   display: none;
-  grid-template-columns: repeat(2, 56px);
-  gap: 18px 20px;
+  grid-template-columns: repeat(2, var(--btn-size));
+  gap: var(--btn-gap);
   justify-items: center;
   transform-style: preserve-3d;
 }
@@ -575,8 +587,8 @@ body {
 }
 .device .btn {
   position: relative;
-  width: 56px;
-  height: 56px;
+  width: var(--btn-size);
+  height: var(--btn-size);
   border: 0;
   padding: 0;
   background: none;
@@ -615,8 +627,8 @@ body {
   transition: transform var(--dur-feedback) var(--ease-out);
 }
 .device .btn .cap svg {
-  width: 26px;
-  height: 26px;
+  width: var(--icon-size);
+  height: var(--icon-size);
   fill: none;
   stroke: var(--color-graphite);
   stroke-width: 2.4;
@@ -660,27 +672,62 @@ body {
   margin-top: 2px;
 }
 
+/* Narrower devices keep the same layout — word left, 2x2 buttons right (Arthur) — and
+ * shrink instead of stacking. Each tier's row width is worked out so it fits its own
+ * lower bound: 6 cells + gaps + lid gap + buttons + padding. */
 @container (max-width: 845px) {
+  /* 6 x 61 + 5 x 16 + 28 + (2 x 48 + 14) + 2 x 24 = 632px */
+  .device .stage {
+    --hole-size: 24px;
+    --dot-gap: 11px 13px;
+    --cell-gap: 16px;
+    --cell-inner-gap: 14px;
+    --label-size: 17px;
+    --btn-size: 48px;
+    --btn-gap: 14px 14px;
+    --icon-size: 22px;
+    --lid-gap: 28px;
+    --lid-pad: 34px 24px 24px;
+  }
+}
+@container (max-width: 640px) {
+  /* The word breaks into two rows of three (EDU / BRA) to leave room on the right:
+   * 3 x 50 + 2 x 14 + 16 + (2 x 42 + 10) + 2 x 14 = 316px */
   .device .box {
     --tilt: 16deg;
   }
-  .device .lid {
-    flex-direction: column;
-    gap: 28px;
-    padding: 32px 20px 24px;
+  .device .stage {
+    --hole-size: 20px;
+    --dot-gap: 9px 10px;
+    --dot-gap-x: 10px;
+    --cell-gap: 14px;
+    --cell-inner-gap: 12px;
+    --label-size: 15px;
+    --btn-size: 42px;
+    --btn-gap: 12px 10px;
+    --icon-size: 20px;
+    --lid-gap: 16px;
+    --lid-pad: 28px 14px 22px;
   }
   .device .word {
     flex-wrap: wrap;
-    justify-content: center;
-    row-gap: 26px;
-    max-width: 360px;
+    row-gap: 22px;
+    max-width: calc(3 * (2 * var(--hole-size) + var(--dot-gap-x)) + 2 * var(--cell-gap));
   }
-  .device .controls {
-    margin: 0;
-    grid-template-columns: repeat(4, 56px);
-  }
-  .device .speed {
-    text-align: center;
+}
+@container (max-width: 315px) {
+  /* 320px phones: 3 x 45 + 2 x 12 + 12 + (2 x 38 + 8) + 2 x 10 = 275px */
+  .device .stage {
+    --hole-size: 18px;
+    --dot-gap: 8px 9px;
+    --dot-gap-x: 9px;
+    --cell-gap: 12px;
+    --label-size: 14px;
+    --btn-size: 38px;
+    --btn-gap: 10px 8px;
+    --icon-size: 18px;
+    --lid-gap: 12px;
+    --lid-pad: 24px 10px 20px;
   }
 }
 @media (prefers-reduced-motion: reduce) {
