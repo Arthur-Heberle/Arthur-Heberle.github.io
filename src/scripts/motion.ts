@@ -516,8 +516,15 @@ function setPieceBraille(): (() => void) | undefined {
     const pins = cell.querySelectorAll('.braille-dot')
     // fromTo's immediateRender hides every pin at creation, before the first paint the
     // braille-pending guard (Base.astro) was covering for.
-    tl.fromTo(pins, { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: BRAILLE_RISE, ease: EASE_OUT }, up)
-    tl.to(pins, { scale: 0, opacity: 0, duration: BRAILLE_RISE, ease: EASE_OUT }, down)
+    // transformOrigin: each pin scales about its own centre (its hole). Set here, never in
+    // CSS as well — see type.css's .braille-cells note.
+    tl.fromTo(
+      pins,
+      { scale: 0, opacity: 0, transformOrigin: '50% 50%' },
+      { scale: 1, opacity: 1, duration: BRAILLE_RISE, ease: EASE_OUT, transformOrigin: '50% 50%' },
+      up,
+    )
+    tl.to(pins, { scale: 0, opacity: 0, duration: BRAILLE_RISE, ease: EASE_OUT, transformOrigin: '50% 50%' }, down)
     if (letters[i]) {
       tl.to(letters[i], { opacity: 1, duration: BRAILLE_RISE, ease: EASE_OUT }, up)
       tl.to(letters[i], { opacity: 0, duration: BRAILLE_RISE, ease: EASE_OUT }, down)

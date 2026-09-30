@@ -592,6 +592,22 @@ one-shot sequence just above):
   - The console is clean.
   - Lighthouse EduBra is 100/100/100 on mobile (CLS 0) and on desktop (CLS 0.0003).
 
+After step 14 — **fixed: the Braille pins flew in from the right instead of appearing in
+their holes** (reported by Arthur).
+- **Measured:** headless, comparing each dot's rendered centre with its own `cx/cy` every
+  frame. While animating, dots sat down-right of their holes, and the distance grew with
+  the cell's x: E up to 142px, A up to 727px.
+- **Cause:** a double transform-origin.
+  - type.css (step 13) gave `.braille-dot` `transform-box: fill-box; transform-origin: center`.
+  - GSAP writes SVG transforms into the `transform` attribute and had already baked that
+    origin into its matrix (`matrix(0,0,0,0,cx,cy)` at scale 0).
+  - The browser applied the CSS origin to that attribute a second time.
+  - Net effect: at scale s, a dot is (1−s)·(cx,cy) off its hole. The old scrub and the
+    0.85 one-shot had the same bug, just smaller.
+- **Fix:** delete the CSS rule and set `transformOrigin: '50% 50%'` in the tweens.
+- **Result:** max drift 0.02px across 131 mid-animation samples, and the loop, pause, speed,
+  reduced-motion and mobile checks all unchanged.
+
 ---
 
 ## Notes for future sessions
@@ -998,3 +1014,12 @@ gotchas, things that looked right and weren't.
   because some files carry mixed CRLF/LF line endings (`file` reports CRLF; `od` on a single
   line shows LF). Read the file and use the `Edit` tool, which matches on content; a Python
   `str.replace` on a multi-line block assumed to be LF will silently assert-fail.
+- **Never give an SVG element a CSS `transform-origin`/`transform-box` if GSAP transforms
+  it.** GSAP bakes the origin into the element's `transform` attribute, and the browser
+  applies the CSS origin on top, so the element drifts by (1−scale)·(its position). Set
+  `transformOrigin` in the tween instead. This is how the Braille pins "flew in from the
+  right" until 2026-09-29.
+- The claude-in-chrome tab can report `visibilityState: hidden`, which freezes rAF, so no
+  animation can be sampled there. Use headless Playwright Chromium over raw CDP
+  (`Emulation.setDeviceMetricsOverride` + `Page.addScriptToEvaluateOnNewDocument` with a
+  per-frame rAF logger) to measure motion.

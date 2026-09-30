@@ -389,13 +389,9 @@ body {
   aspect-ratio: 4 / 1;
   overflow: visible;
 }
-/* An SVG element's default transform-origin is (0,0) of its own coordinate system, not
- * its visual centre — fill-box + a percentage origin corrects that per element, so each
- * dot scales about itself rather than the whole cell row. */
-.braille-dot {
-  transform-box: fill-box;
-  transform-origin: center;
-}
+/* No transform-origin on .braille-dot, on purpose: GSAP owns it (transformOrigin in
+ * motion.ts's tweens) and bakes it into the SVG `transform` attribute, and a CSS origin
+ * would be applied on top of that — counted twice, so the pins flew in from the right. */
 
 /* The text row: one grid column per letter, so its centres land under the SVG's own cell
  * centres (braille.ts sizes every cell at the same 1/n fraction of the viewBox width —
