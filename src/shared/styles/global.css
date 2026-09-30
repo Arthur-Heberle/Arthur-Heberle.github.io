@@ -21,6 +21,7 @@
 /* home: archive rows, tag filter, count */
 @import "../../home/archive/archive.css";
 /* projects/edubra: the 3D device, the "How it works" scroll story and "By the numbers" */
+@import "../../projects/project.css";
 @import "../../projects/edubra/device.css";
 @import "../../projects/edubra/story.css";
 @import "../../projects/edubra/numbers.css";

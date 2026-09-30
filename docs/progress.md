@@ -1629,3 +1629,28 @@ Then, at his request: the icon is 2.5em (~42px) with a ~2.6px graphite stroke, a
 the display face (Archivo Expanded 500, body size) to be eye-catching. That is a second use of the display
 face, which design-spec.md §5 reserves for display lines: Arthur's call, logged here, first child of `ProjectPage.astro`'s article. Static (not sticky), no motion,
 no token or library change. Recorded in design-spec.md §6.
+
+After the EduBra brief — **project pages: origin link at the top, title block at the foot; the house
+icon is gone** (Arthur's brief, 2026-09-30). Replaces the house-icon "Home" link (`HomeLink.astro` and its
+`.home` CSS deleted; no house icon anywhere in `src/`).
+- **Top, `OriginLink.astro`:** one `<a href="/" aria-label="Arthur Heberle, back to home">`: a 20px
+  circle-and-crosshair mark (1.5px graphite) and "Arthur Heberle" in the body font (Archivo, body size).
+  On hover and keyboard focus a 14px leader (graphite-2, 1.5px) draws leftward out of the mark by
+  `stroke-dashoffset` (120ms, `--ease-out`, a CSS transition) and retracts on leave. No arrow character.
+  Focus ring: the global 2px `:focus-visible` one. Reduced motion: the site's 0.01ms transition
+  convention makes the line appear instantly. It sits inside the 16px gutter on phones.
+- **The mark is not the hero's.** The brief says "the same mark used in the home page hero" and "a small
+  circle with a crosshair", but the hero's mark is an L-shaped corner bracket (step 12 dropped the
+  crosshair; half of it fell off the top of the page). Arthur chose the circle and crosshair as written.
+- **Bottom, `TitleBlock.astro`:** a 1px graphite-2 ruled box, left aligned. Top row "Arthur Heberle /
+  index" (index links to `/`), second row "EduBra, sheet 01 of 07" in mono. NN is the project's place in
+  the home archive's order (the new shared `sortArchive.ts`, which `Archive.astro` now uses too, so the
+  two cannot disagree); TT is all archive entries (Arthur's choice over counting only entries with a
+  page). "sheet NN+1" becomes a link when the next entry in that order has a project page; none does yet
+  (EduBra is first and the rest have no pages), so there is no link today. "Project name" is the title
+  before its dash.
+- **Verified (headless Chromium over CDP):** one link, name and text as briefed, target 140x34px, no
+  overflow at 1280 or 375; hover draws and leaving retracts the leader; Tab reaches it with a visible
+  2px ring and the leader drawn; no-JS identical at rest; title block text exact, `index` is its only link;
+  AX links are "Arthur Heberle, back to home" and "index", none named "Home"; the home archive still has
+  7 rows with EduBra first.

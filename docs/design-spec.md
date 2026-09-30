@@ -196,8 +196,12 @@ time. Template (changed by Arthur, 2026-09-30): title and intro (with an optiona
 note beside it), the set-piece, the project's own sections, "How we built it" (optional),
 "My part" (which replaced "What I did" and "Role and team"), "What I'd do differently", Links
 last. "What I'd do differently" is unusual and worth keeping. Every project page also opens with
-a small **"Home" link** (a hairline house and the word written on the page, no button chrome; static, not sticky):
-Arthur's decision, 2026-09-30.
+an **origin link** (a small circle-and-crosshair mark and "Arthur Heberle", one link home; a
+short leader draws out of the mark on hover and focus) and ends with a **title block** in the style
+of an engineering drawing (a thin-ruled box: "Arthur Heberle / index", then "<Project>, sheet NN of
+TT" in mono, NN being the project's place in the home archive's order and TT the number of archive
+entries; "sheet NN+1" links to the next project page when that entry has one). Arthur's decision,
+2026-09-30; it replaced a house-icon "Home" link the same day.
 
 EduBra also carries a **"How it works" scroll story** after the set-piece and its "Try a
 word" field (file → web page → Wi-Fi → Raspberry Pi 4 → audio files → six servos + speaker).

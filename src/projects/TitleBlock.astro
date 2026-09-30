@@ -1,0 +1,33 @@
+---
+// A title block at the foot of every project page, in the style of an engineering drawing's
+// (Arthur's brief, 2026-09-30): a thin-ruled box; top line "Arthur Heberle / index" (index is
+// the link home); second line "<Project name>, sheet NN of TT" in mono, where NN is the
+// project's place in the home archive's own order and TT the number of archive entries.
+// When the next entry in that order has a project page, "sheet NN+1" is a link to it. Left
+// aligned, nothing centred. No middle dots.
+interface Props {
+  name: string
+  sheet: number
+  total: number
+  next?: { sheet: number; href: string; name: string }
+}
+const { name, sheet, total, next } = Astro.props
+const nn = (n: number) => String(n).padStart(2, '0')
+---
+
+<div class="titleblock" role="group" aria-label="Sheet information">
+  <p class="tb-top">Arthur Heberle / <a href="/">index</a></p>
+  <p class="tb-sheet">
+    {name}, sheet {nn(sheet)} of {nn(total)}
+    {
+      next && (
+        <>
+          {' / '}
+          <a href={next.href} aria-label={`Next: ${next.name}, sheet ${nn(next.sheet)}`}>
+            sheet {nn(next.sheet)}
+          </a>
+        </>
+      )
+    }
+  </p>
+</div>

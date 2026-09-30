@@ -1,0 +1,22 @@
+---
+// The way back to the home page, at the top of every project page (Arthur's brief, 2026-09-30):
+// an origin mark (a small circle with a crosshair, 1.5px graphite) and "Arthur Heberle" in the
+// body font, all one link. On hover and keyboard focus a short graphite-2 leader line draws
+// leftward out of the mark (stroke-dashoffset, 120ms, the site ease) and retracts on leave;
+// under reduced motion it simply appears. The mark is new: the home hero's origin mark is an
+// L-shaped corner bracket, not a circle and crosshair, and Arthur chose the circle.
+// Decorative SVGs are aria-hidden; the link's name is the aria-label. The focus ring is the
+// global :focus-visible one (tokens.css). No arrow character.
+---
+
+<a class="origin-link" href="/" aria-label="Arthur Heberle, back to home">
+  <!-- the leader: 14 units long in a 14px box, so its dash length is its real length -->
+  <svg class="origin-leader" viewBox="0 0 14 2" aria-hidden="true" focusable="false">
+    <path d="M14 1H0"></path>
+  </svg>
+  <svg class="origin-mark" viewBox="0 0 20 20" aria-hidden="true" focusable="false">
+    <circle cx="10" cy="10" r="5"></circle>
+    <path d="M10 1V19M1 10H19"></path>
+  </svg>
+  <span>Arthur Heberle</span>
+</a>

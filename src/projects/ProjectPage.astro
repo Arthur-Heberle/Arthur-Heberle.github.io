@@ -17,7 +17,11 @@
 // `project` still renders correctly — Fill.astro's policy is unchanged.
 import type { CollectionEntry } from 'astro:content'
 import Fill from '../shared/components/Fill.astro'
-import HomeLink from '../shared/components/HomeLink.astro'
+import { getCollection } from 'astro:content'
+import OriginLink from './OriginLink.astro'
+import TitleBlock from './TitleBlock.astro'
+import { sortArchive } from '../home/archive/sortArchive'
+import { hasProjectPage, projectPageHref } from './projects'
 import MarginNote from '../home/spine/MarginNote.astro'
 import Tick from '../shared/components/Tick.astro'
 
@@ -34,13 +38,24 @@ if (!project) {
 }
 
 const hasLinks = Boolean(links.repo || links.live || project.paper)
+
+// The title block: this project's place in the home archive's own order, and the next entry
+// if it has a project page of its own. "Project name" is the title before its dash.
+const sorted = sortArchive(await getCollection('archive'))
+const at = sorted.findIndex((e) => e.id === entry.id)
+const nameOf = (t: string) => t.split(' — ')[0]
+const following = sorted[at + 1]
+const next =
+  following && hasProjectPage(following.id)
+    ? { sheet: at + 2, href: projectPageHref(following.id), name: nameOf(following.data.title) }
+    : undefined
 ---
 
 <article class="flex flex-col gap-16 py-16">
   <Tick />
 
   <!-- the way back: first in the page, not revealed by motion -->
-  <HomeLink />
+  <OriginLink />
 
   <div class="flex flex-col gap-4">
     <h1 id="project-heading" class="text-h2 font-sans font-medium" data-anim>{title}</h1>
@@ -131,4 +146,5 @@ const hasLinks = Boolean(links.repo || links.live || project.paper)
       </section>
     )
   }
+  <TitleBlock name={nameOf(title)} sheet={at + 1} total={sorted.length} next={next} />
 </article>

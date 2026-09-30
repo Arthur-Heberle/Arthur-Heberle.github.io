@@ -6,21 +6,14 @@
 // better.
 import { getCollection } from 'astro:content'
 import ArchiveRow from './ArchiveRow.astro'
+import { sortArchive } from './sortArchive'
 import Tick from '../../shared/components/Tick.astro'
 
 const entries = await getCollection('archive')
 
-// Sort: pinned first, then by date descending, then entries with an unresolved [FILL]
-// date last (in their existing collection order — Array#sort is stable, and glob()
-// yields entries in filename order, so this needs no explicit tiebreak of its own).
-const sorted = entries.slice().sort((a, b) => {
-  if (a.data.pinned !== b.data.pinned) return a.data.pinned ? -1 : 1
-  const aFill = a.data.date.includes('[FILL')
-  const bFill = b.data.date.includes('[FILL')
-  if (aFill !== bFill) return aFill ? 1 : -1
-  if (aFill && bFill) return 0
-  return b.data.date.localeCompare(a.data.date)
-})
+// Pinned first, then date descending, [FILL] dates last (sortArchive.ts, shared with the project
+// pages' title block).
+const sorted = sortArchive(entries)
 
 const VISIBLE = 6
 const visible = sorted.slice(0, VISIBLE)
