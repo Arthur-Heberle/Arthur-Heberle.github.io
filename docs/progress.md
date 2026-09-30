@@ -1611,3 +1611,8 @@ After step 14 — **EduBra stage 5: final check** (Arthur's brief, 2026-09-30).
 - **JS:** about 74 KB gzip in total (motion 72.8 KB, the rest under 2 KB each), under the 90 KB floor.
 - **Not tested here:** Firefox, desktop Safari and iOS Safari, as before (see the open question
   above). The `speechSynthesis` voice on iOS is still the standard pattern, not a test result.
+
+After the EduBra brief — **a one-line hint above the device demo** (Arthur, 2026-09-30): "Press the
+buttons, turn the knob on its side, or type your own word below." Small text, `--graphite-2`
+(4.59:1 on the ground), shown only with JS since nothing on the demo works without it. The wording is
+mine, not from the brief: change it in `EdubraDevice.astro`.

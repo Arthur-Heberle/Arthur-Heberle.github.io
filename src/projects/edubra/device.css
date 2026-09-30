@@ -53,6 +53,15 @@
   --box-depth: 72px;
   container-type: inline-size;
 }
+/* the hint above the demo: small, quiet, and only where the controls exist */
+.device .hint {
+  display: none;
+  margin: 0 0 14px;
+  color: var(--color-graphite-2);
+}
+.js .device .hint {
+  display: block;
+}
 .device .stage {
   /* Sizes as variables so the container queries below can shrink the whole lid while
    * keeping its layout: word on the left, the cross on the right, at every width.
