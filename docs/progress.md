@@ -608,6 +608,20 @@ their holes** (reported by Arthur).
 - **Result:** max drift 0.02px across 131 mid-animation samples, and the loop, pause, speed,
   reduced-motion and mobile checks all unchanged.
 
+After step 14 — the Braille controls become a cross-shaped pad beside the word (Arthur).
+- **Layout:** up = restart the word, left = slower, right = faster, down = pause/play, and
+  the speed count (`1×`, `aria-live`) in the centre.
+- **Buttons:** icon-only `.control feedback` squares (2.5rem), with inline hairline SVG
+  icons, an `aria-label` and a `title` each.
+- **Pause/play:** the icon swaps on `data-paused`, and the name swaps on `aria-label`.
+- **Restart:** `tl.restart()` also un-pauses, so one press gets the intent.
+- **Stage:** where the loop runs, it becomes a grid (`word | pad`), and it stays a static
+  column everywhere else.
+- **Verified headless:** the pad sits right of the word, vertically centred, as a cross
+  44px around the centre. Restart from paused resumes at E. Pause, speed bounds, zero pin
+  drift, reduced motion and mobile are all unchanged. Lighthouse desktop is 100/100/100,
+  CLS 0.
+
 ---
 
 ## Notes for future sessions

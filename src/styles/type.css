@@ -414,24 +414,80 @@ body {
 .braille-letter-hi {
   opacity: 0;
 }
-/* The loop's controls: the device's own buttons (BrailleCell.astro). Only where the loop
- * runs — the same three conditions as motion.ts's setPieceBraille() branch, with `.js` set
- * before first paint, so they never appear and then vanish (the .filter-bar precedent). */
+/* The loop's controls: the device's own buttons (BrailleCell.astro), as a cross-shaped pad
+ * beside the word — up restart, left slower, right faster, down pause/play, speed in the
+ * middle. Only where the loop runs — the same three conditions as motion.ts's
+ * setPieceBraille() branch, with `.js` set before first paint, so they never appear and
+ * then vanish (the .filter-bar precedent). There the stage turns from a column into
+ * word | pad; everywhere else it stays the static column. */
+.braille-word {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 0;
+}
 .braille-controls {
   display: none;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.5rem;
+  grid-template-columns: repeat(3, 2.5rem);
+  grid-template-rows: repeat(3, 2.5rem);
+  grid-template-areas:
+    '. up .'
+    'left centre right'
+    '. down .';
+  gap: 0.25rem;
 }
 @media (min-width: 768px) and (prefers-reduced-motion: no-preference) {
+  .js .braille-stage {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--spacing-gutter);
+  }
   .js .braille-controls {
-    display: flex;
+    display: grid;
   }
 }
-/* Pause <-> Play swaps its label; a fixed width keeps the buttons beside it still. */
-[data-braille-toggle] {
-  min-width: 5.5em;
-  text-align: center;
+.braille-controls .control {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+}
+.braille-controls .control svg {
+  width: 0.875rem;
+  height: 0.875rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.25;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.dpad-up {
+  grid-area: up;
+}
+.dpad-left {
+  grid-area: left;
+}
+.dpad-right {
+  grid-area: right;
+}
+.dpad-down {
+  grid-area: down;
+}
+.dpad-centre {
+  grid-area: centre;
+  display: grid;
+  place-items: center;
+  margin: 0;
+}
+/* Pause shows the pause bars; once paused (data-paused, set by motion.ts) it shows play. */
+.icon-play,
+[data-paused] .icon-pause {
+  display: none;
+}
+[data-paused] .icon-play {
+  display: block;
 }
 .braille-controls .control:disabled {
   cursor: default;

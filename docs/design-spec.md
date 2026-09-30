@@ -368,8 +368,9 @@ opacity, 120ms, `--ease-out`, no translate). They hold for 600ms, drop, and the 
 character rises. After the last letter there's a 600ms pause, then it repeats. The text
 version renders alongside, and the letter whose pins are up is highlighted.
 
-Under the letters are the device's own buttons: **Pause/Play, Slower, Faster** (0.5×–2×),
-with the current speed shown as a count. They are also what makes an endless,
+Beside the word is a cross-shaped pad of the device's own buttons: **up** restarts the word,
+**left** slower, **right** faster (0.5×–2×), **down** pause/play, and the current speed sits
+as a count in the middle. They are also what makes an endless,
 self-starting loop acceptable (WCAG 2.2.2), and the loop pauses itself while it's out of view.
 The controls exist only where the loop runs (≥768px, motion allowed, JS). Everywhere else the
 cell is a static, complete word. The device converts text to touch, and the set-piece

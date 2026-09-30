@@ -9,8 +9,9 @@
 // next. A failed GSAP load leaves this already-complete diagram, the same pattern
 // Rule.astro/Tick.astro/MarginNote.astro already use.
 //
-// The controls under the letters (pause/play, slower, faster) are the device's own
-// buttons, and they are what makes a looping animation acceptable (WCAG 2.2.2: anything
+// The controls beside the word are a cross-shaped pad (Arthur, 2026-09-29): up restarts
+// the word, left slower, right faster, down pause/play, the current speed in the middle.
+// They are the device's own buttons, and they are what makes a looping animation acceptable (WCAG 2.2.2: anything
 // moving for more than 5s needs a way to pause it). Shown only where the loop runs (JS,
 // >=768px, motion allowed — type.css); absent everywhere else, where the cell is static.
 //
@@ -36,6 +37,7 @@ const viewWidth = cells.length * 6
 ---
 
 <div class="braille-stage" data-braille={word} data-anim>
+  <div class="braille-word">
   <svg
     class="braille-cells"
     viewBox={`0 0 ${viewWidth} 9`}
@@ -83,10 +85,56 @@ const viewWidth = cells.length * 6
       ))
     }
   </div>
+  </div>
   <div class="braille-controls" role="group" aria-label="Braille animation">
-    <button type="button" class="control feedback" data-braille-toggle>Pause</button>
-    <button type="button" class="control feedback" data-braille-speed="-1">Slower</button>
-    <button type="button" class="control feedback" data-braille-speed="1">Faster</button>
-    <p class="filter-count" aria-live="polite" data-braille-rate>1× speed</p>
+    <button
+      type="button"
+      class="control feedback dpad-up"
+      data-braille-restart
+      aria-label="Restart the word"
+      title="Restart the word"
+    >
+      <svg viewBox="0 0 12 12" aria-hidden="true">
+        <path d="M9.5 6.5 A3.5 3.5 0 1 1 8 3.2" />
+        <path d="M8.4 0.8 V3.6 H5.6" />
+      </svg>
+    </button>
+    <button
+      type="button"
+      class="control feedback dpad-left"
+      data-braille-speed="-1"
+      aria-label="Slower"
+      title="Slower"
+    >
+      <svg viewBox="0 0 12 12" aria-hidden="true">
+        <path d="M6 2.5 L2.5 6 L6 9.5 M9.5 2.5 L6 6 L9.5 9.5" />
+      </svg>
+    </button>
+    <p class="filter-count dpad-centre" aria-live="polite" data-braille-rate>1×</p>
+    <button
+      type="button"
+      class="control feedback dpad-right"
+      data-braille-speed="1"
+      aria-label="Faster"
+      title="Faster"
+    >
+      <svg viewBox="0 0 12 12" aria-hidden="true">
+        <path d="M2.5 2.5 L6 6 L2.5 9.5 M6 2.5 L9.5 6 L6 9.5" />
+      </svg>
+    </button>
+    <button
+      type="button"
+      class="control feedback dpad-down"
+      data-braille-toggle
+      aria-label="Pause"
+      title="Pause"
+    >
+      <svg class="icon-pause" viewBox="0 0 12 12" aria-hidden="true">
+        <path d="M4 2.5 V9.5 M8 2.5 V9.5" />
+      </svg>
+      <svg class="icon-play" viewBox="0 0 12 12" aria-hidden="true">
+        <path d="M3.5 2.5 L9.5 6 L3.5 9.5 Z" />
+      </svg>
+    </button>
   </div>
 </div>

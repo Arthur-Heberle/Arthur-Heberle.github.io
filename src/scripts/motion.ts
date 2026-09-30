@@ -482,8 +482,9 @@ const BRAILLE_RATES = [0.5, 0.75, 1, 1.5, 2] // Slower/Faster steps, applied as 
  *  while its pins are up. After the last letter, one hold's pause, then it starts over.
  *  The outline wells never animate, so every cell's six positions are always visible.
  *
- *  Controls (BrailleCell.astro) are the device's buttons: Pause/Play, Slower, Faster
- *  (timeScale through BRAILLE_RATES). They're also what makes an endless, self-starting
+ *  Controls (BrailleCell.astro) are the device's buttons, laid out as a cross-shaped pad:
+ *  up restarts the word, left Slower, right Faster (timeScale through BRAILLE_RATES), down
+ *  Pause/Play. They're also what makes an endless, self-starting
  *  loop acceptable — WCAG 2.2.2 requires a way to pause motion that runs past 5s. The loop
  *  also pauses itself whenever the stage is out of view, and resumes on return unless the
  *  reader paused it.
@@ -505,6 +506,7 @@ function setPieceBraille(): (() => void) | undefined {
   const cells = gsap.utils.toArray<SVGGElement>('.braille-cell', stage)
   const letters = gsap.utils.toArray<HTMLElement>('.braille-letter-hi', stage)
   const toggle = stage.querySelector<HTMLButtonElement>('[data-braille-toggle]')
+  const restart = stage.querySelector<HTMLButtonElement>('[data-braille-restart]')
   const speedButtons = gsap.utils.toArray<HTMLButtonElement>('[data-braille-speed]', stage)
   const rateOut = stage.querySelector<HTMLElement>('[data-braille-rate]')
 
@@ -569,16 +571,28 @@ function setPieceBraille(): (() => void) | undefined {
   const showRate = () => {
     const rate = BRAILLE_RATES[rateIndex]
     tl.timeScale(rate)
-    if (rateOut) rateOut.textContent = `${rate}× speed`
+    if (rateOut) rateOut.textContent = `${rate}×`
     speedButtons.forEach((b) => {
       const step = Number(b.dataset.brailleSpeed)
       b.disabled = !BRAILLE_RATES[rateIndex + step]
     })
   }
-  const onToggle = () => {
-    userPaused = !userPaused
-    if (toggle) toggle.textContent = userPaused ? 'Play' : 'Pause'
+  // The pad's down button: its icon swaps on data-paused (type.css), its name on aria-label.
+  const setPaused = (paused: boolean) => {
+    userPaused = paused
+    if (toggle) {
+      toggle.toggleAttribute('data-paused', paused)
+      toggle.setAttribute('aria-label', paused ? 'Play' : 'Pause')
+      toggle.title = paused ? 'Play' : 'Pause'
+    }
     sync()
+  }
+  const onToggle = () => setPaused(!userPaused)
+  // The pad's up button: back to the first letter, and running — restarting a word you
+  // then have to un-pause would be two presses for one intent.
+  const onRestart = () => {
+    tl.restart()
+    setPaused(false)
   }
   const onSpeed = (e: Event) => {
     const step = Number((e.currentTarget as HTMLButtonElement).dataset.brailleSpeed)
@@ -588,10 +602,13 @@ function setPieceBraille(): (() => void) | undefined {
   }
   showRate()
   toggle?.addEventListener('click', onToggle)
+  restart?.addEventListener('click', onRestart)
   speedButtons.forEach((b) => b.addEventListener('click', onSpeed))
 
   return () => {
     toggle?.removeEventListener('click', onToggle)
+    restart?.removeEventListener('click', onRestart)
+    toggle?.removeAttribute('data-paused')
     speedButtons.forEach((b) => b.removeEventListener('click', onSpeed))
   }
 }
