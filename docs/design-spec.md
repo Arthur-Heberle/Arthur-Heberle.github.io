@@ -196,7 +196,7 @@ time. Template (changed by Arthur, 2026-09-30): title and intro (with an optiona
 note beside it), the set-piece, the project's own sections, "How we built it" (optional),
 "My part" (which replaced "What I did" and "Role and team"), "What I'd do differently", Links
 last. "What I'd do differently" is unusual and worth keeping. Every project page also opens with
-a small **"Home" link** (a hairline house and the word, in the control style; static, not sticky):
+a small **"Home" link** (a hairline house and the word written on the page, no button chrome; static, not sticky):
 Arthur's decision, 2026-09-30.
 
 EduBra also carries a **"How it works" scroll story** after the set-piece and its "Try a

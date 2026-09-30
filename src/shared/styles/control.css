@@ -14,13 +14,20 @@
   font-family: var(--font-sans);
   font-size: var(--text-small);
 }
-.control.home {
+/* The project pages' "Home" link: no chrome, just the house and the word on the page. The
+ * vertical padding keeps the target 24px or more tall without drawing anything. */
+.home {
   display: inline-flex;
+  width: fit-content;
   align-items: center;
   gap: 0.5em;
+  padding-block: 0.4em;
   text-decoration: none;
+  color: var(--color-graphite-2);
+  font-family: var(--font-sans);
+  font-size: var(--text-small);
 }
-.control.home svg {
+.home svg {
   width: 1.1em;
   height: 1.1em;
   fill: none;

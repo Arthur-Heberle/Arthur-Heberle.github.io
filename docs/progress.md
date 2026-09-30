@@ -1623,6 +1623,7 @@ It names the callouts and the Sound button because those exist in every layout; 
 don't on phones or under reduced motion.
 
 After the EduBra brief — **a "Home" link at the top of every project page** (Arthur, 2026-09-30).
-`HomeLink.astro` (shared): a real `<a href="/">` in the `.control feedback` chrome with a hairline house
-icon and the text "Home", first child of `ProjectPage.astro`'s article. Static (not sticky), no motion,
+`HomeLink.astro` (shared): a real `<a href="/">` with a hairline house icon and the text "Home",
+written straight on the page (no button chrome: Arthur asked for that right after the first version),
+in `--graphite-2` (4.59:1 on the ground), first child of `ProjectPage.astro`'s article. Static (not sticky), no motion,
 no token or library change. Recorded in design-spec.md §6.
