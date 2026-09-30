@@ -372,14 +372,19 @@ cell, which was a pinned scrub through step 14 and a GSAP loop earlier that day.
   ~900ms, then drop with the same transition, and only then does the next character rise.
   After A there's a longer pause, then it repeats. The letter whose pins are up is marked
   under its cell.
-- **The buttons:** four round, tactile yellow buttons in a 2×2 grid: ⏮ back to the start
-  of the word, ⏯ pause/play, − slower, + faster (0.5×–2×), with the speed as a count
-  beneath. A press sinks the cap, for the keyboard too.
+- **The controls** (prototype v2): a black **volume knob**, like the real box's
+  potentiometer. It steps off / low / high by click or arrow keys, starts off, and speaks
+  each letter as its pins rise through the browser's own speech synthesis.
+- **The buttons:** beside the knob, a **cross** of four round, tactile yellow buttons: up ⏮
+  back to the start of the word, left − slower, right + faster (0.5×–2×), down ⏯
+  pause/play, with the speed as a count in the middle. A press sinks the cap, for the
+  keyboard too.
 - **Why the controls matter:** they make the endless, self-starting loop acceptable
   (WCAG 2.2.2). An IntersectionObserver also stops the loop while it's off screen.
 - **Exception to §8 (Arthur's decision):** the device stays 3D and animated below 768px.
-  At every width the word stays on the left and the 2×2 buttons on the right. Narrower
-  devices shrink the holes and buttons, and below ~640px the word wraps into EDU / BRA.
+  At every width the word stays on the left and the knob and cross on the right. Narrower
+  devices shrink the holes and buttons. Below ~670px the word wraps into EDU / BRA and the
+  knob moves above the cross.
   Under reduced motion the loop still steps, with no transitions.
 - **Without JS:** the first letter is raised and the controls are absent.
 

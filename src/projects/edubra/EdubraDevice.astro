@@ -2,7 +2,8 @@
 // The EduBra device set-piece — design-spec.md §9, "the strongest piece on the site".
 // Ported from Arthur's reference prototype (edubra-device-3d.html, 2026-09-29), not
 // redesigned: a wooden box tilted back in CSS 3D, one Braille character at a time on six
-// pins, and four tactile yellow buttons (restart, pause/play, slower, faster).
+// pins, a volume knob that speaks each letter, and a cross of four tactile yellow buttons
+// (up restart, left slower, right faster, down pause/play) — controls per prototype v2.
 //
 // Markup is rendered here, not built by script, so the page reads without JavaScript: the
 // first letter's pins ship raised, and the controls are absent without `.js` (type.css).
@@ -55,7 +56,14 @@ const cells = brailleCells(word)
             ))
           }
         </div>
-        <div class="controls">
+        <div class="panel">
+          <div class="knobwrap">
+            <button type="button" class="knob" data-knob aria-label="Volume: off">
+              <span class="well" /><span class="sd" /><span class="sd2" /><span class="top" />
+            </button>
+            <span class="vol" aria-hidden="true" data-vol>off</span>
+          </div>
+          <div class="cross">
           <button type="button" class="btn" data-back aria-label="Back to the start of the word">
             <span class="well" /><span class="sd" /><span class="sd2" />
             <span class="cap">
@@ -66,6 +74,19 @@ const cells = brailleCells(word)
                   d="M17.5 6.8v10.4a.8.8 0 0 1-1.2.7l-7.9-5.2a.8.8 0 0 1 0-1.4l7.9-5.2a.8.8 0 0 1 1.2.7z"
                 />
               </svg>
+            </span>
+          </button>
+          <button type="button" class="btn" data-slower aria-label="Slower">
+            <span class="well" /><span class="sd" /><span class="sd2" />
+            <span class="cap">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 12h12" /></svg>
+            </span>
+          </button>
+          <div class="speed" aria-live="polite" data-speed>1×</div>
+          <button type="button" class="btn" data-faster aria-label="Faster">
+            <span class="well" /><span class="sd" /><span class="sd2" />
+            <span class="cap">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 12h12M12 6v12" /></svg>
             </span>
           </button>
           <button type="button" class="btn" data-play aria-label="Pause" aria-pressed="false">
@@ -80,19 +101,7 @@ const cells = brailleCells(word)
               </svg>
             </span>
           </button>
-          <button type="button" class="btn" data-slower aria-label="Slower">
-            <span class="well" /><span class="sd" /><span class="sd2" />
-            <span class="cap">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 12h12" /></svg>
-            </span>
-          </button>
-          <button type="button" class="btn" data-faster aria-label="Faster">
-            <span class="well" /><span class="sd" /><span class="sd2" />
-            <span class="cap">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 12h12M12 6v12" /></svg>
-            </span>
-          </button>
-          <div class="speed" aria-live="polite" data-speed>1×</div>
+          </div>
         </div>
       </div>
       <div class="front" aria-hidden="true"></div>
@@ -143,21 +152,64 @@ const cells = brailleCells(word)
         c.pos.forEach((p) => p.classList.remove('up'))
         c.label.classList.remove('on')
       })
+    // Sound, from prototype v2: the knob is the real box's volume potentiometer, stepping
+    // off / low / high. Each letter is spoken as its pins rise, through the browser's own
+    // speech synthesis — no library, no audio files. Starts off, so nothing ever plays
+    // until the reader turns it up.
+    const VOLS = [
+      { name: 'off', v: 0, deg: -135 },
+      { name: 'low', v: 0.5, deg: 0 },
+      { name: 'high', v: 1, deg: 135 },
+    ]
+    const knob = device.querySelector<HTMLButtonElement>('[data-knob]')!
+    const knobTop = knob.querySelector<HTMLElement>('.top')!
+    const volText = device.querySelector<HTMLElement>('[data-vol]')!
+    const canSpeak = 'speechSynthesis' in window
+    let volIx = 0
+    const hush = () => {
+      if (canSpeak) speechSynthesis.cancel()
+    }
+    const speak = (ch: string) => {
+      if (!VOLS[volIx].v || !canSpeak) return
+      speechSynthesis.cancel()
+      const u = new SpeechSynthesisUtterance(ch.toLowerCase())
+      u.lang = 'en-US'
+      u.volume = VOLS[volIx].v
+      u.rate = Math.min(1.6, 0.9 * SPEEDS[speedIx])
+      speechSynthesis.speak(u)
+    }
+    const setVol = (ix: number) => {
+      volIx = Math.min(VOLS.length - 1, Math.max(0, ix))
+      knobTop.style.setProperty('--angle', `${VOLS[volIx].deg}deg`)
+      knob.setAttribute('aria-label', `Volume: ${VOLS[volIx].name}`)
+      volText.textContent = VOLS[volIx].name
+      if (!VOLS[volIx].v) hush()
+    }
+
     const raise = (k: number, announce: boolean) => {
       cells[k].pos.forEach((p) => p.classList.toggle('up', 'raised' in p.dataset))
       cells[k].label.classList.add('on')
+      speak(cells[k].ch)
       if (announce) live.textContent = `Letter ${cells[k].ch}: dots ${raisedDots(k).join(', ')}`
     }
-    // Drop whatever is up, then raise letter k once the drop has finished.
+    // Drop whatever is up, then raise letter k once the drop has finished. The wait starts
+    // on the next frame, not now: if the main thread is busy (measured at page load), a
+    // plain timeout can fire before the drop transition has even begun, and for a few
+    // frames two letters would show at once.
+    let showToken = 0
     const show = (k: number, announce = false) => {
+      const token = ++showToken
       window.clearTimeout(raiseTimer)
       drop()
-      raiseTimer = window.setTimeout(() => raise(k, announce), dropMs())
+      requestAnimationFrame(() => {
+        if (token !== showToken) return
+        raiseTimer = window.setTimeout(() => raise(k, announce), dropMs())
+      })
     }
 
     const schedule = () => {
       window.clearTimeout(timer)
-      if (!playing || !visible) return
+      if (!playing || !visible) return hush()
       const last = i === cells.length - 1
       timer = window.setTimeout(
         () => {
@@ -202,6 +254,19 @@ const cells = brailleCells(word)
       schedule()
     })
 
+    // Click steps the knob round (off → low → high → off); arrow keys turn it up or down.
+    knob.addEventListener('click', () => setVol((volIx + 1) % VOLS.length))
+    knob.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
+        e.preventDefault()
+        setVol(volIx + 1)
+      }
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
+        e.preventDefault()
+        setVol(volIx - 1)
+      }
+    })
+
     // Keyboard presses get the same sinking cap as a mouse press.
     device.querySelectorAll<HTMLButtonElement>('.btn').forEach((b) => {
       b.addEventListener('keydown', (e) => {
@@ -222,6 +287,7 @@ const cells = brailleCells(word)
 
     renderPlay()
     renderSpeed()
+    setVol(0)
     schedule()
   }
 </script>

@@ -720,6 +720,32 @@ After step 14 — **`src/` reorganised by domain (Arthur), no behaviour change.*
     `.control` now ahead of `.archive-row`; they never style the same element.
   - Build and `astro check` are clean.
 
+After step 14 — **EduBra controls follow prototype v2** (`edubra-device-3d.html` v2 and
+`public/edubra-device-3d-preview.png`, both from Arthur).
+- **Knob and cross:** a volume knob, then a cross of buttons: up ⏮, left −, right +,
+  down ⏯, speed in the middle. This replaces the 2×2.
+- **Sound:** the knob steps off / low / high (click cycles, arrows step and clamp). Each
+  letter is spoken as its pins rise via `speechSynthesis` (en-US, rate follows speed), with
+  no library. It starts off, and it's cancelled on pause, off screen, or off.
+- **The knob turns on `transform` only**, and reduced motion drops that transition.
+- **Not ported yet:** v2's "Try a word" input, because Arthur asked for the cross and the
+  sound only. It is a new feature (§6/§9), so it waits for his call.
+- **Fit:** v2's row needs ~944px against an 855px column. Desktop sizes are slightly
+  smaller than v2's (holes 26, buttons 48, knob 50, 830px row), and the container-query
+  tiers are recomputed. ≤669px wraps the word EDU / BRA and stacks the knob above the
+  cross.
+- **Fixed on the way:** the drop→raise wait now starts on the next frame. Under the
+  page-load stall, a bare timeout had let two letters overlap for 3 frames.
+- **Verified headless:**
+  - At 1280/768/600/375/320 the cross is symmetric around the speed readout, sitting
+    right of the word. The lid never overflows, and the page never scrolls sideways.
+  - The knob starts off with nothing spoken. Low speaks at volume 0.5, high at 1, the
+    angle follows (−135/0/135°), and the arrow keys clamp.
+  - 3D chain: 99 elements OK.
+  - Zero overlap frames in 6 runs.
+  - Controls, off-screen pause, reduced motion and no-JS all pass. The console is clean.
+  - Lighthouse EduBra: mobile 99/100/100 CLS 0.0015, desktop 100/100/100 CLS 0.
+
 ---
 
 ## Notes for future sessions

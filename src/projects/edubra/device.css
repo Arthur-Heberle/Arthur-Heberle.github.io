@@ -2,16 +2,19 @@
  * edubra-device-3d.html (2026-09-29). Device colours are tokens scoped to .device — they
  * are the object's materials (wood, pins, yellow caps), not site palette.
  *
- * THE 3D CHAIN: .box > .lid > .word > .cell > .dots > .pos > .pin, and .lid > .controls >
- * .btn > .cap, all keep transform-style: preserve-3d. Nothing in that chain may get
+ * THE 3D CHAIN: .box > .lid > .word > .cell > .dots > .pos > .pin, and .lid > .panel >
+ * .cross > .btn > .cap and .panel > .knobwrap > .knob, all keep transform-style:
+ * preserve-3d. Nothing in that chain may get
  * overflow other than visible, opacity below 1, or a filter — any of them flattens the
  * whole thing silently. Opacity only ever changes on leaves (.pin > i, the cap icons).
  * Only transform and opacity animate; box shadows are static.
  *
- * Divergences from the prototype, both for fit: the page column is at most 855px and the
- * prototype's row needed ~910, so the cell gap is 26px (was 34) and the lid's side padding
- * 36px (was 48); and the stacked layout switches on the device's own width (container
- * query) instead of an 820px viewport. The active letter is weight 500, not 600 — the site
+ * Controls follow prototype v2 (Arthur, 2026-09-29): a volume knob, then a cross of four
+ * buttons (up back to the start, left slower, right faster, down pause/play, speed in the
+ * middle). Divergences, for fit: the page column is at most 855px and v2's row needs ~944,
+ * so desktop sizes are a little smaller than v2's, and narrower devices shrink in
+ * container-query tiers instead of stacking (Arthur: word left, controls right, always);
+ * the narrow tiers put the knob above the cross. The active letter is weight 500, not 600 — the site
  * ships Archivo 400/500 only, and 600 would be faux-bold. Pins also drop with a transition
  * now instead of instantly (Arthur), and the script waits for the drop before raising. */
 .device {
@@ -27,6 +30,9 @@
   --cap-lo: #d6a324;
   --cap-side: #a97d18;
   --cap-side-2: #c3931f;
+  --knob: #2a2b2d;
+  --knob-hi: #4a4c50;
+  --knob-side: #151617;
   --tilt: 20deg;
   --pin-h: 7px;
   --cap-h: 8px;
@@ -35,17 +41,22 @@
 }
 .device .stage {
   /* Sizes as variables so the container queries below can shrink the whole lid while
-   * keeping its layout: word on the left, 2x2 buttons on the right, at every width. */
-  --hole-size: 30px;
-  --dot-gap: 14px 16px;
+   * keeping its layout: word on the left, knob + cross on the right, at every width.
+   * Row width here: 6 x 64 + 5 x 26 + 28 + (50 + 22 + 3 x 48 + 2 x 8) + 2 x 28 = 830px,
+   * inside the 855px column. */
+  --hole-size: 26px;
+  --dot-gap: 11px 12px;
+  --dot-gap-x: 12px;
   --cell-gap: 26px;
-  --cell-inner-gap: 18px;
-  --label-size: 20px;
-  --btn-size: 56px;
-  --btn-gap: 18px 20px;
-  --icon-size: 26px;
-  --lid-gap: 56px;
-  --lid-pad: 44px 36px 30px;
+  --cell-inner-gap: 16px;
+  --label-size: 18px;
+  --btn-size: 48px;
+  --cross-gap: 8px;
+  --icon-size: 22px;
+  --knob-size: 50px;
+  --panel-gap: 22px;
+  --lid-gap: 28px;
+  --lid-pad: 40px 28px 30px;
   perspective: 2000px;
   perspective-origin: 50% 10%;
   position: relative;
@@ -202,17 +213,37 @@
   background: var(--pin);
 }
 
-/* controls: round tactile buttons like the box. Absent without JS — they'd do nothing. */
-.device .controls {
+/* right side: volume knob + cross of four buttons, like the real box. Absent without JS —
+ * they would do nothing. */
+.device .panel {
   margin-left: auto;
   display: none;
-  grid-template-columns: repeat(2, var(--btn-size));
-  gap: var(--btn-gap);
-  justify-items: center;
+  align-items: center;
+  gap: var(--panel-gap);
   transform-style: preserve-3d;
 }
-.js .device .controls {
+.js .device .panel {
+  display: flex;
+}
+.device .cross {
   display: grid;
+  grid-template-columns: repeat(3, var(--btn-size));
+  grid-template-rows: repeat(3, var(--btn-size));
+  gap: var(--cross-gap);
+  place-items: center;
+  transform-style: preserve-3d;
+}
+.device [data-back] {
+  grid-area: 1 / 2;
+}
+.device [data-slower] {
+  grid-area: 2 / 1;
+}
+.device [data-faster] {
+  grid-area: 2 / 3;
+}
+.device [data-play] {
+  grid-area: 3 / 2;
 }
 .device .btn {
   position: relative;
@@ -287,56 +318,121 @@
 .device .btn:disabled .cap svg {
   opacity: 0.35;
 }
-.device .btn:focus-visible {
+.device .btn:focus-visible,
+.device .knob:focus-visible {
   outline: 2px solid var(--color-graphite);
   outline-offset: 6px;
 }
 .device .speed {
-  grid-column: 1 / -1;
+  grid-area: 2 / 2;
   font-family: var(--font-mono);
   font-size: 13px;
   line-height: 1;
   letter-spacing: 0.02em;
   color: var(--color-graphite);
-  margin-top: 2px;
 }
 
-/* Narrower devices keep the same layout — word left, 2x2 buttons right (Arthur) — and
- * shrink instead of stacking. Each tier's row width is worked out so it fits its own
- * lower bound: 6 cells + gaps + lid gap + buttons + padding. */
+/* volume knob, like the potentiometer on the real box: click or arrow keys step
+ * off / low / high. Only the top turns (transform); the body is static. */
+.device .knobwrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  transform-style: preserve-3d;
+}
+.device .knob {
+  position: relative;
+  width: var(--knob-size);
+  height: var(--knob-size);
+  border: 0;
+  padding: 0;
+  background: none;
+  cursor: pointer;
+  border-radius: 50%;
+  transform-style: preserve-3d;
+}
+.device .knob .well {
+  position: absolute;
+  inset: -7px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgb(90 62 28 / 0.35) 55%, transparent 72%);
+}
+.device .knob .sd {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--knob-side);
+}
+.device .knob .sd2 {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--knob-side);
+  transform: translateZ(6px);
+}
+.device .knob .top {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  transform: translateZ(12px) rotate(var(--angle, -135deg));
+  background: repeating-conic-gradient(from 0deg, var(--knob) 0 6deg, #323336 6deg 12deg);
+  transition: transform 180ms var(--ease-out);
+}
+.device .knob .top::before {
+  content: '';
+  position: absolute;
+  inset: 14%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 36% 30%, var(--knob-hi), var(--knob) 65%);
+}
+.device .knob .top::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 12%;
+  width: 3px;
+  height: 26%;
+  margin-left: -1.5px;
+  border-radius: 2px;
+  background: #f2efe8;
+}
+.device .vol {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  color: var(--color-graphite);
+}
+
+/* Narrower devices keep the same layout — word left, controls right (Arthur) — and shrink
+ * instead of stacking. Each tier's row width is worked out against its own lower bound. */
 @container (max-width: 845px) {
-  /* 6 x 61 + 5 x 16 + 28 + (2 x 48 + 14) + 2 x 24 = 632px */
+  /* 6 x 54 + 5 x 16 + 18 + (44 + 14 + 3 x 40 + 2 x 6) + 2 x 22 = 656px (tier is >= 670) */
   .device .stage {
-    --hole-size: 24px;
-    --dot-gap: 11px 13px;
+    --hole-size: 22px;
+    --dot-gap: 9px 10px;
+    --dot-gap-x: 10px;
     --cell-gap: 16px;
-    --cell-inner-gap: 14px;
-    --label-size: 17px;
-    --btn-size: 48px;
-    --btn-gap: 14px 14px;
-    --icon-size: 22px;
-    --lid-gap: 28px;
-    --lid-pad: 34px 24px 24px;
+    --cell-inner-gap: 13px;
+    --label-size: 16px;
+    --btn-size: 40px;
+    --cross-gap: 6px;
+    --icon-size: 19px;
+    --knob-size: 44px;
+    --panel-gap: 14px;
+    --lid-gap: 18px;
+    --lid-pad: 32px 22px 24px;
   }
 }
-@container (max-width: 640px) {
-  /* The word breaks into two rows of three (EDU / BRA) to leave room on the right:
-   * 3 x 50 + 2 x 14 + 16 + (2 x 42 + 10) + 2 x 14 = 316px */
+@container (max-width: 669px) {
+  /* The word breaks into two rows of three (EDU / BRA) and the knob sits above the cross:
+   * 3 x 54 + 2 x 16 + 18 + (3 x 40 + 2 x 6) + 2 x 22 = 388px (tier is >= 420) */
   .device .box {
     --tilt: 16deg;
   }
-  .device .stage {
-    --hole-size: 20px;
-    --dot-gap: 9px 10px;
-    --dot-gap-x: 10px;
-    --cell-gap: 14px;
-    --cell-inner-gap: 12px;
-    --label-size: 15px;
-    --btn-size: 42px;
-    --btn-gap: 12px 10px;
-    --icon-size: 20px;
-    --lid-gap: 16px;
-    --lid-pad: 28px 14px 22px;
+  .device .panel {
+    flex-direction: column;
   }
   .device .word {
     flex-wrap: wrap;
@@ -344,25 +440,43 @@
     max-width: calc(3 * (2 * var(--hole-size) + var(--dot-gap-x)) + 2 * var(--cell-gap));
   }
 }
-@container (max-width: 315px) {
-  /* 320px phones: 3 x 45 + 2 x 12 + 12 + (2 x 38 + 8) + 2 x 10 = 275px */
+@container (max-width: 419px) {
+  /* phones: 3 x 45 + 2 x 12 + 12 + (3 x 36 + 2 x 4) + 2 x 10 = 307px (tier is >= 316) */
   .device .stage {
     --hole-size: 18px;
     --dot-gap: 8px 9px;
     --dot-gap-x: 9px;
     --cell-gap: 12px;
+    --cell-inner-gap: 12px;
     --label-size: 14px;
-    --btn-size: 38px;
-    --btn-gap: 10px 8px;
-    --icon-size: 18px;
+    --btn-size: 36px;
+    --cross-gap: 4px;
+    --icon-size: 17px;
+    --knob-size: 40px;
+    --panel-gap: 12px;
     --lid-gap: 12px;
-    --lid-pad: 24px 10px 20px;
+    --lid-pad: 26px 10px 20px;
+  }
+}
+@container (max-width: 315px) {
+  /* 320px phones: 3 x 40 + 2 x 10 + 10 + (3 x 32 + 2 x 4) + 2 x 8 = 270px */
+  .device .stage {
+    --hole-size: 16px;
+    --dot-gap: 7px 8px;
+    --dot-gap-x: 8px;
+    --cell-gap: 10px;
+    --label-size: 13px;
+    --btn-size: 32px;
+    --icon-size: 15px;
+    --knob-size: 36px;
+    --lid-gap: 10px;
+    --lid-pad: 22px 8px 18px;
   }
 }
 @media (prefers-reduced-motion: reduce) {
   .device .pin > i,
-  .device .btn .cap {
+  .device .btn .cap,
+  .device .knob .top {
     transition: none !important;
   }
 }
-
