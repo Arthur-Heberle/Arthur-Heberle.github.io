@@ -39,8 +39,8 @@ project:
       The model is swappable: any OpenAI-compatible provider works. Today it runs on DeepSeek.
   next:
     - >-
-      Because you can add any .csv catalog file in there, an AI matches the columns, some values
-      still are matching wrong.
+      The CSV import is the shakiest part. You can upload any catalogue and an AI works out which
+      column is the price and which is the stock, but it still gets some values wrong.
     - >-
       Product photos are saved on the server's disk, which Railway wipes on every redeploy. They
       need to move to real storage.

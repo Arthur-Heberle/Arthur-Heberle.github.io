@@ -73,6 +73,7 @@ are chosen.
 | Stage | Step | Status | Notes |
 |---|---|---|---|
 | 1 | Accessibility, and make it a rule | done | **Nothing to fix: both pages were already clean.** AX tree (CDP `Accessibility.getFullAXTree`, headless Chromium, not Brave) at 1280 and 375, JS on / reduced motion / JS off: every text node inside `.canvas` (EduBra 17, Agente H 39) checked for an exact match in the tree, none found; no duplicate text; the drawing is one `image` node with the section description. Rule added to CLAUDE.md Hard rules. EduBra's reduced-motion callout buttons ("Audio jack: ...") are real controls, not drawing text, and were left |
+| 2 | Copy | done | first "What's next" item replaced verbatim in `src/content/archive/agente-h.md`; checked in the built page |
 
 ---
 
