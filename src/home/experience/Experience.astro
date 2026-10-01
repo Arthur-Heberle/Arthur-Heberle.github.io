@@ -1,12 +1,24 @@
 ---
-// Experience: a plain, semantic list (title, place, dates, role, people, summary), oldest first.
-// Kept as clean markup on purpose: a later task turns it into an animated timeline. Optional
-// fields (place, role, people) are omitted when missing or still a [FILL] (src/shared/fill.ts).
+// Experience: an ordered list (title, dates, then place, role, people, summary), oldest first, and
+// from 768px up a timeline drawn over it: a dimension-line axis from 2025.01 to the current month, one
+// row per entry with a bar covering its dates and its own object standing at the bar's start. The
+// collection is the only source of text; the axis, bars and objects are aria-hidden drawings, so the
+// accessibility tree holds the list and nothing else. Optional fields (place, role, people) are
+// omitted when missing or still a [FILL] (src/shared/fill.ts).
+//
+// timeline.ts (a separate chunk, fetched when the section nears the viewport) plays the arrival once.
+// Without it every part is in its final state.
 import { getCollection } from 'astro:content'
 import Tick from '../../shared/components/Tick.astro'
 import { isFilled } from '../../shared/fill'
+import { layout, monthOf } from './months'
+import Placeholder from './objects/Placeholder.astro'
 
 const entries = (await getCollection('experience')).sort((a, b) => a.data.start.localeCompare(b.data.start))
+const { spans, ticks } = layout(
+  entries.map((e) => e.data),
+  monthOf(new Date()),
+)
 // "2026-07" displays as "2026.07" (design-spec.md §7).
 const show = (month: string) => month.replace('-', '.')
 ---
@@ -14,24 +26,80 @@ const show = (month: string) => month.replace('-', '.')
 <section class="flex flex-col gap-8 py-16" aria-labelledby="experience-heading">
   <Tick />
   <h2 id="experience-heading" class="text-h2 font-sans font-medium" data-anim>Experience</h2>
-  <ol class="experience" role="list" data-anim data-delay="0.06">
-    {
-      entries.map(({ data }) => (
-        <li class="experience-item">
-          <h3 class="text-h3 font-sans font-medium">{data.title}</h3>
-          <p class="experience-meta font-mono text-dimension text-graphite-2">
-            {isFilled(data.place) && <span>{data.place}</span>}
-            <span>
-              <time datetime={data.start}>{show(data.start)}</time>
-              {' – '}
-              {data.end ? <time datetime={data.end}>{show(data.end)}</time> : 'now'}
-            </span>
-          </p>
-          {isFilled(data.role) && <p class="text-small text-graphite-2">{data.role}</p>}
-          {isFilled(data.people) && <p class="text-small text-graphite-2">{data.people}</p>}
-          <p class="measure text-body">{data.summary}</p>
-        </li>
-      ))
-    }
-  </ol>
+  <div class="xp-tl" data-xp>
+    <!-- the axis: a dimension line with arrowheads at both ends, year ticks (mono) and a small tick per month -->
+    <div class="xp-axis" aria-hidden="true">
+      <span class="xp-axis-line"></span>
+      <svg class="xp-arrow xp-arrow-l" viewBox="0 0 10 10" width="10" height="10" focusable="false"><path d="M10 1 L1 5 L10 9" /></svg>
+      <svg class="xp-arrow xp-arrow-r" viewBox="0 0 10 10" width="10" height="10" focusable="false"><path d="M0 1 L9 5 L0 9" /></svg>
+      {
+        ticks.map((t) => (
+          <span class={t.year ? 'xp-tick xp-tick-year' : 'xp-tick'} style={`left:${t.x}%`}>
+            {t.year && <span class="xp-year font-mono text-dimension text-graphite-2">{t.year}</span>}
+          </span>
+        ))
+      }
+    </div>
+    <ol class="xp" role="list">
+      {
+        entries.map(({ id, data }, i) => {
+          const span = spans[i]
+          const side = span.b < 50 ? 'right' : 'left'
+          return (
+            <li class="xp-row" data-side={side} style={`--a:${span.a}%;--b:${span.b}%`}>
+              <div class="xp-track">
+                <span class="xp-bar" aria-hidden="true"></span>
+                {span.open && (
+                  <span class="xp-open" aria-hidden="true">
+                    <svg viewBox="0 0 12 16" width="12" height="16" focusable="false"><path d="M1 1 L10 8 L1 15" /></svg>
+                    <span class="font-mono text-dimension text-graphite-2">now</span>
+                  </span>
+                )}
+                <div class="xp-obj" aria-hidden="true" data-obj={id}>
+                  <div class="xp-scene">
+                    <div class="xp-plane">
+                      <div class="xp-lift">
+                        <Placeholder />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="xp-label">
+                  <h3 class="xp-title text-small font-sans font-medium">{data.title}</h3>
+                  <p class="xp-dates font-mono text-dimension text-graphite-2">
+                    <time datetime={data.start}>{show(data.start)}</time>
+                    {' – '}
+                    {data.end ? <time datetime={data.end}>{show(data.end)}</time> : 'now'}
+                  </p>
+                </div>
+              </div>
+              <div class="xp-detail">
+                {isFilled(data.place) && <p class="text-small text-graphite-2">{data.place}</p>}
+                {isFilled(data.role) && <p class="text-small text-graphite-2">{data.role}</p>}
+                {isFilled(data.people) && <p class="text-small text-graphite-2">{data.people}</p>}
+                <p class="measure text-body">{data.summary}</p>
+              </div>
+            </li>
+          )
+        })
+      }
+    </ol>
+  </div>
 </section>
+
+<script>
+  // The motion is set up only when the timeline approaches the viewport: timeline.ts is a separate
+  // chunk, fetched here (the same pattern as the bench).
+  const timeline = document.querySelector<HTMLElement>('[data-xp]')
+  if (timeline) {
+    const near = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return
+        near.disconnect()
+        import('./timeline').then((m) => m.initTimeline(timeline))
+      },
+      { rootMargin: '400px 0px' },
+    )
+    near.observe(timeline)
+  }
+</script>

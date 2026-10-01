@@ -1,21 +1,252 @@
-/* The experience list (Experience.astro): one hairline-ruled item per entry, plain for now. */
-.experience {
+/* The experience list and its timeline (Experience.astro). Below 768px, and for readers without
+ * JavaScript at any width, it is a plain ruled list. From 768px up the entries sit on a timeline: a
+ * dimension-line axis, one row per entry, a bar over its dates and an object standing at the bar's
+ * start. Everything is placed by percentages along the axis (--a, --b, set per row in the markup),
+ * so the layout needs no script. Drawings are aria-hidden; only transform and opacity ever change
+ * (timeline.ts).
+ *
+ * THE 3D CHAIN, as in the bench: nothing from .xp-scene (the perspective element) down may get
+ * overflow other than visible, opacity below 1 or a filter if it has 3D children. */
+.xp {
   display: flex;
   flex-direction: column;
 }
-.experience-item {
+.xp-row {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
   padding-block: 1.5rem;
   border-top: var(--hairline) solid var(--color-line);
 }
-.experience-item:first-child {
+.xp-row:first-child {
   padding-top: 0;
   border-top: 0;
 }
-.experience-meta {
+.xp-dates {
+  margin: 0;
+}
+.xp-detail {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.25rem var(--spacing-gutter);
+  flex-direction: column;
+  gap: 0.5rem;
+}
+/* the drawings exist only on the timeline */
+.xp-axis,
+.xp-bar,
+.xp-open,
+.xp-obj {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .xp-tl {
+    --k: 0.84; /* the objects' scale, in the bench's four steps */
+    --row: 128px;
+    --bar: 6px;
+    position: relative;
+  }
+
+  /* ---------- the axis ---------- */
+  .xp-axis {
+    position: relative;
+    display: block;
+    height: 44px;
+  }
+  .xp-axis-line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 1px;
+    background: var(--color-graphite);
+    transform-origin: 0 50%;
+  }
+  .xp-arrow {
+    position: absolute;
+    bottom: -4.5px;
+    fill: none;
+    stroke: var(--color-graphite);
+    stroke-width: 1;
+  }
+  .xp-arrow-l {
+    left: 0;
+  }
+  .xp-arrow-r {
+    right: 0;
+  }
+  .xp-tick {
+    position: absolute;
+    bottom: 0;
+    width: 1px;
+    height: 5px;
+    background: var(--color-graphite);
+    transform-origin: 50% 100%;
+  }
+  .xp-tick-year {
+    height: 14px;
+  }
+  .xp-year {
+    position: absolute;
+    left: 6px;
+    top: -6px;
+  }
+
+  /* ---------- the rows ---------- */
+  .xp {
+    gap: 0;
+  }
+  .xp-row {
+    position: relative;
+    display: block;
+    padding: 0;
+    border-top: 0;
+  }
+  /* the drawing's own box: bars, objects and labels are placed in it, from its bottom edge */
+  .xp-track {
+    position: relative;
+    height: var(--row);
+  }
+  /* no scripting: the details stay in view under their row */
+  html:not(.js) .xp-detail {
+    padding: 0.5rem 0 1.5rem;
+  }
+  /* the bar: the entry's dates on the axis, from its start month to the end of its last month */
+  .xp-bar {
+    position: absolute;
+    display: block;
+    left: var(--a);
+    width: calc(var(--b) - var(--a));
+    bottom: 0;
+    height: var(--bar);
+    background: var(--color-graphite);
+    transform-origin: 0 50%;
+  }
+  /* an entry with no end: the bar stops in an open tip at the current month, labelled "now" */
+  .xp-open {
+    position: absolute;
+    display: block;
+    right: 0;
+    bottom: calc(var(--bar) / 2 - 8px);
+    width: 12px;
+    height: 16px;
+  }
+  .xp-open svg {
+    position: absolute;
+    inset: 0;
+    fill: none;
+    stroke: var(--color-graphite);
+    stroke-width: 1;
+  }
+  .xp-open span {
+    position: absolute;
+    right: 0;
+    bottom: 22px;
+  }
+
+  /* With scripting the details are read from the list, not seen on the page (stage 3 opens them as a callout
+   * by the row): visually hidden, still in the accessibility tree. Without it they stay in view below. */
+  .js .xp-detail {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  /* the label: title and dates beside the bar, on the side with room */
+  .xp-label {
+    position: absolute;
+    bottom: 0;
+    max-width: 260px;
+    padding-bottom: 14px;
+  }
+  .xp-row[data-side='right'] .xp-label {
+    left: calc(var(--b) + 16px);
+  }
+  .xp-row[data-side='left'] .xp-label {
+    right: calc(100% - var(--a) + 120px);
+    text-align: right;
+  }
+
+  /* ---------- the object: a CSS 3D scene on the bench's diagonal camera ---------- */
+  .xp-obj {
+    position: absolute;
+    display: block;
+    left: var(--a);
+    bottom: var(--bar);
+    width: 104px;
+    height: 112px;
+    scale: var(--k);
+    transform-origin: 0 100%;
+    pointer-events: none;
+  }
+  .xp-scene {
+    position: absolute;
+    inset: 0;
+    perspective: 1600px;
+    perspective-origin: 50% 38%;
+  }
+  /* the plane the object stands on: tilted back and turned clockwise (so right faces show), as the
+   * bench's mat; its footprint is 84 x 60 here and each object sets its own */
+  .xp-plane {
+    position: absolute;
+    left: 10px;
+    top: 52px;
+    width: 84px;
+    height: 60px;
+    transform-style: preserve-3d;
+    transform: rotateX(55deg) rotateZ(32deg);
+  }
+  .xp-lift {
+    position: absolute;
+    inset: 0;
+    transform-style: preserve-3d;
+  }
+
+  /* the Cub helper's faces (the bench's block, scoped to this section) */
+  .xp-obj .cub {
+    position: absolute;
+    transform-style: preserve-3d;
+  }
+  .xp-obj .cub > .top {
+    position: absolute;
+    inset: 0;
+    transform-style: preserve-3d;
+  }
+  .xp-obj .cub > .front {
+    position: absolute;
+    left: 0;
+    right: 0;
+    transform-origin: 50% 0;
+  }
+  .xp-obj .cub > .right {
+    position: absolute;
+    top: 0;
+    transform-origin: 0 0;
+  }
+  .xp-box > .top {
+    background: #cfd3d6;
+  }
+  .xp-box > .front {
+    background: #9ea3a8;
+  }
+  .xp-box > .right {
+    background: #82878c;
+  }
+}
+@media (min-width: 810px) {
+  .xp-tl {
+    --k: 0.89;
+  }
+}
+@media (min-width: 860px) {
+  .xp-tl {
+    --k: 0.94;
+  }
+}
+@media (min-width: 903px) {
+  .xp-tl {
+    --k: 1;
+  }
 }

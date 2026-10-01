@@ -7,6 +7,10 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+  # The home page's experience timeline ends at the current month (the build month), so the
+  # site rebuilds on the 1st of every month.
+  schedule:
+    - cron: '0 6 1 * *'
 
 permissions:
   contents: read

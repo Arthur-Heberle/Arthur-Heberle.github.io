@@ -110,6 +110,17 @@ to before).
 | 3 | Lift and turn | done | hover or keyboard focus (`:focus-visible`) on a hover device: one transform on `.wb-lift` (`translateZ`, then `rotateZ` and `rotateX`, set from a 0-to-1 proxy so the order is exact; GSAP's own rotation order differs), 0.38 s out and 0.28 s back, then the action plays once. The phone and the handheld turn about their **near edge** (`-32deg`, `-48deg` / `-44deg`), so they rise like a propped-up phone and read straight on; a first version pivoting about the middle sank the phone's lower half under the mat (the stamp vanished). The box turns about its middle by a few degrees only, so its right face stays visible. The wide shadow is a second static layer whose opacity follows the lift; the leader line is re-measured every frame. Each link has a flat hit area a little larger than its footprint (`.wb-link::before`), so an object that moves from under the pointer does not end its own hover. No lift without hover (`hover: none`) or with reduced motion (the action then plays on scroll-in, or not at all) |
 | 4 | Check | done | headless Chromium over CDP (not Brave): hover (emulated mouse), keyboard (Tab: EduBra, Agente H, Brasilore, each with its label and a visible 2px ring), `hover: none` with touch (all three labels and lines, hint hidden), reduced motion (labels at once, no lift) and JavaScript off (labels, no lines) all behave as briefed; a click on EduBra navigates to `/projects/edubra/`. 375px: the bench screenshot is **byte-identical** to the one taken before stage 1. AX tree (`Accessibility.getFullAXTree`) at 1280 and 375: three links, each named by its title and described by its line and meta; no `QUALIFIED_LEAD`, chat, hint or engraving text anywhere else. Lighthouse mobile, six runs: perf 97 four times and 93 twice (TBT 130 to 160 ms: the cold-run noise steps 09 and 11 document; the bench's script is not loaded at the top of the page), a11y 100, best practices 100, CLS 0; JS 73.7 KB gzip. design-spec §9 rewritten for the desk. **Not done:** Firefox, desktop Safari and iOS Safari (`transform-style: preserve-3d` with a lifted, tilted object is exactly where they differ: untested); no real touch device |
 
+### Home Experience timeline (2026-10-01, Arthur's brief)
+
+Five stages, in order. Commit message `timeline: <stage>`. Replaces the plain Experience list; the
+`experience` collection stays the only source of text. Decisions Arthur made: "now" is the build month
+and the deploy workflow rebuilds on the 1st of each month; the details callout floats by its row; leaving
+closes a hover-opened callout and a click or Enter pins it.
+
+| Stage | Step | Status | Notes |
+|---|---|---|---|
+| 1 | Timeline layout | done | `months.ts` turns dates into percentages along the axis (22 monthly slots to 2026.10, the build month); axis, bars and labels are percentages in CSS, so the layout needs no script; the axis and bars are `div`s animated with `scaleX`/`scaleY`, not SVG strokes (nothing to measure); objects are placeholder boxes (stage 2); `timeline.ts` plays the arrival once. **Divergence:** without JavaScript the details sit under each row, with JavaScript from 768px up they are visually hidden but stay in the accessibility tree (stage 3 opens them as the callout) |
+
 ---
 
 ## Open questions for Arthur
