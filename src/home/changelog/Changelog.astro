@@ -6,7 +6,7 @@ import { getCollection } from 'astro:content'
 import Tick from '../../shared/components/Tick.astro'
 
 const entries = await getCollection('changelog')
-const sorted = entries.slice().sort((a, b) => b.data.date.localeCompare(a.data.date))
+const sorted = entries.slice().sort((a, b) => b.data.date.localeCompare(a.data.date) || b.id.localeCompare(a.id))
 
 const VISIBLE = 3
 const visible = sorted.slice(0, VISIBLE)
