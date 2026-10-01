@@ -30,6 +30,11 @@
   flex-direction: column;
   gap: 0.5rem;
 }
+/* the callout's own heading: only inside the callout */
+.xp-d-head {
+  display: none;
+  margin: 0;
+}
 /* the drawings exist only on the timeline */
 .xp-axis,
 .xp-bar,
@@ -180,7 +185,6 @@
     height: var(--bh);
     scale: calc(var(--k) * var(--s));
     transform-origin: 0 100%;
-    pointer-events: none;
   }
   .xp-scene {
     position: absolute;
@@ -526,5 +530,89 @@
 @media (min-width: 903px) {
   .xp-tl {
     --k: 1;
+  }
+}
+
+/* ---------- the row's button and its callout (768px and up, with scripting) ----------
+ * timeline.ts makes the title a button (aria-expanded, aria-describedby the object's description). Hover
+ * or keyboard focus opens the callout, a click or Enter pins it; one is open at a time. The callout
+ * hangs just under its row on the label's side, joined to the bar by a leader line in the annotation
+ * style (a --signal dot, a graphite-2 line). Esc or a press elsewhere closes it. */
+@media (min-width: 768px) {
+  .xp-btn {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: inherit;
+    cursor: pointer;
+    text-decoration: underline transparent;
+    text-decoration-thickness: var(--hairline);
+    text-underline-offset: 4px;
+    transition: text-decoration-color var(--dur-feedback) var(--ease-out);
+  }
+  .xp-row:hover .xp-btn,
+  .xp-btn:focus-visible,
+  .xp-row[data-open] .xp-btn {
+    text-decoration-color: currentColor;
+  }
+  .js .xp-obj,
+  .js .xp-bar,
+  .js .xp-label {
+    cursor: pointer;
+  }
+  /* a little slop around the 6px bar, so it is easy to point at */
+  .js .xp-bar::before {
+    content: '';
+    position: absolute;
+    inset: -10px 0;
+  }
+  .js .xp-row[data-open] {
+    z-index: 4;
+  }
+  .js .xp-row[data-open] .xp-detail {
+    position: absolute;
+    top: calc(var(--row) + 14px);
+    width: min(340px, 100%);
+    height: auto;
+    overflow: visible;
+    clip-path: none;
+    white-space: normal;
+    padding: 14px 16px;
+    background: var(--color-sheet);
+    border: var(--hairline) solid var(--color-graphite-2);
+  }
+  .js .xp-row[data-open][data-side='right'] .xp-detail {
+    left: calc(var(--b) + 16px);
+    width: min(340px, calc(100% - var(--b) - 16px));
+  }
+  .js .xp-row[data-open][data-side='left'] .xp-detail {
+    right: calc(100% - var(--a) + 120px);
+    width: min(340px, calc(var(--a) - 120px));
+  }
+  .js .xp-row[data-open] .xp-d-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.25rem 0.75rem;
+  }
+  .xp-leader {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    pointer-events: none;
+    z-index: 5;
+  }
+  .xp-leader-line {
+    fill: none;
+    stroke: var(--color-graphite-2);
+    stroke-width: 1;
+  }
+  .xp-leader-dot {
+    fill: var(--color-signal);
   }
 }

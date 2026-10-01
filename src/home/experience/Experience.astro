@@ -107,7 +107,7 @@ const show = (month: string) => month.replace('-', '.')
                   {obj.Flat && <obj.Flat />}
                 </div>
                 <div class="xp-label">
-                  <h3 class="xp-title text-small font-sans font-medium">{data.title}</h3>
+                  <h3 class="xp-title text-small font-sans font-medium" data-d={`xp-d-${id}`} data-o={`xp-o-${id}`}>{data.title}</h3>
                   <p class="xp-dates font-mono text-dimension text-graphite-2">
                     <time datetime={data.start}>{show(data.start)}</time>
                     {' – '}
@@ -115,12 +115,23 @@ const show = (month: string) => month.replace('-', '.')
                   </p>
                 </div>
               </div>
-              <div class="xp-detail">
+              <div class="xp-detail" id={`xp-d-${id}`}>
+                <!-- the callout's heading: a visual repeat of the label, so aria-hidden (the list item carries the real one) -->
+                <p class="xp-d-head" aria-hidden="true">
+                  <strong class="font-sans font-medium">{data.title}</strong>
+                  <span class="font-mono text-dimension text-graphite-2">
+                    {show(data.start)}
+                    {' – '}
+                    {data.end ? show(data.end) : 'now'}
+                  </span>
+                </p>
                 {isFilled(data.place) && <p class="text-small text-graphite-2">{data.place}</p>}
                 {isFilled(data.role) && <p class="text-small text-graphite-2">{data.role}</p>}
                 {isFilled(data.people) && <p class="text-small text-graphite-2">{data.people}</p>}
                 <p class="measure text-body">{data.summary}</p>
               </div>
+              <!-- what the object is, for the row's button (aria-describedby); not shown -->
+              <p id={`xp-o-${id}`} hidden>{obj.desc}</p>
             </li>
           )
         })

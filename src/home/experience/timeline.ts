@@ -1,8 +1,8 @@
 // The experience timeline's motion, loaded when the section nears the viewport (Experience.astro).
 // Only transform, opacity and stroke-dashoffset. Nothing loops: every part shows its final state at rest;
 // the arrival plays once when the timeline is in view, and each object's action plays once on arrival and
-// again on hover (or, from stage 3, focus or tap). An action resets its object to the start, plays, and
-// ends on the final state. Reduced motion never gets past this guard: final states only.
+// again on hover, keyboard focus or tap. An action resets its object to the start, plays, and ends on the
+// final state. Reduced motion gets final states only (and the same buttons and callouts, with no tweens).
 import { gsap } from 'gsap'
 
 // motion.ts's one curve (the CustomEase 'reveal'), by name; power4.out is the same shape if
@@ -154,15 +154,193 @@ const ACTIONS: Record<string, (root: HTMLElement) => Action> = {
   rp3: printer,
 }
 
-export function initTimeline(root: HTMLElement) {
-  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return
+/** What opening a row also does: replay its object's action. */
+type RowHooks = { onOpen?: (row: HTMLElement) => void }
+
+// ---- the row buttons and the callout (768px and up) ----
+// The title becomes a button (aria-expanded, aria-controls the details, aria-describedby the object's
+// description). Hover or keyboard focus opens its callout; a click, tap, Enter or Space pins it. One is
+// open at a time; Esc or a press elsewhere closes it. The leader line is one shared SVG, measured from
+// the bar to the callout every time one opens. Without motion (reduced) everything shows and hides at once.
+function initDetails(root: HTMLElement, rows: HTMLElement[], reduced: boolean, hooks: RowHooks) {
   const wide = matchMedia('(min-width: 768px)')
-  const axisLine = root.querySelector<HTMLElement>('.xp-axis-line')
-  const ticks = [...root.querySelectorAll<HTMLElement>('.xp-tick')]
-  const arrows = [...root.querySelectorAll<SVGElement>('.xp-arrow')]
-  const years = [...root.querySelectorAll<HTMLElement>('.xp-year')]
+  const NS = 'http://www.w3.org/2000/svg'
+  const svg = document.createElementNS(NS, 'svg')
+  svg.setAttribute('class', 'xp-leader')
+  svg.setAttribute('aria-hidden', 'true')
+  svg.setAttribute('focusable', 'false')
+  const line = document.createElementNS(NS, 'path')
+  line.setAttribute('class', 'xp-leader-line')
+  const dot = document.createElementNS(NS, 'circle')
+  dot.setAttribute('class', 'xp-leader-dot')
+  dot.setAttribute('r', '2.5')
+  svg.append(line, dot)
+  gsap.set([line, dot], { opacity: 0 })
+
+  type Item = { row: HTMLElement; button: HTMLButtonElement | null; detail: HTMLElement; bar: HTMLElement; side: string }
+  const items: Item[] = rows.map((row) => ({
+    row,
+    button: null,
+    detail: row.querySelector<HTMLElement>('.xp-detail')!,
+    bar: row.querySelector<HTMLElement>('.xp-bar')!,
+    side: row.dataset.side ?? 'right',
+  }))
+
+  let current: Item | null = null
+  let pinned = false
+  let closeTimer = 0
+  let tl: gsap.core.Timeline | undefined
+  let closing: (() => void) | null = null // a fade-out in flight: finished at once if something else opens
+
+  const measure = (it: Item) => {
+    const base = root.getBoundingClientRect()
+    const b = it.bar.getBoundingClientRect()
+    const c = it.detail.getBoundingClientRect()
+    // the dot sits on the bar's end nearest the callout, the line drops to the callout's edge, then runs in
+    const right = it.side === 'right'
+    const dx = (right ? b.right : b.left) - base.left
+    const dy = b.top - base.top + b.height / 2
+    const ex = (right ? c.left : c.right) - base.left
+    const ty = c.top - base.top + 14
+    line.setAttribute('d', `M${dx.toFixed(1)} ${dy.toFixed(1)} V${ty.toFixed(1)} H${ex.toFixed(1)}`)
+    dot.setAttribute('cx', dx.toFixed(1))
+    dot.setAttribute('cy', dy.toFixed(1))
+    return line.getTotalLength()
+  }
+
+  const setExpanded = (it: Item, on: boolean) => it.button?.setAttribute('aria-expanded', String(on))
+
+  const hide = () => {
+    clearTimeout(closeTimer)
+    const it = current
+    if (!it) return
+    current = null
+    pinned = false
+    setExpanded(it, false)
+    tl?.kill()
+    const done = () => {
+      closing = null
+      it.row.removeAttribute('data-open')
+      gsap.set(it.detail, { clearProps: 'opacity' })
+      gsap.set([line, dot], { opacity: 0 })
+      line.style.strokeDasharray = ''
+      line.style.strokeDashoffset = ''
+    }
+    if (reduced) return done()
+    closing = done
+    tl = gsap.timeline({ onComplete: done }).to([it.detail, line, dot], { opacity: 0, duration: 0.08 })
+  }
+
+  const show = (it: Item, pin: boolean) => {
+    clearTimeout(closeTimer)
+    if (current === it) {
+      pinned = pinned || pin
+      return
+    }
+    if (current) {
+      // swap at once: the old one goes without a fade
+      current.row.removeAttribute('data-open')
+      setExpanded(current, false)
+      gsap.set(current.detail, { clearProps: 'opacity' })
+    }
+    tl?.kill()
+    closing?.()
+    current = it
+    pinned = pin
+    it.row.setAttribute('data-open', '')
+    setExpanded(it, true)
+    const len = measure(it)
+    hooks.onOpen?.(it.row)
+    if (reduced) {
+      gsap.set([line, dot], { opacity: 1 })
+      line.style.strokeDasharray = ''
+      line.style.strokeDashoffset = ''
+      return
+    }
+    line.style.strokeDasharray = String(len)
+    line.style.strokeDashoffset = String(len)
+    gsap.set(it.detail, { opacity: 0 })
+    gsap.set(dot, { opacity: 0 })
+    tl = gsap
+      .timeline()
+      .set(line, { opacity: 1 })
+      .to(dot, { opacity: 1, duration: 0.1 })
+      .to(line, { strokeDashoffset: 0, duration: 0.25, ease: ease() })
+      .to(it.detail, { opacity: 1, duration: 0.12 })
+  }
+
+  const closeSoon = (it: Item) => {
+    clearTimeout(closeTimer)
+    closeTimer = window.setTimeout(() => current === it && !pinned && hide(), 140)
+  }
+
+  const handlers: [EventTarget, string, EventListener][] = []
+  const on = (el: EventTarget, type: string, fn: EventListener) => {
+    el.addEventListener(type, fn)
+    handlers.push([el, type, fn])
+  }
+
+  const enable = () => {
+    root.append(svg)
+    items.forEach((it) => {
+      const title = it.row.querySelector<HTMLElement>('.xp-title')!
+      const btn = document.createElement('button')
+      btn.type = 'button'
+      btn.className = 'xp-btn'
+      btn.setAttribute('aria-expanded', 'false')
+      btn.setAttribute('aria-controls', title.dataset.d ?? '')
+      btn.setAttribute('aria-describedby', title.dataset.o ?? '')
+      btn.append(...title.childNodes)
+      title.append(btn)
+      it.button = btn
+      // the parts of the row that answer to the pointer: object, bar, label (not the empty band) and the callout
+      ;['.xp-obj', '.xp-bar', '.xp-label', '.xp-detail'].forEach((s) => {
+        const el = it.row.querySelector(s)!
+        on(el, 'pointerenter', () => show(it, false))
+        on(el, 'pointerleave', () => closeSoon(it))
+      })
+      // a click or tap on the row, or Enter or Space on the button (which clicks), pins it; again unpins and closes
+      ;['.xp-obj', '.xp-bar', '.xp-label'].forEach((s) =>
+        on(it.row.querySelector(s)!, 'click', () => (current === it && pinned ? hide() : show(it, true))),
+      )
+      on(btn, 'focus', () => btn.matches(':focus-visible') && show(it, false))
+      on(btn, 'blur', () => current === it && !pinned && hide())
+    })
+    on(document, 'keydown', (e) => {
+      if ((e as KeyboardEvent).key !== 'Escape' || !current) return
+      const btn = current.button
+      const hadFocus = btn && document.activeElement === btn
+      hide()
+      if (hadFocus) btn.focus({ preventScroll: true })
+    })
+    on(document, 'pointerdown', (e) => {
+      if (current && !current.row.contains(e.target as Node)) hide()
+    })
+  }
+
+  const disable = () => {
+    hide()
+    handlers.splice(0).forEach(([el, type, fn]) => el.removeEventListener(type, fn))
+    svg.remove()
+    items.forEach((it) => {
+      const title = it.row.querySelector<HTMLElement>('.xp-title')
+      if (it.button && title) title.append(...it.button.childNodes)
+      it.button?.remove()
+      it.button = null
+    })
+  }
+
+  wide.addEventListener('change', () => {
+    disable()
+    if (wide.matches) enable()
+  })
+  if (wide.matches) enable()
+}
+
+export function initTimeline(root: HTMLElement) {
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches
+  const wide = matchMedia('(min-width: 768px)')
   const rows = [...root.querySelectorAll<HTMLElement>('.xp-row')]
-  if (!axisLine || !wide.matches) return
 
   const parts = rows.map((row) => {
     const obj = row.querySelector<HTMLElement>('.xp-obj')!
@@ -177,13 +355,25 @@ export function initTimeline(root: HTMLElement) {
       action,
       // runs the action from its start; `fresh` is true when the start state is already set (the arrival)
       play: (fresh = false) => {
-        if (!action || running) return
+        if (!action || running || reduced) return
         running = true
         if (!fresh) action.reset()
         action.run().eventCallback('onComplete', () => (running = false))
       },
     }
   })
+  let arrived = reduced
+
+  // hover, keyboard focus or a tap opens a row's callout; its object's action plays again with it
+  initDetails(root, rows, reduced, {
+    onOpen: (row) => arrived && parts.find((p) => p.row === row)?.play(),
+  })
+
+  const axisLine = root.querySelector<HTMLElement>('.xp-axis-line')
+  const ticks = [...root.querySelectorAll<HTMLElement>('.xp-tick')]
+  const arrows = [...root.querySelectorAll<SVGElement>('.xp-arrow')]
+  const years = [...root.querySelectorAll<HTMLElement>('.xp-year')]
+  if (reduced || !axisLine || !wide.matches) return
 
   // the drawing waits at its start until the timeline is seen. Transform only on the 3D parts: an
   // opacity below 1 would flatten each object's 3D chain while it plays.
@@ -197,7 +387,6 @@ export function initTimeline(root: HTMLElement) {
     p.action?.reset()
   })
 
-  let arrived = false
   const arrive = new IntersectionObserver(
     ([entry]) => {
       if (!entry.isIntersecting) return
@@ -226,7 +415,4 @@ export function initTimeline(root: HTMLElement) {
     { threshold: 0.25 },
   )
   arrive.observe(root)
-
-  // hover (or the touch that starts a pointer): the action plays again, once the arrival has finished
-  parts.forEach((p) => p.row.addEventListener('pointerenter', () => arrived && p.play()))
 }
