@@ -59,7 +59,7 @@ Five stages, in order. Commit message `agent-h: <stage>`. The source of truth is
 | 1 | Page, archive entry, copy | done | `/projects/agente-h/`; copy verbatim bar the two edits Arthur chose (intro, category); `wip` field and a half-filled-circle marker on the row and the status line; `part`/`differently` made optional, EduBra's HTML unchanged (only the CSS hash moved) |
 | 2 | The animation | done | own `story.ts`/`story.css`/`AgenteStory.astro` in `src/projects/agente-h/`, EduBra's files untouched; phone is the only 3D object (standing slab, same bench tilt/turn); ring resets twice (verified); gold only ever with a dark outline (see divergences); JS ~79 KB gzip |
 | 3 | By the numbers | done | EduBra's `.numbers`/`[data-numbers]` reused, no motion change; tests are **46**, not the 42 the commit history mentions (`def test_` in backend/tests: 27 + 13 + 6, no parametrize, no duplicate names; pytest is not installed here, so counted, not collected) |
-| 4 | Dashboard screenshots | todo | |
+| 4 | Dashboard screenshots | done | three 1280x800 webp (catalogue, conversations, leads) in `public/agente-h/`, alt text on each; **taken from the real dashboard files served with a stub API, not the real backend** (no Docker, Postgres or Python deps here, and there is no `seed-en.html`); demo data only |
 | 5 | Final check | todo | |
 
 ---
@@ -89,6 +89,13 @@ Blocking or near-blocking. Add to this list rather than guessing.
         only 2.81:1 (3.10:1 on `--sheet`), so darkening doesn't clear 3:1. No gold shape is ever the
         boundary on the light ground: each carries a 1.5px `#1E1C19` outline (14.3:1) and dark text
         (7.4:1); gold on the dashboard's dark sidebar is 7.4:1.
+      - **The dashboard screenshots are of the real UI over a stub API.** The AGENT-H backend couldn't run
+        here (no Docker, Postgres or Python packages). A throwaway Node server (kept in the scratchpad, not
+        in either repo) served `backend/static` unchanged and answered the API with demo data: the repo's
+        own `catalogo_moveis.csv` (Portuguese product names, as the dashboard would show them), invented
+        first names and conversations, and phone numbers with the nonexistent area code 00. The English
+        interface is the dashboard's own. Retake them against a real seeded instance if you want the
+        real backend in the shot.
       - **`design-spec.md` §9** said Agente H is a scrubbed schematic and "explicitly not a chat
         thread". The brief replaces it; §6 and §9 are updated at stage 5.
 

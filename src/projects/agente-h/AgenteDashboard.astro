@@ -1,6 +1,24 @@
 ---
-// Agente H's "The dashboard": the owner's side, in one paragraph (Arthur's copy, verbatim) and,
-// from stage 4, screenshots of the real dashboard running on demo data only.
+// Agente H's "The dashboard": the owner's side, in one paragraph (Arthur's copy, verbatim) and
+// three screenshots of the real dashboard (backend/static of the AGENT-H repo, unmodified) served
+// with DEMO data only: the repo's own sample catalogue (catalogo_moveis.csv) and invented
+// conversations and leads, with phone numbers whose area code "00" does not exist. No real phone
+// number, name or message appears in them. The English interface is the dashboard's own.
+// 1280x800, so the boxes are sized before the images load.
+const SHOTS = [
+  {
+    src: '/agente-h/dashboard-catalogue.webp',
+    alt: 'The dashboard\'s catalogue page: a table of twenty demo products with name, category, price, stock and status, above it a search box, filters and the Import CSV and Add product buttons.',
+  },
+  {
+    src: '/agente-h/dashboard-conversations.webp',
+    alt: 'The dashboard\'s conversations page: a list of five demo customers on the left and, on the right, one conversation in which a customer asks for a 3-seat sofa and the agent answers, with the switch that turns the agent off for this conversation at the top.',
+  },
+  {
+    src: '/agente-h/dashboard-leads.webp',
+    alt: 'The dashboard\'s leads page: a table of four demo leads, each with a one-line summary, a status menu (New, Contacted, Won) and a WhatsApp link, and an Export CSV button.',
+  },
+]
 ---
 
 <section class="flex flex-col gap-3" aria-labelledby="dashboard-heading">
@@ -10,4 +28,11 @@
     the conversations; the leads; the agent's instructions; the business hours. In any conversation
     they can switch the agent off and answer themselves.
   </p>
+  <div class="shots">
+    {
+      SHOTS.map((s) => (
+        <img class="shot" src={s.src} alt={s.alt} width="1280" height="800" loading="lazy" decoding="async" />
+      ))
+    }
+  </div>
 </section>

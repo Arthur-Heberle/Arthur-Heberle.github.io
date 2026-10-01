@@ -258,3 +258,18 @@ html:not(.js) .hstory .fit {
   white-space: nowrap;
   transform: translateX(-50%) rotate(-8deg);
 }
+
+/* ---------- "The dashboard": screenshots of the real dashboard (demo data only) ---------- */
+.shots {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-top: 12px;
+}
+.shots .shot {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1280 / 800; /* the box is sized before the image loads, so nothing shifts */
+  border: var(--hairline) solid var(--color-graphite-2);
+}
