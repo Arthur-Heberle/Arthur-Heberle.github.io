@@ -1,0 +1,260 @@
+/* Agente H's "How it works" (AgenteStory.astro, story.ts). The root carries EduBra's `.story`
+ * class too, so the head, captions, step ticks, controls, frame, the camera layout and the
+ * drawing language (src/projects/edubra/story.css) all apply as they are; this file only adds
+ * what is Agente H's: its canvas size, the phone, the product's own gold and dark, and the
+ * drawing's own shapes. Imported after story.css so these rules win on equal specificity.
+ *
+ * Rule of the section: software is 2D, hardware is CSS 3D. The phone is the only 3D object.
+ * THE 3D CHAIN: .obj (perspective) > .bench > .ph > .pf / .pr / .pt / .pb keeps
+ * transform-style: preserve-3d. Nothing from .bench down may get overflow other than visible,
+ * opacity below 1 or a filter on an element that has 3D children; only the flat screen (.scr)
+ * clips, and only leaves inside it (bubbles, the stamp) change opacity. */
+.hstory {
+  /* the product's own colours, used for the product's things only: the lead stamp, the lead
+   * card and the dashboard. Bare gold is 1.93:1 on the ground (and #A8893C only 2.81:1), so a
+   * gold shape is never the boundary on the light ground: it always carries a 1.5px dark
+   * outline (14.3:1), and any text on it is dark (7.4:1). On the dashboard's dark sidebar gold
+   * is 7.4:1. */
+  --hs-gold: #c9a84c;
+  --hs-ink: #1e1c19;
+  --ph-w: 150px; /* the phone: screen width, standing height, thickness */
+  --ph-h: 430px;
+  --ph-t: 11px;
+}
+
+/* ---------- the canvas: 760 x 560 instead of EduBra's 1060 x 570 ---------- */
+.hstory .fit {
+  width: max(100%, 547px); /* the static layout: the canvas at a fixed 0.72 scale, scrolling sideways */
+  aspect-ratio: 760 / 560;
+}
+html:not(.js) .hstory .fit {
+  width: 547px;
+}
+.hstory .canvas {
+  width: 760px;
+  height: 560px;
+}
+.hstory .layer {
+  position: absolute;
+  left: 0;
+  top: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+
+/* ---------- 2D drawing ---------- */
+.hstory .s13 {
+  font-size: 13px;
+}
+.hstory .s14 {
+  font-size: 14px;
+}
+.hstory .arc {
+  fill: none;
+  stroke: var(--st-pin);
+  stroke-width: 4;
+}
+.hstory .hull {
+  fill: none;
+  stroke: var(--color-line);
+  stroke-width: 1.25;
+  stroke-dasharray: 3 5;
+}
+.hstory .pdot {
+  fill: var(--st-line);
+}
+.hstory .phi {
+  fill: none;
+  stroke: var(--st-pin);
+  stroke-width: 2;
+}
+.hstory .nl {
+  fill: none;
+  stroke: var(--st-line);
+  stroke-width: 1;
+}
+.hstory .nl.hi {
+  stroke: var(--st-pin);
+  stroke-width: 2;
+}
+/* a highlight is a copy stacked on the original and crossfaded on opacity (colour is not animated) */
+.hstory .lbl-hi {
+  fill: var(--st-pin);
+}
+.hstory .hiw {
+  fill: none; /* only the marked word shows */
+}
+.hstory .hiw .word {
+  fill: var(--st-pin);
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+/* a frame's paper is its own shape, so it can fade in while the outline draws */
+.hstory .paper {
+  fill: var(--st-paper);
+  stroke: none;
+}
+.hstory .mhi {
+  fill: none;
+  stroke: var(--st-pin);
+  stroke-width: 2.5;
+}
+.hstory .side {
+  fill: var(--hs-ink);
+}
+.hstory .navline {
+  fill: none;
+  stroke: #5b5851;
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+.hstory .navline.on {
+  stroke: var(--hs-gold);
+}
+.hstory .col {
+  stroke: var(--color-line);
+}
+.hstory .leadcard {
+  fill: var(--hs-gold);
+  stroke: var(--hs-ink);
+  stroke-width: 1.5;
+}
+.hstory .hs-ink {
+  fill: var(--hs-ink);
+}
+
+/* ---------- 3D: the customer's phone, standing on the table, the only hardware ----------
+ * A slab: the screen face, a back, and the right and top edges (the faces the three-quarter
+ * camera shows). It stands on its bottom edge like EduBra's speaker: .ph is a flat plane
+ * rotated up out of the table by rotateX(-90deg) about its bottom edge. Local +z is toward the
+ * viewer, so the body (z from -thickness to 0) sits behind the screen. */
+.hstory #o-phone {
+  left: 0;
+  top: -22px;
+  width: 190px;
+  height: 440px;
+  perspective: 1500px; /* gentler than the hardware's 900px: the phone is tall and close */
+}
+.hstory #o-phone .bench {
+  left: 26px;
+  bottom: 18px;
+  width: var(--ph-w);
+  height: var(--ph-t);
+}
+.hstory .shadow {
+  left: -12px;
+  top: -34px;
+  width: calc(var(--ph-w) + 40px);
+  height: 74px;
+}
+.hstory .ph {
+  position: absolute;
+  left: 0;
+  top: calc(var(--ph-t) - var(--ph-h));
+  width: var(--ph-w);
+  height: var(--ph-h);
+  transform-style: preserve-3d;
+  transform-origin: 50% 100%;
+  transform: rotateX(-90deg);
+}
+.hstory .ph > * {
+  position: absolute;
+}
+.hstory .pf {
+  inset: 0;
+  border-radius: 22px;
+  background: #1c1d20;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.14);
+}
+.hstory .pb {
+  inset: 0;
+  border-radius: 22px;
+  background: #141518;
+  transform: translateZ(calc(var(--ph-t) * -1));
+}
+.hstory .pr {
+  left: var(--ph-w);
+  top: 0;
+  width: var(--ph-t);
+  height: var(--ph-h);
+  background: linear-gradient(90deg, #3a3b40, #202125);
+  transform-origin: 0 0;
+  transform: rotateY(90deg);
+}
+.hstory .pt {
+  left: 0;
+  top: 0;
+  width: var(--ph-w);
+  height: var(--ph-t);
+  background: #2e2f34;
+  border-radius: 22px 22px 0 0;
+  transform-origin: 0 0;
+  transform: rotateX(-90deg);
+}
+/* the screen: flat, light, drawn in the site's line style: hairline bubbles, no logo, no green */
+.hstory .scr {
+  position: absolute;
+  inset: 9px;
+  overflow: hidden;
+  border-radius: 14px;
+  background: var(--st-paper);
+}
+.hstory .who {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 12px;
+  border-bottom: 1.5px solid var(--st-line);
+}
+.hstory .who i {
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid var(--st-line);
+  border-radius: 50%;
+}
+.hstory .who b {
+  width: 56px;
+  height: 0;
+  border-top: 1.5px solid var(--st-line);
+}
+.hstory .chat {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  padding: 12px 10px;
+}
+.hstory .bub {
+  margin: 0;
+  max-width: 90%;
+  padding: 6px 10px 7px;
+  border: 1.5px solid var(--st-line);
+  border-radius: 11px;
+  font: 13px/1.3 var(--font-sans);
+  color: var(--color-graphite);
+}
+.hstory .bub.out {
+  align-self: flex-end;
+  border-bottom-right-radius: 3px;
+}
+.hstory .bub.in {
+  align-self: flex-start;
+  border-color: var(--st-pin);
+  border-bottom-left-radius: 3px;
+}
+/* the classifier's own word, stamped on the conversation: gold with its dark outline and text */
+.hstory .stamp {
+  position: absolute;
+  left: 50%;
+  bottom: 30px;
+  margin: 0;
+  padding: 5px 9px 6px;
+  border: 2px solid var(--hs-ink);
+  border-radius: 3px;
+  background: var(--hs-gold);
+  color: var(--hs-ink);
+  font: 600 13px/1 var(--font-mono);
+  white-space: nowrap;
+  transform: translateX(-50%) rotate(-8deg);
+}

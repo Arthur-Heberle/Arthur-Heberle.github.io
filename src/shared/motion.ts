@@ -10,6 +10,7 @@ import { Flip } from 'gsap/Flip'
 import { CustomEase } from 'gsap/CustomEase'
 import Lenis from 'lenis'
 import { storyPlayer } from '../projects/edubra/story'
+import { hstoryPlayer } from '../projects/agente-h/story'
 
 gsap.registerPlugin(ScrollTrigger, DrawSVGPlugin, SplitText, Flip, CustomEase)
 
@@ -523,6 +524,7 @@ const mm = gsap.matchMedia()
 mm.add('(min-width: 768px) and (prefers-reduced-motion: no-preference)', (ctx) => {
   // EduBra's "How it works" story: autoplays once when 40% visible (no pin, no scrub)
   const offStory = storyPlayer({ autoplay: true, ease: EASE_OUT })
+  const offHStory = hstoryPlayer({ autoplay: true, ease: EASE_OUT }) // Agente H's: same engine, its own drawing
   tier2Reveals(true)
   tier2Numbers()
   if (rulePath && pageMain) {
@@ -539,11 +541,13 @@ mm.add('(min-width: 768px) and (prefers-reduced-motion: no-preference)', (ctx) =
   return () => {
     offFilter()
     offStory()
+    offHStory()
   }
 })
 
 mm.add('(max-width: 767px) and (prefers-reduced-motion: no-preference)', (ctx) => {
   const offStory = storyPlayer({ autoplay: true, ease: EASE_OUT }) // phones animate too: the story with its camera
+  const offHStory = hstoryPlayer({ autoplay: true, ease: EASE_OUT })
   tier2Reveals(false)
   tier2Numbers()
   // design-spec.md §8: below 768px the drawing layer keeps the scrubbed rule only — no
@@ -564,11 +568,13 @@ mm.add('(max-width: 767px) and (prefers-reduced-motion: no-preference)', (ctx) =
   return () => {
     offFilter()
     offStory()
+    offHStory()
   }
 })
 
 mm.add('(prefers-reduced-motion: reduce)', (ctx) => {
   const offStory = storyPlayer({ autoplay: false, ease: EASE_OUT }) // never autoplays: final state plus a Play button
+  const offHStory = hstoryPlayer({ autoplay: false, ease: EASE_OUT })
   // Final states, nothing animates. toArray guards the empty selector — gsap.set on a
   // selector matching nothing logs a "target not found" warning, and step 06's gate
   // expects a clean console. Also clears any inline style left behind if the reader
@@ -603,5 +609,6 @@ mm.add('(prefers-reduced-motion: reduce)', (ctx) => {
   return () => {
     offFilter()
     offStory()
+    offHStory()
   }
 })

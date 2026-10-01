@@ -57,7 +57,7 @@ Five stages, in order. Commit message `agent-h: <stage>`. The source of truth is
 | Stage | Step | Status | Notes |
 |---|---|---|---|
 | 1 | Page, archive entry, copy | done | `/projects/agente-h/`; copy verbatim bar the two edits Arthur chose (intro, category); `wip` field and a half-filled-circle marker on the row and the status line; `part`/`differently` made optional, EduBra's HTML unchanged (only the CSS hash moved) |
-| 2 | The animation | todo | |
+| 2 | The animation | done | own `story.ts`/`story.css`/`AgenteStory.astro` in `src/projects/agente-h/`, EduBra's files untouched; phone is the only 3D object (standing slab, same bench tilt/turn); ring resets twice (verified); gold only ever with a dark outline (see divergences); JS ~79 KB gzip |
 | 3 | By the numbers | todo | |
 | 4 | Dashboard screenshots | todo | |
 | 5 | Final check | todo | |
@@ -82,6 +82,13 @@ Blocking or near-blocking. Add to this list rather than guessing.
         because the repo has per-business `business_hours` and a 6–22 h gate in n8n. Arthur's choice.
       - **How I built it, one edit:** "name, description or specs" became "name, category,
         description or specs" (`product_service._needs_reembed` also checks category). Arthur's choice.
+      - **The prompt card shows three products; the repo sends eight.** `rag.py` passes the closest
+        eight (`similarity_search(..., limit=8)`) into the prompt. The animation draws lines to the
+        nearest eight and follows the closest three into the card, as briefed.
+      - **Gold contrast.** Bare `#C9A84C` is 1.93:1 on the ground and the `#A8893C` fallback is still
+        only 2.81:1 (3.10:1 on `--sheet`), so darkening doesn't clear 3:1. No gold shape is ever the
+        boundary on the light ground: each carries a 1.5px `#1E1C19` outline (14.3:1) and dark text
+        (7.4:1); gold on the dashboard's dark sidebar is 7.4:1.
       - **`design-spec.md` §9** said Agente H is a scrubbed schematic and "explicitly not a chat
         thread". The brief replaces it; §6 and §9 are updated at stage 5.
 

@@ -1,12 +1,107 @@
 ---
-// Agente H's "How it works". Stage 1 ships the heading and the four captions (Arthur's copy,
-// verbatim); stage 2 adds the drawing and its player.
+// Agente H's "How it works": a customer's WhatsApp message goes in, a lead comes out. Built on
+// EduBra's story engine (the same autoplay, controls, step ticks, pause off screen, mobile
+// camera and reduced-motion behaviour), re-implemented in story.ts for this drawing.
+//
+// Rule of the section (the site's): software is 2D, hardware is CSS 3D. Here the only hardware
+// is the customer's phone, so it is the only 3D object; its screen is 2D. Everything else (the
+// timer, the query, the map of the catalogue, the prompt, the model, the dashboard) is the 2D SVG.
+// One fixed 760x560 canvas, scaled as a whole. The drawing is rendered in its FINAL state
+// (render(1) in story.ts), so it reads without JavaScript and is already the picture reduced
+// motion and the static layout show. The product map, the nearest-neighbour ranking and every
+// position below are computed here once, so story.ts only reads them.
 const CAPTIONS = [
   { n: 1, title: 'Wait', text: 'Customers send three short messages instead of one. The agent waits until they stop typing, so it answers once.' },
   { n: 2, title: 'Find', text: 'The question becomes a point on a map of the catalogue. The closest products win, even with a typo.' },
   { n: 3, title: 'Answer', text: 'A language model writes the reply with those products in front of it, and it goes back on WhatsApp.' },
   { n: 4, title: 'Hand off', text: 'If the customer is ready to buy, the owner gets a lead with a one-line summary.' },
 ]
+const STEPS = ['Wait', 'Find', 'Answer', 'Hand off']
+const LABEL =
+  "A customer sends three short WhatsApp messages. The agent waits until they stop typing, turns the question into a point on a map of the store's products, finds the closest ones, writes a reply with a language model and sends it back. Because the customer is ready to buy, the owner gets a lead."
+
+// ---- the customer's messages and the reply (copy from Arthur's brief) ----
+const MSGS = ['hi', 'do you have sofas', '3 seat sofs?']
+const REPLY = 'Yes! The Rubi 3-seat sofa, leather with solid wood legs, R$ 2,490. Want to see photos?'
+const QUERY = MSGS.join(' ') // "hi do you have sofas 3 seat sofs?"
+const TYPO = 'sofs'
+const TYPO_AT = QUERY.indexOf(TYPO)
+
+// ---- 2D drawing: ring timer, query line, number row ----
+const RING = { x: 281, y: 66, r: 32 }
+const CIRC = +(2 * Math.PI * RING.r).toFixed(2)
+const QX = 392 // the query line's left edge; mono, 14px, so 8.4px a character
+const QY = 26
+const CH = 8.4
+const slotX = (at: number, len: number) => +(QX + CH * (at + len / 2)).toFixed(1)
+const SLOTS = [
+  { x: slotX(0, 2), y: QY - 5 },
+  { x: slotX(3, 17), y: QY - 5 },
+  { x: slotX(21, 12), y: QY - 5 },
+]
+const NUMS_Y = 58
+const NUMS = '0.12  -0.48  0.07  ...  1,536 numbers'
+const NUMS_END = { x: QX + 7.8 * NUMS.length + 10, y: NUMS_Y - 4 }
+
+// ---- the map of the catalogue: names from catalogo_moveis.csv, in English ----
+const MAP = { x: 392, y: 78, w: 366, h: 296 }
+const Q = { x: 508, y: 214 } // where the query lands
+type Anchor = 'start' | 'middle' | 'end'
+interface Prod { id: string; name: string; x: number; y: number; lx: number; ly: number; a: Anchor; word?: string }
+const PRODUCTS: Prod[] = [
+  { id: 'rubi', name: 'Rubi 3-seat sofa', x: 530, y: 190, lx: 538, ly: 194, a: 'start', word: 'sofa' },
+  { id: 'dublin', name: 'Dublin 2-seat sofa', x: 542, y: 240, lx: 550, ly: 244, a: 'start' },
+  { id: 'veneza', name: 'Veneza corner sofa', x: 470, y: 238, lx: 470, ly: 258, a: 'middle' },
+  { id: 'amelie', name: 'Amélie armchair', x: 458, y: 184, lx: 458, ly: 170, a: 'middle' },
+  { id: 'toscana', name: 'Toscana table', x: 660, y: 112, lx: 660, ly: 100, a: 'middle' },
+  { id: 'oslo', name: 'Oslo coffee table', x: 712, y: 144, lx: 712, ly: 162, a: 'middle' },
+  { id: 'round', name: 'Round side table', x: 652, y: 150, lx: 644, ly: 154, a: 'end' },
+  { id: 'milano', name: 'Milano chair', x: 622, y: 302, lx: 622, ly: 320, a: 'middle' },
+  { id: 'berlim', name: 'Berlim office chair', x: 706, y: 274, lx: 714, ly: 292, a: 'end' },
+  { id: 'serenno', name: 'Serenno queen bed', x: 452, y: 326, lx: 460, ly: 330, a: 'start' },
+  { id: 'lugano', name: 'Lugano wardrobe', x: 522, y: 352, lx: 530, ly: 356, a: 'start' },
+]
+// loose clusters, drawn as dashed hulls with their name
+const HULLS = [
+  { name: 'sofas', cx: 498, cy: 214, rx: 100, ry: 56, tx: 408, ty: 124 },
+  { name: 'tables', cx: 670, cy: 134, rx: 78, ry: 46, tx: 756, ty: 94 },
+  { name: 'chairs', cx: 664, cy: 288, rx: 80, ry: 38, tx: 756, ty: 250 },
+  { name: 'beds', cx: 492, cy: 340, rx: 86, ry: 32, tx: 408, ty: 360 },
+]
+const hull = (h: { cx: number; cy: number; rx: number; ry: number }) =>
+  `M${h.cx - h.rx} ${h.cy}a${h.rx} ${h.ry} 0 1 0 ${2 * h.rx} 0a${h.rx} ${h.ry} 0 1 0 ${-2 * h.rx} 0`
+const dist = (p: { x: number; y: number }) => Math.hypot(p.x - Q.x, p.y - Q.y)
+const ranked = [...PRODUCTS].sort((a, b) => dist(a) - dist(b))
+const rankOf = Object.fromEntries(ranked.map((p, i) => [p.id, i])) as Record<string, number>
+const NEAR = 8 // the repo reads the closest eight products before every reply
+const TOP = 3 // the three the drawing follows into the prompt
+const nearest = ranked.slice(0, NEAR)
+const top = ranked.slice(0, TOP)
+const wordParts = (p: Prod) => {
+  const w = p.word!
+  const i = p.name.indexOf(w)
+  return [p.name.slice(0, i), w, p.name.slice(i + w.length)]
+}
+
+// ---- the prompt card, the model, the chips ----
+const CARD = { x: 196, y: 140, w: 170, h: 184 }
+const MODEL = { x: 196, y: 352, w: 170, h: 58 }
+const CX = CARD.x + CARD.w / 2
+const ROW_P = [192, 212, 232] // product chips, in rank order
+const ROW_M = [268, 288, 308] // message chips
+const chipW = (t: string, em = 7.2) => +(t.length * em + 12).toFixed(1)
+const rect = (r: { x: number; y: number; w: number; h: number }) => `M${r.x} ${r.y}H${r.x + r.w}V${r.y + r.h}H${r.x}Z`
+
+// ---- the owner's dashboard (the product's own gold and dark, #C9A84C and #1E1C19) ----
+const DASH = { x: 392, y: 394, w: 366, h: 160 }
+const SIDE = 70
+const COLS = [
+  { name: 'New', x: 474, w: 130 },
+  { name: 'Contacted', x: 610, w: 76 },
+  { name: 'Won', x: 692, w: 58 },
+]
+const LEAD = { w: 120, h: 46, x: 544, y: 480 } // the lead card's centre once it has landed
+const LEAD_LINES = ['Wants a 3-seat', 'leather sofa.']
 ---
 
 <section class="story hstory" data-hstory aria-labelledby="how">
@@ -18,6 +113,181 @@ const CAPTIONS = [
           <p class="cap"><b>{c.n}</b><strong>{c.title}</strong><span>{c.text}</span></p>
         ))
       }
+    </div>
+    <div class="ticks" role="group" aria-label="Steps">
+      {
+        STEPS.map((title, i) => (
+          <button type="button" class="tickbtn" aria-label={`Go to step ${i + 1}: ${title}`}><u></u></button>
+        ))
+      }
+    </div>
+    <div class="controls">
+      <button type="button" class="control feedback" data-toggle aria-label="Pause the drawing" aria-pressed="false" hidden>Pause</button>
+      <button type="button" class="control feedback" data-again hidden>Play again</button>
+    </div>
+    <p class="sr-only" aria-live="polite" data-live></p>
+  </div>
+
+  <!-- One labelled image for the whole drawing: everything drawn inside is aria-hidden, and the
+       controls sit outside the image so they stay reachable. The frame is a focus stop only while
+       it scrolls sideways (the static layout); story.ts takes the three attributes off when the
+       live layout has nothing to scroll. -->
+  <div class="frame" role="group" aria-label="Drawing, scrolls sideways" tabindex="0">
+    <div class="fit">
+      <div class="canvas" role="img" aria-label={LABEL}>
+        <!-- 2D, under the phone: the timer, the query, the map, the prompt, the model, the dashboard -->
+        <svg class="layer" id="hs-base" viewBox="0 0 760 560" width="760" height="560" aria-hidden="true" focusable="false">
+          <!-- 1 Wait: the silence timer next to the phone -->
+          <g id="hs-ring">
+            <circle class="ln" cx={RING.x} cy={RING.y} r={RING.r}></circle>
+            <circle id="hs-arc" class="arc" cx={RING.x} cy={RING.y} r={RING.r} transform={`rotate(-90 ${RING.x} ${RING.y})`} stroke-dasharray={CIRC} stroke-dashoffset="0"></circle>
+            <text id="hs-ringtxt" class="mono s15 mid" x={RING.x} y={RING.y + 5}>30 s</text>
+            <text class="mono s12 dim mid" x={RING.x} y={RING.y + RING.r + 20}>silence timer</text>
+          </g>
+
+          <!-- the query line: the three messages, merged -->
+          <text id="hs-qtext" class="mono s14" x={QX} y={QY}>{QUERY}</text>
+          <!-- the typo, marked: a copy of the line in which only "sofs" shows, blue and underlined -->
+          <text id="hs-qhi" class="mono s14 hiw" x={QX} y={QY}>
+            <tspan class="ghost">{QUERY.slice(0, TYPO_AT)}</tspan><tspan class="word">{TYPO}</tspan><tspan class="ghost">{QUERY.slice(TYPO_AT + TYPO.length)}</tspan>
+          </text>
+          <!-- 2 Find: the query as a row of numbers (a short sample of 1,536) -->
+          <text id="hs-nums" class="mono s13 dim" x={QX} y={NUMS_Y} opacity="0">{NUMS}</text>
+
+          <!-- the catalogue as a map -->
+          <path id="hs-frame" class="ln" d={rect(MAP)}></path>
+          <text class="mono s12 dim hs-fade" x={MAP.x + 8} y={MAP.y + 18}>the catalogue, as a map</text>
+          <g class="hs-fade" id="hs-hulls">
+            {HULLS.map((h) => <path class="hull" d={hull(h)}></path>)}
+            {HULLS.map((h) => <text class="s12 dim" x={h.tx} y={h.ty} text-anchor={h.tx > 700 ? 'end' : 'start'}>{h.name}</text>)}
+          </g>
+
+          <!-- the nearest eight: a line to each; the closest three are drawn again, in blue -->
+          {nearest.map((p, i) => <path class="nl" data-rank={i} d={`M${Q.x} ${Q.y}L${p.x} ${p.y}`}></path>)}
+          {top.map((p, i) => <path class="nl hi" data-rank={i} d={`M${Q.x} ${Q.y}L${p.x} ${p.y}`}></path>)}
+
+          {
+            PRODUCTS.map((p, i) => {
+              const r = rankOf[p.id]
+              const inTop = r < TOP
+              return (
+                <g class="prod" data-i={i} data-rank={r}>
+                  <circle class="pdot" cx={p.x} cy={p.y} r="4"></circle>
+                  <text class="plabel s12" x={p.lx} y={p.ly} text-anchor={p.a}>{p.name}</text>
+                  {inTop && <circle class="phi" cx={p.x} cy={p.y} r="8"></circle>}
+                  {inTop && <text class="plabel s12 lbl-hi" x={p.lx} y={p.ly} text-anchor={p.a}>{p.name}</text>}
+                  {
+                    p.word && (
+                      <text class="plabel s12 hiw" x={p.lx} y={p.ly} text-anchor={p.a}>
+                        <tspan class="ghost">{wordParts(p)[0]}</tspan><tspan class="word">{wordParts(p)[1]}</tspan><tspan class="ghost">{wordParts(p)[2]}</tspan>
+                      </text>
+                    )
+                  }
+                </g>
+              )
+            })
+          }
+          <circle id="hs-qdot" cx={Q.x} cy={Q.y} r="6" class="fill-pin"></circle>
+
+          <!-- 3 Answer: the prompt card, and the language model -->
+          <g id="hs-card">
+            <path class="paper" d={rect(CARD)}></path>
+            <path id="hs-cardframe" class="ln" d={rect(CARD)}></path>
+            <g class="hs-fade">
+              <text class="mono s12" x={CARD.x + 10} y={CARD.y + 18}>prompt</text>
+              <text class="mono s12 dim" x={CARD.x + 10} y="176">products</text>
+              <text class="mono s12 dim" x={CARD.x + 10} y="252">messages</text>
+            </g>
+          </g>
+          <g id="hs-model">
+            <path class="paper" d={rect(MODEL)}></path>
+            <path id="hs-modelframe" class="ln" d={rect(MODEL)}></path>
+            <path id="hs-modelhi" class="mhi" d={rect(MODEL)} opacity="0"></path>
+            <text class="t15 mid hs-fade" x={MODEL.x + MODEL.w / 2} y={MODEL.y + MODEL.h / 2 + 5}>language model</text>
+          </g>
+
+          <!-- 4 Hand off: the owner's dashboard -->
+          <g id="hs-dash">
+            <path class="paper" d={rect(DASH)}></path>
+            <path id="hs-dashframe" class="ln" d={rect(DASH)}></path>
+            <g class="hs-fade">
+              <path class="side" d={rect({ x: DASH.x, y: DASH.y, w: SIDE, h: DASH.h })}></path>
+              {[0, 1, 2, 3, 4].map((i) => <path class={`navline ${i === 2 ? 'on' : ''}`} d={`M${DASH.x + 12} ${DASH.y + 24 + i * 26}H${DASH.x + SIDE - 12}`}></path>)}
+              <text class="t15 hs-ink" x={DASH.x + SIDE + 14} y={DASH.y + 24}>Leads</text>
+              {COLS.map((c) => <text class="s12 dim" x={c.x + 4} y={DASH.y + 50}>{c.name}</text>)}
+              {COLS.map((c) => <path class="ln dash col" d={rect({ x: c.x, y: DASH.y + 58, w: c.w, h: 88 })}></path>)}
+            </g>
+          </g>
+        </svg>
+
+        <!-- 3D: the customer's phone, the only hardware. A standing slab with a screen of 2D chat,
+             one three-quarter camera as on EduBra (story.css gives .bench its tilt and turn) -->
+        <div class="scene" aria-hidden="true">
+          <div class="obj" id="o-phone">
+            <div class="bench">
+              <div class="shadow"></div>
+              <div class="ph">
+                <div class="pb"></div>
+                <div class="pr"></div>
+                <div class="pt"></div>
+                <div class="pf">
+                  <div class="scr">
+                    <div class="who"><i></i><b></b></div>
+                    <div class="chat">
+                      {MSGS.map((m, i) => <p class="bub out" data-b={i}>{m}</p>)}
+                      <p class="bub in" id="hs-reply">{REPLY}</p>
+                    </div>
+                    <p class="stamp" id="hs-stamp">QUALIFIED_LEAD</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2D, over the phone: everything that travels (chips, dots, the lead) -->
+        <svg class="layer" id="hs-top" viewBox="0 0 760 560" width="760" height="560" aria-hidden="true" focusable="false">
+          <!-- the three messages, on their way to the query line -->
+          {
+            MSGS.map((m, i) => (
+              <g class="chipA" data-i={i} opacity="0" transform={`translate(${SLOTS[i].x} ${SLOTS[i].y})`}>
+                <rect class="fill-pin" x={-chipW(m) / 2} y="-9" width={chipW(m)} height="18" rx="3"></rect>
+                <text class="mono s12 chip mid" y="4">{m}</text>
+              </g>
+            ))
+          }
+          <!-- the three closest products and the messages, in the prompt -->
+          {
+            top.map((p, i) => (
+              <g class="chipP" data-i={i} data-p={p.id} transform={`translate(${CX} ${ROW_P[i]})`}>
+                <rect class="fill-pin" x={-chipW(p.name, 6.4) / 2} y="-9" width={chipW(p.name, 6.4)} height="18" rx="3"></rect>
+                <text class="s12 chip mid" y="4">{p.name}</text>
+              </g>
+            ))
+          }
+          {
+            MSGS.map((m, i) => (
+              <g class="chipM" data-i={i} transform={`translate(${CX} ${ROW_M[i]})`}>
+                <rect class="fill-pin" x={-chipW(m) / 2} y="-9" width={chipW(m)} height="18" rx="3"></rect>
+                <text class="mono s12 chip mid" y="4">{m}</text>
+              </g>
+            ))
+          }
+          <!-- the prompt, going into the model -->
+          <g id="hs-mini" opacity="0" transform={`translate(${CX} ${CARD.y + CARD.h})`}>
+            <rect class="fill-pin" x="-27" y="-9" width="54" height="18" rx="3"></rect>
+            <text class="mono s12 chip mid" y="4">prompt</text>
+          </g>
+          <circle id="hs-dot" class="fill-pin" r="5" opacity="0"></circle>
+
+          <!-- the lead, landed in the dashboard's "New" column: the product's gold with its dark -->
+          <g id="hs-lead" transform={`translate(${LEAD.x} ${LEAD.y})`}>
+            <rect class="leadcard" x={-LEAD.w / 2} y={-LEAD.h / 2} width={LEAD.w} height={LEAD.h} rx="3"></rect>
+            <text class="s12 hs-ink" x={-LEAD.w / 2 + 9} y="-3">{LEAD_LINES[0]}</text>
+            <text class="s12 hs-ink" x={-LEAD.w / 2 + 9} y="13">{LEAD_LINES[1]}</text>
+          </g>
+        </svg>
+      </div>
     </div>
   </div>
 </section>
