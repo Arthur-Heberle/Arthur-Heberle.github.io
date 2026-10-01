@@ -33,3 +33,17 @@ export const parsePts = (s: string): Pt[] =>
     const [x, y] = q.split(',')
     return { x: +x, y: +y }
   })
+
+/** The query line: the customer's messages joined, in mono 14px (8.4px a character), at the map's top left. */
+export const QUERY_LINE = { x: 392, y: 26, ch: 8.4 }
+/** Where each message's chip sits on the query line: the centre of its words. */
+export function slotsFor(msgs: string[]): Pt[] {
+  let at = 0
+  return msgs.map((m) => {
+    const p = { x: +(QUERY_LINE.x + QUERY_LINE.ch * (at + m.length / 2)).toFixed(1), y: QUERY_LINE.y - 5 }
+    at += m.length + 1
+    return p
+  })
+}
+/** A chip's width for its text: a character is `em` px wide (7.2 mono, 5.7 for the product names), plus padding. */
+export const chipW = (t: string, em = 7.2) => +(t.length * em + 12).toFixed(1)

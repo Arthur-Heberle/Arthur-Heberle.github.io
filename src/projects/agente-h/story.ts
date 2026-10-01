@@ -1,18 +1,26 @@
 // Agente H's "How it works" (AgenteStory.astro). The same player as EduBra's story
 // (src/projects/edubra/story.ts), kept as its own copy so EduBra stays untouched: render(p) is a
 // pure function of progress p in [0, 1]; hstoryPlayer() drives it from ONE GSAP tween of a proxy p
-// (autoplay, 12 s, linear, no pin, no scrub), pauses it off screen, and in the static layout (and
+// (autoplay, 15 s, linear, no pin, no scrub), pauses it off screen, and in the static layout (and
 // under reduced motion) shows render(1). motion.ts owns the matchMedia branches and calls it.
 // Left out, on purpose: EduBra's voice and its hardware callouts. Only transform, opacity and
 // stroke-dashoffset change, so every highlight is an opacity crossfade between stacked copies.
 //
-// Scenes, as fractions of p (the brief): Wait 0-.30, Find .30-.58, Answer .58-.82, Hand off .82-1.
+// Scenes, as fractions of p: Wait 0-.30, Find .30-.58, Answer .58-.90, Hand off .90-1.
+//
+// Three questions can be tried (questions.ts). applyQuestion() swaps what changes between them, all
+// prepared in advance: the customer's bubbles and the query line, where the dot lands on the map, which
+// eight products have a line to it and which three are closest, where every label goes (map.ts), the
+// chips in the prompt, the reply, the classification stamp, and whether a lead is handed over.
 import { gsap } from 'gsap'
-import { arrow, parsePts, poly } from './flow'
+import { arrow, chipW, parsePts, poly, slotsFor } from './flow'
 import type { Pt } from './flow'
+import { HULLS, LABELS, LANDINGS } from './map'
+import { QUESTIONS, rankFor } from './questions'
 
 const W = 760
 const H = 560
+const TOP = 3 // the closest three products are the ones highlighted and followed into the prompt
 const DURATION = 15 // seconds, linear (12 before the reply was written word by word)
 
 type Range = [number, number]
@@ -35,16 +43,16 @@ const MERGE: Range[] = [
   [0.25, 0.29],
 ]
 
-/** The timer's fill in [0, 1] at p: filling after a message, emptied by the next, full after the third. */
-function ring(p: number): number {
+/** The timer's fill in [0, 1] at p: filling after a message, emptied by the next, full after the last of n. */
+function ring(p: number, n: number): number {
   const filled = (i: number, until: number) => clamp((Math.min(p, until) - RING_FROM[i]) / FILL)
-  for (let i = 0; i < 2; i++) {
+  for (let i = 0; i < n - 1; i++) {
     const next = MSG_AT[i + 1]
     if (p < next) return filled(i, next)
     if (p < next + RESET) return filled(i, next) * (1 - ease(seg(p, next, next + RESET)))
     if (p < RING_FROM[i + 1]) return 0
   }
-  return filled(2, 1)
+  return filled(n - 1, 1)
 }
 
 // ---- 2 Find ----
@@ -103,10 +111,6 @@ const SCENES: Range[] = [
 // so the phone is still in frame for it, and then goes to the dashboard.
 const CAM_AT = [0, 0.3, 0.58, 0.945]
 
-interface Pt {
-  x: number
-  y: number
-}
 interface Story {
   root: HTMLElement
   frame: HTMLElement
@@ -114,6 +118,15 @@ interface Story {
   canvas: HTMLElement
   phone: HTMLElement
   bub: HTMLElement[]
+  q: number // the question chosen
+  nmsg: number // how many bubbles the customer sends in it
+  typo: boolean // whether it has a misspelling to mark
+  leadOn: boolean // whether the owner is handed a lead
+  askBtns: HTMLButtonElement[]
+  askLive: HTMLElement
+  cap2: HTMLElement // the second caption's text, which gains a sentence for some questions
+  cap2Base: string
+  hullLabels: SVGElement[]
   reply: HTMLElement
   words: HTMLElement[] // the reply, a span a word
   mtick: SVGElement // the tick under "language model" that steps along as it writes
@@ -129,7 +142,7 @@ interface Story {
   frameEls: SVGGeometryElement[] // the frames that draw themselves: the map, the card, the model, the dashboard
   paper: SVGElement[] // the fills behind the card, the model and the dashboard, in that order
   lens: number[]
-  prods: { g: SVGElement; rank: number; hi: SVGElement[]; word: SVGElement | null; pt: Pt }[]
+  prods: { id: string; g: SVGElement; rank: number; hi: SVGElement[]; word: SVGElement | null; labs: SVGElement[]; pt: Pt }[]
   nl: { el: SVGGeometryElement; len: number; rank: number; hi: boolean }[]
   wires: { el: SVGGeometryElement; arrow: SVGElement; pts: Pt[]; len: number }[]
   pulses: { el: SVGElement; w: number }[]
@@ -189,7 +202,9 @@ function grab(): Story | null {
   const prods = $$<SVGElement>('.prod').map((g) => {
     const dot = g.querySelector('.pdot')!
     return {
+      id: g.dataset.id!,
       g,
+      labs: [...g.querySelectorAll<SVGElement>('.plabel')],
       rank: +g.dataset.rank!,
       hi: [...g.querySelectorAll<SVGElement>('.phi, .lbl-hi')],
       word: g.querySelector<SVGElement>('.hiw'),
@@ -209,10 +224,19 @@ function grab(): Story | null {
     canvas: $('.canvas'),
     phone: $('#o-phone'),
     bub: $$<HTMLElement>('.bub.out'),
+    q: 0,
+    nmsg: QUESTIONS[0].msgs.length,
+    typo: true,
+    leadOn: true,
+    askBtns: $$<HTMLButtonElement>('[data-q]'),
+    askLive: $('[data-ask-live]'),
+    cap2: $<HTMLElement>('.cap:nth-child(2) span'),
+    cap2Base: $<HTMLElement>('.cap:nth-child(2) span').textContent!,
+    hullLabels: $$<SVGElement>('#hs-hulls text'),
     reply: $('#hs-reply'),
     words: $$<HTMLElement>('#hs-reply .rw'),
     mtick: $('#hs-mtick'),
-    mtickRun: +$('#hs-mtick').dataset.run!,
+    mtickRun: +$<SVGElement>('#hs-mtick').dataset.run!,
     stamp: $('#hs-stamp'),
     ring: $('#hs-ring'),
     arc: $('#hs-arc'),
@@ -305,12 +329,13 @@ function render(p: number) {
     b.style.opacity = String(a)
     b.style.transform = `translateY(${8 * (1 - a)}px)`
   })
-  const f = ring(p)
+  const f = ring(p, s.nmsg)
   s.arc.style.strokeDashoffset = String(CIRC * (1 - f))
   s.ringTxt.textContent = `${Math.round(f * 30)} s`
 
   // ... then the three merge into one query line
   s.chipA.forEach((c, i) => {
+    if (i >= s.nmsg) return op(c, 0)
     const [a, b] = MERGE[i]
     const t = inout(seg(p, a, b))
     const from = s.bubC[i] ?? s.slots[i]
@@ -345,10 +370,10 @@ function render(p: number) {
   const top = seg(p, ...T.top)
   const word = seg(p, ...T.word)
   s.prods.forEach((pr) => {
-    pr.hi.forEach((el) => op(el, top))
-    if (pr.word) op(pr.word, word)
+    pr.hi.forEach((el) => op(el, pr.rank < TOP ? top : 0)) // the closest three, in blue
+    if (pr.word) op(pr.word, s.typo ? word : 0) // the product the typo matched
   })
-  op(s.qhi, word)
+  op(s.qhi, s.typo ? word : 0)
 
   // 3 Answer: the three products and the messages slide into the prompt, which goes into the model
   s.chipP.forEach((c, i) => {
@@ -359,6 +384,7 @@ function render(p: number) {
     op(c, seg(p, a, a + 0.008))
   })
   s.chipM.forEach((c, i) => {
+    if (i >= s.nmsg) return op(c, 0)
     const a = CHIPS_M[i]
     const t = inout(seg(p, a, a + FLY))
     const from = s.bubC[i] ?? s.rows.m[i]
@@ -394,12 +420,13 @@ function render(p: number) {
   const lt = inout(seg(p, ...LEAD))
   const lp = along([...s.wires[6].pts, { x: s.leadEnd.x, y: s.lane }, s.leadEnd], lt) // out under the phone and along its wire
   at(s.lead, lp.x, lp.y, ` scale(${lerp(0.7, 1, ease(seg(p, LEAD[0], LEAD[0] + 0.03)))})`)
-  op(s.lead, seg(p, LEAD[0], LEAD[0] + 0.012))
+  op(s.lead, s.leadOn ? seg(p, LEAD[0], LEAD[0] + 0.012) : 0)
 
   // the flow: the wires draw in, the pulses run along them, the step numbers arrive with their scene
   s.wires.forEach((w, i) => {
-    w.el.style.strokeDashoffset = String(w.len * (1 - ease(seg(p, ...WIRE_AT[i]))))
-    op(w.arrow, seg(p, WIRE_AT[i][1] - 0.012, WIRE_AT[i][1]))
+    const on = i < 6 || s.leadOn // no lead, nothing to hand to the leads board
+    w.el.style.strokeDashoffset = String(w.len * (1 - (on ? ease(seg(p, ...WIRE_AT[i])) : 0)))
+    op(w.arrow, on ? seg(p, WIRE_AT[i][1] - 0.012, WIRE_AT[i][1]) : 0)
   })
   s.pulses.forEach(({ el, w }) => {
     const r = PULSE_AT[w].find(([a, b]) => p >= a && p < b)
@@ -418,6 +445,91 @@ function render(p: number) {
     })
     s.ticks.forEach((t, i) => op(t, p >= SCENES[i][0] - 0.02 && p < SCENES[i][1] ? 1 : 0))
   }
+}
+
+// A chip is a blue rect and its text; both follow the text.
+function setChip(g: SVGElement, text: string, em: number) {
+  const w = chipW(text, em)
+  const r = g.querySelector('rect')!
+  r.setAttribute('x', String(-w / 2))
+  r.setAttribute('width', String(w))
+  g.querySelector('text')!.textContent = text
+}
+
+/** Swap the drawing to question i. Only the DOM and the state change; the caller lays it out again
+ *  (relayout) and renders, because the phone, the bubbles and the stamp are measured. */
+function applyQuestion(i: number) {
+  const s = S!
+  const q = QUESTIONS[i]
+  const Q = LANDINGS[q.key]
+  const lab = LABELS[q.key]
+  const ranked = rankFor(q.key)
+  s.q = i
+  s.nmsg = q.msgs.length
+  s.typo = !!q.typo
+  s.leadOn = q.lead
+  s.askBtns.forEach((b, k) => b.setAttribute('aria-pressed', String(k === i)))
+
+  // the phone: the customer's bubbles, the reply (a span a word), the stamp
+  s.bub.forEach((b, k) => {
+    b.style.display = k < q.msgs.length ? '' : 'none'
+    if (k < q.msgs.length) b.textContent = q.msgs[k]
+  })
+  s.reply.textContent = ''
+  q.reply.split(' ').forEach((w, k, all) => {
+    const span = document.createElement('span')
+    span.className = 'rw'
+    span.textContent = w
+    s.reply.append(span)
+    if (k < all.length - 1) s.reply.append(' ')
+  })
+  s.words = [...s.reply.querySelectorAll<HTMLElement>('.rw')]
+  s.stamp.textContent = q.cls
+  s.stamp.classList.toggle('plain', !q.lead) // a lead is gold; the other classifications are plain
+  s.stamp.classList.toggle('long', q.cls.length > 14)
+
+  // the query line, and the chips that carry the messages there and into the prompt
+  s.qtext.textContent = q.msgs.join(' ')
+  s.slots = slotsFor(q.msgs)
+  s.chipA.forEach((c, k) => {
+    c.style.display = k < q.msgs.length ? '' : 'none'
+    if (k < q.msgs.length) setChip(c, q.msgs[k], 7.2)
+  })
+  s.chipM.forEach((c, k) => {
+    c.style.display = k < q.msgs.length ? '' : 'none'
+    if (k < q.msgs.length) setChip(c, q.msgs[k], 7.2)
+  })
+  s.chipP.forEach((c, k) => setChip(c, ranked[k].name, 5.7)) // the closest three products
+
+  // the map: where the dot lands, the eight lines, the closest three, and every label's place
+  s.qdot.setAttribute('cx', String(Q.x))
+  s.qdot.setAttribute('cy', String(Q.y))
+  s.qAt = { x: Q.x, y: Q.y }
+  s.nl.forEach((n) => {
+    const p = ranked[n.rank]
+    n.el.setAttribute('d', `M${Q.x} ${Q.y}L${p.x} ${p.y}`)
+  })
+  s.prods.forEach((pr) => {
+    pr.rank = ranked.findIndex((p) => p.id === pr.id)
+    pr.g.dataset.rank = String(pr.rank)
+    const at = lab[pr.id]
+    pr.labs.forEach((el) => {
+      el.setAttribute('x', String(at.x))
+      el.setAttribute('y', String(at.y))
+    })
+  })
+  s.hullLabels.forEach((el, k) => {
+    const at = lab['hull-' + HULLS[k].name]
+    el.setAttribute('x', String(at.x))
+    el.setAttribute('y', String(at.y))
+  })
+  s.tag.setAttribute('x', String(lab.tag.x))
+  s.tag.setAttribute('y', String(lab.tag.y))
+
+  // the words around it: the second caption, and the drawing's one description
+  s.cap2.textContent = q.extra ? `${s.cap2Base} ${q.extra}` : s.cap2Base
+  s.canvas.setAttribute('aria-label', q.label)
+  s.askLive.textContent = `${q.button}. Reply: ${q.reply} Classified as ${q.cls.replaceAll('_', ' ').toLowerCase()}${q.lead ? ', so the owner gets a lead.' : ', so there is no lead.'}`
 }
 
 // The canvas is a fixed 760x560 box scaled as a whole. CSS sizes .fit (aspect-ratio), so the scale
@@ -452,7 +564,7 @@ interface Framing {
 const FRAMINGS: Framing[] = [
   { x0: 0, y0: 0, x1: 372, y1: 412, minText: 12 }, // 1 Wait: the phone and the timer
   { x0: 392, y0: 0, x1: 760, y1: 412, minText: 12 }, // 2 Find: the query and the map
-  { x0: 0, y0: 124, x1: 372, y1: 536, minText: 12 }, // 3 Answer: the prompt, the model and the phone
+  { x0: 0, y0: 100, x1: 372, y1: 512, minText: 12 }, // 3 Answer: the prompt, the model and the phone (the reply sits higher when the customer sends one message)
   { x0: 392, y0: 148, x1: 760, y1: 560, minText: 12 }, // 4 Hand off: the dashboard
 ]
 const MIN_PX = 11
@@ -567,10 +679,10 @@ export function hstoryPlayer(opts: { autoplay: boolean; ease?: string | gsap.Eas
   const ac = new AbortController()
   const { signal } = ac
   const state = { p: 0 }
-  const capText = s.caps.map((c) => {
-    const part = (sel: string) => c.querySelector(sel)?.textContent?.trim() ?? ''
-    return `Step ${part('b')}, ${part('strong')}. ${part('span')}`
-  })
+  const capText = (i: number) => {
+    const part = (sel: string) => s.caps[i].querySelector(sel)?.textContent?.trim() ?? ''
+    return `Step ${part('b')}, ${part('strong')}. ${part('span')}` // read now: the second caption can have a sentence more
+  }
 
   const goLive = () => {
     s.live = true
@@ -607,7 +719,7 @@ export function hstoryPlayer(opts: { autoplay: boolean; ease?: string | gsap.Eas
     if (sc === scene) return
     scene = sc
     s.tickBtns.forEach((b, i) => (i === sc ? b.setAttribute('aria-current', 'step') : b.removeAttribute('aria-current')))
-    if (announce) s.liveMsg.textContent = capText[sc]
+    if (announce) s.liveMsg.textContent = capText(sc)
   }
 
   const tween = gsap.to(state, {
@@ -677,6 +789,20 @@ export function hstoryPlayer(opts: { autoplay: boolean; ease?: string | gsap.Eas
     { signal },
   )
   s.again.addEventListener('click', () => begin(0), { signal })
+  // Try another question: swap the drawing to it and play scenes 2 to 4 (the first scene is the customer's
+  // typing, and only the sofa question has it). With motion off there is no player: show the end at once.
+  s.askBtns.forEach((b, i) =>
+    b.addEventListener(
+      'click',
+      () => {
+        applyQuestion(i)
+        relayout()
+        if (s.live) begin(SCENES[1][0])
+        else render(1)
+      },
+      { signal },
+    ),
+  )
   // a step tick jumps to the start of its scene (the first one, to the very start)
   s.tickBtns.forEach((b, i) => b.addEventListener('click', () => begin(i === 0 ? 0 : SCENES[i][0]), { signal }))
 

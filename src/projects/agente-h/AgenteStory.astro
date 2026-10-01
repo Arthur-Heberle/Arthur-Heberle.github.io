@@ -10,7 +10,8 @@
 // (render(1) in story.ts), so it reads without JavaScript and is already the picture reduced
 // motion and the static layout show. The product map, the nearest-neighbour ranking and every
 // position below are computed here once, so story.ts only reads them.
-import { P, poly, arrow, fmtPts } from './flow'
+import { P, poly, arrow, fmtPts, QUERY_LINE, slotsFor, chipW } from './flow'
+import { QUESTIONS } from './questions'
 import { MAP, PRODUCTS as BASE, HULLS, LANDINGS, LABELS } from './map'
 import type { Pt } from './flow'
 const CAPTIONS = [
@@ -20,28 +21,23 @@ const CAPTIONS = [
   { n: 4, title: 'Hand off', text: 'If the customer is ready to buy, the owner gets a lead with a one-line summary.' },
 ]
 const STEPS = ['Wait', 'Find', 'Answer', 'Hand off']
-const LABEL =
-  "A customer sends three short WhatsApp messages. The agent waits until they stop typing, turns the question into a point on a map of the store's products, finds the closest ones, writes a reply with a language model and sends it back. Because the customer is ready to buy, the owner gets a lead."
+// The page opens on the first question (the story as it was); story.ts swaps the three that follow.
+const FIRST = QUESTIONS[0]
+const LABEL = FIRST.label
 
 // ---- the customer's messages and the reply (copy from Arthur's brief) ----
-const MSGS = ['hi', 'do you have sofas', '3 seat sofs?']
-const REPLY = 'Yes! The Rubi 3-seat sofa, leather with solid wood legs, R$ 2,490. Want to see photos?'
+const MSGS = FIRST.msgs
+const REPLY = FIRST.reply
 const QUERY = MSGS.join(' ') // "hi do you have sofas 3 seat sofs?"
-const TYPO = 'sofs'
+const TYPO = FIRST.typo!
 const TYPO_AT = QUERY.indexOf(TYPO)
 
 // ---- 2D drawing: ring timer, query line, number row ----
 const RING = { x: 281, y: 66, r: 32 }
 const CIRC = +(2 * Math.PI * RING.r).toFixed(2)
-const QX = 392 // the query line's left edge; mono, 14px, so 8.4px a character
-const QY = 26
-const CH = 8.4
-const slotX = (at: number, len: number) => +(QX + CH * (at + len / 2)).toFixed(1)
-const SLOTS = [
-  { x: slotX(0, 2), y: QY - 5 },
-  { x: slotX(3, 17), y: QY - 5 },
-  { x: slotX(21, 12), y: QY - 5 },
-]
+const QX = QUERY_LINE.x // the query line's left edge; mono, 14px, so 8.4px a character
+const QY = QUERY_LINE.y
+const SLOTS = slotsFor(MSGS)
 const NUMS_Y = 58
 const NUMS = '0.12  -0.48  0.07  ...  1,536 numbers'
 
@@ -72,7 +68,6 @@ const MODEL = { x: 196, y: 352, w: 170, h: 58 }
 const CX = CARD.x + CARD.w / 2
 const ROW_P = [192, 212, 232] // product chips, in rank order
 const ROW_M = [268, 288, 308] // message chips
-const chipW = (t: string, em = 7.2) => +(t.length * em + 12).toFixed(1)
 const rect = (r: { x: number; y: number; w: number; h: number }) => `M${r.x} ${r.y}H${r.x + r.w}V${r.y + r.h}H${r.x}Z`
 
 // ---- the flow: wires between the parts, in the order the captions tell it ----
@@ -186,11 +181,11 @@ const LEAD_LINES = ['Wants a 3-seat', 'leather sofa.']
               const r = rankOf[p.id]
               const inTop = r < TOP
               return (
-                <g class="prod" data-i={i} data-rank={r}>
+                <g class="prod" data-i={i} data-id={p.id} data-rank={r}>
                   <circle class="pdot" cx={p.x} cy={p.y} r="4"></circle>
                   <text class="plabel s12" x={LAB[p.id].x} y={LAB[p.id].y}>{p.name}</text>
-                  {inTop && <circle class="phi" cx={p.x} cy={p.y} r="8"></circle>}
-                  {inTop && <text class="plabel s12 lbl-hi" x={LAB[p.id].x} y={LAB[p.id].y}>{p.name}</text>}
+                  <circle class="phi" cx={p.x} cy={p.y} r="8" style={inTop ? '' : 'opacity:0'}></circle>
+                  <text class="plabel s12 lbl-hi" x={LAB[p.id].x} y={LAB[p.id].y} style={inTop ? '' : 'opacity:0'}>{p.name}</text>
                   {
                     p.word && (
                       <text class="plabel s12 hiw" x={LAB[p.id].x} y={LAB[p.id].y}>
@@ -279,7 +274,7 @@ const LEAD_LINES = ['Wants a 3-seat', 'leather sofa.']
           {
             top.map((p, i) => (
               <g class="chipP" data-i={i} data-p={p.id} transform={`translate(${CX} ${ROW_P[i]})`}>
-                <rect class="fill-pin" x={-chipW(p.name, 6.4) / 2} y="-9" width={chipW(p.name, 6.4)} height="18" rx="3"></rect>
+                <rect class="fill-pin" x={-chipW(p.name, 5.7) / 2} y="-9" width={chipW(p.name, 5.7)} height="18" rx="3"></rect>
                 <text class="s12 chip mid" y="4">{p.name}</text>
               </g>
             ))
@@ -310,5 +305,17 @@ const LEAD_LINES = ['Wants a 3-seat', 'leather sofa.']
         </svg>
       </div>
     </div>
+  </div>
+
+  <!-- Under the drawing: the visitor can try other questions. Real buttons, one pressed at a time; with no
+       JavaScript there is nothing to press, so the whole control is left out (story.css). The replies,
+       landing points and classifications are prepared in advance (questions.ts); no API is called. -->
+  <div class="ask" data-ask>
+    <p class="ask-label" id="ask-label">Try another question</p>
+    <div class="ask-choices" role="group" aria-labelledby="ask-label">
+      {QUESTIONS.map((q, i) => <button type="button" class="control feedback" data-q={i} aria-pressed={i === 0 ? 'true' : 'false'}>{q.button}</button>)}
+    </div>
+    <p class="ask-note">Positions and replies are prepared in advance for this demo. The real search runs on the server.</p>
+    <p class="sr-only" aria-live="polite" data-ask-live></p>
   </div>
 </section>

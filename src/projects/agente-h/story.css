@@ -279,6 +279,43 @@ html:not(.js) .hstory .fit {
   transform: translateX(-50%) rotate(-8deg);
 }
 
+/* a classification that is not a lead is not gold: the same stamp, on paper */
+.hstory .stamp.plain {
+  background: var(--st-paper);
+}
+.hstory .stamp.long {
+  font-size: 11px; /* GENERAL_QUESTION has to fit the phone's screen */
+}
+
+/* ---------- under the drawing: try another question ---------- */
+.hstory .ask {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  margin-top: 18px;
+}
+.hstory .ask-label {
+  margin: 0;
+  font-size: var(--text-small);
+  color: var(--color-graphite-2);
+}
+.hstory .ask-choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.hstory .ask-note {
+  flex: 1 1 100%;
+  margin: 0;
+  font: 12px/1.4 var(--font-mono);
+  color: var(--color-graphite-2);
+}
+/* with no JavaScript there is nothing to press, so the control is left out */
+html:not(.js) .hstory .ask {
+  display: none;
+}
+
 /* ---------- "The dashboard": screenshots of the real dashboard (demo data only) ---------- */
 .shots {
   display: flex;
