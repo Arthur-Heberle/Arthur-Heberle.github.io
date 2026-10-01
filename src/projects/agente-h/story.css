@@ -156,7 +156,9 @@ html:not(.js) .hstory .fit {
   height: var(--ph-h);
   transform-style: preserve-3d;
   transform-origin: 50% 100%;
-  transform: rotateX(-90deg);
+  /* turned to the right: the bench's own +20deg turn plus -40deg here is a net -20deg, so the screen
+   * faces right and the left edge shows */
+  transform: rotateZ(-40deg) rotateX(-90deg);
 }
 .hstory .ph > * {
   position: absolute;
@@ -174,21 +176,22 @@ html:not(.js) .hstory .fit {
   transform: translateZ(calc(var(--ph-t) * -1));
 }
 .hstory .pr {
-  left: var(--ph-w);
-  top: 0;
+  left: 0;
+  top: 12px;
   width: var(--ph-t);
-  height: var(--ph-h);
-  background: linear-gradient(90deg, #3a3b40, #202125);
+  height: calc(var(--ph-h) - 24px);
+  background: linear-gradient(90deg, #202125, #3a3b40);
   transform-origin: 0 0;
   transform: rotateY(90deg);
 }
+/* the top edge stops short of the rounded corners, so it no longer sticks out as a square slab */
 .hstory .pt {
-  left: 0;
+  left: 14px;
   top: 0;
-  width: var(--ph-w);
+  width: calc(var(--ph-w) - 28px);
   height: var(--ph-t);
   background: #2e2f34;
-  border-radius: 22px 22px 0 0;
+  border-radius: 8px 8px 0 0;
   transform-origin: 0 0;
   transform: rotateX(-90deg);
 }
