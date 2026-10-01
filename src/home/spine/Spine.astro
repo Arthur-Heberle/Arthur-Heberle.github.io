@@ -1,7 +1,6 @@
 ---
-// Spine — the three paragraphs carrying the through-line. Copy is verbatim from
-// docs/content.md, final, not provisional. Page copy, not a collection (step 03 scoped
-// collections to archive/notes/changelog only); the five margin notes it points to are
+// Spine — the two paragraphs carrying the through-line. Copy is verbatim from
+// Arthur's brief of 2026-10-01. Page copy, not a collection; the five margin notes it points to are
 // the `notes` collection, keyed here by label rather than by file order, since the
 // spine's marker order (reading, working on, languages, chess, guitar) doesn't match
 // the notes directory's alphabetical listing.
@@ -18,29 +17,15 @@ const byLabel = Object.fromEntries(notes.map((note) => [note.data.label, note]))
   <div class="rail" data-anim-scope>
     <p class="rail-prose text-body" data-anim>
       I build things that sit between software and the physical world. A device that
-      turns digital text into Braille. Research software that plans how a part gets
-      printed. Energy data somebody has to make a decision from. The part I'm best at is
-      the handover: getting the thing understood by the people who have to use it, sign
-      it off, or pay for it.<a
+      turns digital text into Braille. A WhatsApp agent that sells from a shop's own
+      catalogue. A 2D platformer in C++. The part I'm best at is the handover: getting
+      the thing understood by the people who have to use it, sign it off, or pay for
+      it.<a
         class="feedback marker"
         id="marker-reading"
         href="#note-reading"
         aria-label="note 1, reading">1</a
-      >
-    </p>
-    <div class="rail-margin flex flex-col">
-      <MarginNote entry={byLabel['reading']} marker={1} />
-    </div>
-  </div>
-
-  <div class="rail" data-anim-scope>
-    <p class="rail-prose text-body" data-anim>
-      Most of what I've done has had an audience. I was a monitor twice at UTFPR, for
-      Calculus II and later for Programming Techniques, which mostly meant explaining
-      pointers to people who were close to giving up. I spent six months at an energy
-      efficiency firm, in the field with meters and inverters and then in the report the
-      client actually reads. Now I'm on RP3 at UTFPR's NUFER lab, in C++ and Qt, and I
-      build my own projects when nobody asked me to.<a
+      > And I build my own projects when nobody asked me to.<a
         class="feedback marker"
         id="marker-working-on"
         href="#note-working-on"
@@ -48,7 +33,8 @@ const byLabel = Object.fromEntries(notes.map((note) => [note.data.label, note]))
       >
     </p>
     <div class="rail-margin flex flex-col">
-      <MarginNote entry={byLabel['working on']} marker={2} />
+      <MarginNote entry={byLabel['reading']} marker={1} sibling={0} />
+      <MarginNote entry={byLabel['working on']} marker={2} sibling={1} />
     </div>
   </div>
 

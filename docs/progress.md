@@ -91,7 +91,7 @@ shared surface; the Brasilore art is his own (Emilia.png is the playable charact
 |---|---|---|---|
 | 1 | Never publish a [FILL] | done | `scripts/check-fill.mjs` runs after `astro build` inside the `build` script (the deploy action runs it); `isFilled()` in `src/shared/fill.ts` replaces `Fill.astro` (deleted, with `.fill` CSS): optional fields are omitted, prose renders as written so a marker fails the build (tested with a marker in the changelog, then reverted); identity line is a `<ul>`. The old archive row guards date/role with `isFilled` until stage 2 deletes it |
 | 2 | Split the content | done | `archive` replaced by `projects` (bench) and `experience`; `Archive`, its filter and the dead Flip code in `motion.ts` removed (`Flip` no longer registered); `sortArchive` became `src/projects/sortProjects.ts`; the title blocks now read "of 03" (three projects), not "of 07"; Experience is a plain `<ol>`, oldest first, with `<time>` dates; `Fill.astro` is gone, so a changelog or contact line is plain text |
-| 3 | The spine | todo | |
+| 3 | The spine | done | two rails, copy verbatim; rail 1 carries notes 1 (reading) and 2 (working on) as siblings 0 and 1, rail 2 unchanged; 5 notes, 5 leaders checked in the built page |
 | 4 | The bench | todo | |
 | 5 | Changelog | todo | |
 
