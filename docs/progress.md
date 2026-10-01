@@ -120,6 +120,7 @@ closes a hover-opened callout and a click or Enter pins it.
 | Stage | Step | Status | Notes |
 |---|---|---|---|
 | 1 | Timeline layout | done | `months.ts` turns dates into percentages along the axis (22 monthly slots to 2026.10, the build month); axis, bars and labels are percentages in CSS, so the layout needs no script; the axis and bars are `div`s animated with `scaleX`/`scaleY`, not SVG strokes (nothing to measure); objects are placeholder boxes (stage 2); `timeline.ts` plays the arrival once. **Divergence:** without JavaScript the details sit under each row, with JavaScript from 768px up they are visually hidden but stay in the accessibility tree (stage 3 opens them as the callout) |
+| 2 | The four objects | done | `src/home/experience/objects/`: chalkboard (chalk curve, integral sign, area fills by `scaleY`), energy meter (display counts up, plus a flat before/after chart: baseline, "after", the gap "savings"), laptop (UML: boxes, inheritance arrows, Level-to-Entity pointer), printer (six layers, each infill at its own angle, gantry climbs). Each plays once after its object lands and again on `pointerenter`, reset to its start and ending on the final markup; the end state matches the reduced-motion state on screen. Objects are drawn small and scaled 1.35x (`--s`) so the drawings on them stay crisp; row is 190px. **Illustrative, not facts:** the meter reading (128.4 kWh) and the class names (said so in the row's description); the chart has no numbers. Hover/focus/tap hooks: pointerenter now, focus in stage 3 |
 
 ---
 

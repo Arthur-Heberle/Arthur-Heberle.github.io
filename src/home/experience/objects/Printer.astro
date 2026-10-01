@@ -1,0 +1,45 @@
+---
+// RP3: a 3D printer: a frame (two posts and a base), a gantry carrying the print head, and a bed. A part
+// stands on the bed as six layers, each with its own infill lines at a different angle from the one below.
+// Action (timeline.ts): the part builds up layer by layer while the gantry climbs.
+import Cub from '../../../projects/edubra/Cub.astro'
+
+const ANGLES = [0, 60, 120, 30, 90, 150]
+const PW = 28
+const PD = 24
+// parallel lines across the layer (the svg clips what falls outside, whatever the angle)
+const LINES = Array.from({ length: 11 }, (_, i) => `M-12 ${-8 + i * 4} H40`)
+---
+
+<Cub x={0} y={0} w={80} d={64} h={8} cls="xp-frame">
+  <Cub x={8} y={10} w={64} d={48} h={2} cls="xp-bed">
+    {
+      ANGLES.map((angle, i) => {
+        return (
+          <div class="pr-layer" style={`transform:translateZ(${i * 3}px)`}>
+            <div class="pr-pop" style={`transform-origin:${18 + PW / 2}px ${12 + PD / 2}px`}>
+            <Cub x={18} y={12} w={PW} d={PD} h={3} cls="xp-part">
+              <svg viewBox={`0 0 ${PW} ${PD}`} width="100%" height="100%" focusable="false">
+                <g transform={`rotate(${angle} ${PW / 2} ${PD / 2})`}>
+                  {LINES.map((d) => (
+                    <path class="pr-fill" d={d} />
+                  ))}
+                </g>
+              </svg>
+            </Cub>
+            </div>
+          </div>
+        )
+      })
+    }
+  </Cub>
+  <Cub x={2} y={2} w={6} d={6} h={46} cls="xp-frame" />
+  <Cub x={72} y={2} w={6} d={6} h={46} cls="xp-frame" />
+  <div class="pr-gantry">
+    <Cub x={2} y={2} w={76} d={6} h={6} cls="xp-frame" />
+    <div class="pr-head">
+      <Cub x={33} y={8} w={14} d={9} h={10} cls="xp-head" />
+      <div class="pr-noz"><Cub x={38.5} y={11} w={3} d={3} h={4} cls="xp-nozzle" /></div>
+    </div>
+  </div>
+</Cub>

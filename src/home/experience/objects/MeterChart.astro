@@ -1,0 +1,20 @@
+---
+// ELETRON's chart, beside the meter: consumption before (a baseline) and after (higher at first, then lower),
+// and the gap between them, "savings". Measurement and verification, in the site's line style.
+const before: [number, number][] = [[14, 38], [48, 38], [82, 38], [116, 38], [146, 38]]
+const after: [number, number][] = [[14, 28], [30, 26], [48, 38], [68, 52], [90, 58], [118, 60], [146, 58]]
+const d = (p: [number, number][]) => p.map(([x, y], i) => `${i ? 'L' : 'M'}${x} ${y}`).join(' ')
+// the gap: along the baseline from where the lines cross, and back along the "after" line
+const gap = `M48 38 H146 ` + [...after].slice(2).reverse().map(([x, y]) => `L${x} ${y}`).join(' ') + ' Z'
+---
+
+<svg class="mt-chart" viewBox="0 0 160 84" width="160" height="84" focusable="false">
+  <path class="mc-axis" d="M10 6 V72 H156" />
+  <path class="mc-gap" d={gap} />
+  <path class="mc-before" d={d(before)} />
+  <path class="mc-after" d={d(after)} />
+  <text class="mc-t" x="12" y="14" data-l="axis">kWh</text>
+  <text class="mc-t" x="150" y="34" text-anchor="end" data-l="before">before</text>
+  <text class="mc-t" x="150" y="80" text-anchor="end" data-l="after">after</text>
+  <text class="mc-t mc-sav" x="96" y="49" text-anchor="middle" data-l="savings">savings</text>
+</svg>

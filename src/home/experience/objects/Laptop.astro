@@ -1,0 +1,40 @@
+---
+// Programming Techniques: a laptop, screen open. The screen is a 2D UML class diagram: Entity, with Player and
+// Enemy inheriting from it, and a Level holding Entities. The names are illustrative of the course's SFML game,
+// not its real code (the row's description says so). Action (timeline.ts): the boxes appear, the inheritance
+// arrows draw, then the pointer arrow draws from Level to Entity.
+import Cub from '../../../projects/edubra/Cub.astro'
+
+const W = 120
+const boxes = [
+  { n: 'Level', x: 8, y: 10, w: 32, h: 15 },
+  { n: 'Entity', x: 64, y: 10, w: 36, h: 15 },
+  { n: 'Player', x: 32, y: 48, w: 36, h: 15 },
+  { n: 'Enemy', x: 76, y: 48, w: 36, h: 15 },
+]
+---
+
+<Cub x={0} y={0} w={W} d={56} h={4} cls="xp-lap xp-turn">
+  <div class="lp-hinge" style={`width:${W}px`}>
+    <Cub x={0} y={0} w={W} d={3} h={70} cls="xp-scr">
+      <svg slot="front" viewBox={`0 0 ${W} 70`} width="100%" height="100%" focusable="false">
+        <g class="un-boxes">
+          {
+            boxes.map((b) => (
+              <g class="un-box">
+                <rect x={b.x} y={b.y} width={b.w} height={b.h} />
+                <text x={b.x + b.w / 2} y={b.y + b.h / 2 + 2.6} text-anchor="middle">
+                  {b.n}
+                </text>
+              </g>
+            ))
+          }
+        </g>
+        <path class="un-inh" d="M50 48 V38 H82 V25" />
+        <path class="un-inh" d="M94 48 V38 H82" />
+        <path class="un-tri" d="M82 25 L78 31 L86 31 Z" />
+        <path class="un-ptr" d="M40 17.5 H64 M60 14.5 L64 17.5 L60 20.5" />
+      </svg>
+    </Cub>
+  </div>
+</Cub>

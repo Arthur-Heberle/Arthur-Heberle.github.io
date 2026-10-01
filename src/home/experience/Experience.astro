@@ -12,13 +12,50 @@ import { getCollection } from 'astro:content'
 import Tick from '../../shared/components/Tick.astro'
 import { isFilled } from '../../shared/fill'
 import { layout, monthOf } from './months'
-import Placeholder from './objects/Placeholder.astro'
+import Chalkboard from './objects/Chalkboard.astro'
+import Meter from './objects/Meter.astro'
+import MeterChart from './objects/MeterChart.astro'
+import Laptop from './objects/Laptop.astro'
+import Printer from './objects/Printer.astro'
 
 const entries = (await getCollection('experience')).sort((a, b) => a.data.start.localeCompare(b.data.start))
 const { spans, ticks } = layout(
   entries.map((e) => e.data),
   monthOf(new Date()),
 )
+
+// Each experience's object: its footprint on the plane (fw by fd, in px), the object itself, and an optional
+// flat 2D companion drawn beside it. `desc` is the short description the row's button points at
+// (aria-describedby); the drawings themselves are aria-hidden.
+const SIN = Math.sin((32 * Math.PI) / 180)
+const COS = Math.cos((32 * Math.PI) / 180)
+const OBJECTS: Record<string, { fw: number; fd: number; Object: any; Flat?: any; desc: string }> = {
+  'calculus-ii': {
+    fw: 84,
+    fd: 44,
+    Object: Chalkboard,
+    desc: 'A small chalkboard on a stand: chalk draws a curve and an integral sign, then the area under the curve fills in.',
+  },
+  'eletron-energia': {
+    fw: 64,
+    fd: 34,
+    Object: Meter,
+    Flat: MeterChart,
+    desc: 'An energy meter whose display counts up kWh, beside a chart of consumption before and after, with the gap between the two lines marked as savings.',
+  },
+  'programming-techniques': {
+    fw: 120,
+    fd: 56,
+    Object: Laptop,
+    desc: "A laptop showing a class diagram: Entity, with Player and Enemy inheriting from it, and a Level holding Entities. The class names are illustrative of the course's SFML game, not its real code.",
+  },
+  rp3: {
+    fw: 80,
+    fd: 64,
+    Object: Printer,
+    desc: 'A 3D printer building a part, each layer at a different angle.',
+  },
+}
 // "2026-07" displays as "2026.07" (design-spec.md §7).
 const show = (month: string) => month.replace('-', '.')
 ---
@@ -45,6 +82,10 @@ const show = (month: string) => month.replace('-', '.')
         entries.map(({ id, data }, i) => {
           const span = spans[i]
           const side = span.b < 50 ? 'right' : 'left'
+          const obj = OBJECTS[id]
+          // the plane's screen box once turned 32deg: where the object's footprint ends up
+          const bw = Math.round(obj.fw * COS + obj.fd * SIN)
+          const bh = Math.round((obj.fw * SIN + obj.fd * COS) * 0.819)
           return (
             <li class="xp-row" data-side={side} style={`--a:${span.a}%;--b:${span.b}%`}>
               <div class="xp-track">
@@ -55,14 +96,15 @@ const show = (month: string) => month.replace('-', '.')
                     <span class="font-mono text-dimension text-graphite-2">now</span>
                   </span>
                 )}
-                <div class="xp-obj" aria-hidden="true" data-obj={id}>
+                <div class="xp-obj" aria-hidden="true" data-obj={id} style={`--bw:${bw}px;--bh:${bh}px;--fw:${obj.fw}px;--fd:${obj.fd}px`}>
                   <div class="xp-scene">
                     <div class="xp-plane">
                       <div class="xp-lift">
-                        <Placeholder />
+                        <obj.Object />
                       </div>
                     </div>
                   </div>
+                  {obj.Flat && <obj.Flat />}
                 </div>
                 <div class="xp-label">
                   <h3 class="xp-title text-small font-sans font-medium">{data.title}</h3>
