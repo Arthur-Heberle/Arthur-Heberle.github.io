@@ -10,13 +10,16 @@ interface Props {
   w: number
   d: number
   h: number
+  ax: number // the leader line's start, in this object's top-face pixels
+  ay: number
 }
-const { w, d, h } = Astro.props
+const { w, d, h, ax, ay } = Astro.props
 const question = QUESTIONS[0]
 ---
 
 <div class="wb-dk wb-dk-phone" data-wb-desk="agente">
   <Cub x={0} y={0} w={w} d={d} h={h} cls="dk-phone">
+    <i class="wb-anchor" data-anchor style={`left:${ax}px;top:${ay}px`}></i>
     <Phone bare msgs={[question.msgs[1]]} reply={question.reply} stamp={question.cls} ids={false} />
   </Cub>
 </div>

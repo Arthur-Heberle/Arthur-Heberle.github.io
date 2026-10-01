@@ -9,12 +9,15 @@ interface Props {
   w: number
   d: number
   h: number
+  ax: number // the leader line's start, in this object's top-face pixels
+  ay: number
 }
-const { w, d, h } = Astro.props
+const { w, d, h, ax, ay } = Astro.props
 ---
 
 <div class="wb-dk wb-dk-hh" data-wb-desk="brasilore">
   <Cub x={0} y={0} w={w} d={d} h={h} cls="dk-hh">
+    <i class="wb-anchor" data-anchor style={`left:${ax}px;top:${ay}px`}></i>
     <div class="hh-scr">
       <div class="hh-scene">
         <img class="mon-cloud a" src="/brasilore/cloud.png" width="68" height="21" alt="" loading="lazy" decoding="async" />

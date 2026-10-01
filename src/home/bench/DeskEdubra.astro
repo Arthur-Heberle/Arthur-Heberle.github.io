@@ -11,13 +11,16 @@ interface Props {
   w: number
   d: number
   h: number
+  ax: number // the leader line's start, in this object's top-face pixels
+  ay: number
 }
-const { w, d, h } = Astro.props
+const { w, d, h, ax, ay } = Astro.props
 ---
 
 <div class="device wb-dk wb-dk-edubra" data-wb-desk="edubra">
   <Cub x={0} y={0} w={w} d={d} h={h} cls="dk-mdf">
     <div class="dk-lid"><EdubraLid /></div>
+    <i class="wb-anchor" data-anchor style={`left:${ax}px;top:${ay}px`}></i>
     <span slot="front" class="engrave" data-text="EduBra"></span>
     <div slot="right" class="dk-side">
       <span class="dk-knob"></span>

@@ -34,6 +34,13 @@ const GEO: Record<string, { x: number; y: number; w: number; d: number; h: numbe
   'agente-h': { x: 318, y: 22, w: 112, d: 232, h: 8 },
   brasilore: { x: 40, y: 214, w: 240, d: 124, h: 12 },
 }
+// Where the leader line starts, in each object's own top-face pixels, and which side its label is on
+// (the label's slot is fixed in bench.css, so it never lands on the mat or on another label).
+const NOTE: Record<string, { ax: number; ay: number; side: 'left' | 'right'; slot: string }> = {
+  edubra: { ax: 40, ay: 26, side: 'left', slot: 'tl' },
+  'agente-h': { ax: 84, ay: 28, side: 'right', slot: 'tr' },
+  brasilore: { ax: 30, ay: 100, side: 'left', slot: 'bl' },
+}
 const CALIPER = { x: 306, y: 296, w: 250, d: 22, h: 4 }
 const SLOT = { x: 452, y: 40, w: 120, d: 130 }
 ---
@@ -69,7 +76,7 @@ const SLOT = { x: 452, y: 40, w: 120, d: 130 }
                         <div class="wb-desk-obj" aria-hidden="true">
                           <div class="wb-shadow" />
                           <div class="wb-lift">
-                            <DeskObject w={geo.w} d={geo.d} h={geo.h} />
+                            <DeskObject w={geo.w} d={geo.d} h={geo.h} ax={NOTE[project.id].ax} ay={NOTE[project.id].ay} />
                           </div>
                         </div>
                         <div class="wb-cap">
@@ -110,7 +117,48 @@ const SLOT = { x: 452, y: 40, w: 120, d: 130 }
           </Cub>
         </div>
       </div>
+      <!-- The labels and their leader lines: drawn in plain pixels over the scene (never scaled), shown on
+           hover and focus (bench.ts). A visual copy of each link's description, aria-hidden: the links
+           carry the real one by aria-describedby. Without JavaScript the labels simply show, without lines. -->
+      <svg class="wb-lines" aria-hidden="true" focusable="false">
+        {
+          projects.map((project) => (
+            <g data-note={project.id}>
+              <path class="wb-line" d="" />
+              <circle class="wb-dot" r="2.5" cx="0" cy="0" />
+            </g>
+          ))
+        }
+      </svg>
+      {
+        projects.map((project) => {
+          const { title, line, role, date, status } = project.data
+          const note = NOTE[project.id]
+          return (
+            <div class={`wb-note wb-note-${note.slot}`} data-note={project.id} data-side={note.side} aria-hidden="true">
+              <p class="text-h3 font-sans font-medium">{title}</p>
+              <p class="text-small">{line}</p>
+              <p class="wb-meta font-mono text-dimension text-graphite-2">
+                {isFilled(role) && <span>{role}</span>}
+                {isFilled(date) && <span>{date.replace('-', '.')}</span>}
+                {
+                  isFilled(status) && (
+                    <span class="wip">
+                      <svg class="status-mark" viewBox="0 0 12 12" aria-hidden="true" focusable="false">
+                        <circle cx="6" cy="6" r="4.5" />
+                        <path d="M6 1.5A4.5 4.5 0 0 0 6 10.5Z" />
+                      </svg>
+                      {status}
+                    </span>
+                  )
+                }
+              </p>
+            </div>
+          )
+        })
+      }
     </div>
+    <p class="wb-hint font-mono text-dimension text-graphite-2" aria-hidden="true">Point at something on the desk.</p>
   </div>
 </section>
 
