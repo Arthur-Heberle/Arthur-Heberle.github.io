@@ -1,3 +1,130 @@
 ---
-// Agente H's "By the numbers". Stage 3 fills it in; until then the section is not rendered.
+// Agente H's "By the numbers" (Arthur's brief, 2026-09-30): the same component as EduBra's
+// (src/projects/edubra/EdubraNumbers.astro and numbers.css): four figures, each a small technical
+// drawing in the site's line style over a mono number and its label; four across from 768px, two
+// by two below. motion.ts's tier2Numbers() draws any [data-numbers] row in once, so this needs no
+// script. Every drawing is hand-made paths (no rect/circle/line), the same constraint as EduBra's,
+// so one length-measuring tween covers it.
+//
+// Every figure is from the AGENT-H repo: 30 s is the debounce in the n8n query (`created_at <
+// NOW() - 30 s`), 1,536 is `VECTOR(1536)` in schema.sql (text-embedding-3-small), 8 is
+// `similarity_search(..., limit=8)` in services/rag.py, and 46 is the count of `def test_` in
+// backend/tests (27 + 13 + 6; no parametrized tests, no duplicate names). The commit history
+// mentions 42 and has since grown.
+
+// a closed circle as two arcs (a path, not a <circle>): centre, radius
+const circle = (cx: number, cy: number, r: number) =>
+  `M${cx - r} ${cy}a${r} ${r} 0 1 0 ${2 * r} 0a${r} ${r} 0 1 0 ${-2 * r} 0`
+
+// 1: a ring timer. Twelve ticks round it, and one hand at the top: full.
+const RING = { cx: 80, cy: 50, r: 32 }
+const ticks = Array.from({ length: 12 }, (_, i) => {
+  const a = (i * Math.PI) / 6
+  const [s, c] = [Math.sin(a), -Math.cos(a)]
+  const f = (n: number) => +n.toFixed(2)
+  return `M${f(RING.cx + s * (RING.r + 3))} ${f(RING.cy + c * (RING.r + 3))}L${f(RING.cx + s * (RING.r + 7))} ${f(RING.cy + c * (RING.r + 7))}`
+})
+
+// 2: a short row of bars, trailing off into dots
+const heights = [58, 42, 52, 30, 38, 22, 26, 14, 16]
+const bars = heights.map((h, i) => {
+  const x = 12 + i * 13
+  return `M${x} 82V${82 - h}H${x + 7}V82Z`
+})
+const dots = [120, 132, 144].map((x) => `M${x} 82H${x + 4}`)
+
+// 3: one dot, eight lines out to its neighbours (the nearest eight)
+const HUB = { x: 80, y: 50 }
+const neighbours = [
+  [34, 22], [62, 12], [112, 18], [138, 44], [122, 82], [86, 90], [44, 78], [20, 52],
+].map(([x, y]) => {
+  const d = Math.hypot(x - HUB.x, y - HUB.y)
+  const [ux, uy] = [(x - HUB.x) / d, (y - HUB.y) / d]
+  const f = (n: number) => +n.toFixed(2)
+  return {
+    ring: circle(x, y, 3.5),
+    line: `M${f(HUB.x + ux * 7)} ${f(HUB.y + uy * 7)}L${f(x - ux * 4.5)} ${f(y - uy * 4.5)}`,
+  }
+})
+
+// 4: automated tests, as a checklist: a box, a tick in it, a line for the name
+const rows = [24, 50, 76].map((y) => ({
+  box: `M22 ${y - 8}H38V${y + 8}H22Z`,
+  tick: `M26 ${y}L30 ${y + 4}L36 ${y - 5}`,
+  name: `M50 ${y}H${y === 50 ? 118 : y === 24 ? 132 : 104}`,
+}))
+
+const figures = [
+  { n: '30', unit: ' s', label: 'of silence before it answers' },
+  { n: '1,536', unit: '', label: 'numbers that describe each product to the search' },
+  { n: '8', unit: '', label: 'closest products it reads before every reply' },
+  { n: '46', unit: '', label: 'automated tests' },
+]
 ---
+
+<section class="flex flex-col gap-6" aria-labelledby="agente-numbers-heading">
+  <h2 id="agente-numbers-heading" class="text-h3 font-sans font-medium" data-anim>By the numbers</h2>
+  <div class="numbers" data-numbers>
+    <figure>
+      <svg viewBox="0 0 160 100" aria-hidden="true" focusable="false">
+        <g class="ink">
+          <path d={circle(RING.cx, RING.cy, RING.r)}></path>
+          <path d={`M${RING.cx} ${RING.cy}V${RING.cy - RING.r + 6}`}></path>
+        </g>
+        <g class="dim">
+          {ticks.map((d) => <path d={d}></path>)}
+        </g>
+      </svg>
+      <figcaption>
+        <p class="num"><span class="n">{figures[0].n}</span><span class="u">{figures[0].unit}</span></p>
+        <p class="lab text-small">{figures[0].label}</p>
+      </figcaption>
+    </figure>
+
+    <figure>
+      <svg viewBox="0 0 160 100" aria-hidden="true" focusable="false">
+        <g class="ink">
+          {bars.map((d) => <path d={d}></path>)}
+        </g>
+        <g class="dim">
+          {dots.map((d) => <path d={d}></path>)}
+        </g>
+      </svg>
+      <figcaption>
+        <p class="num"><span class="n">{figures[1].n}</span><span class="u">{figures[1].unit}</span></p>
+        <p class="lab text-small">{figures[1].label}</p>
+      </figcaption>
+    </figure>
+
+    <figure>
+      <svg viewBox="0 0 160 100" aria-hidden="true" focusable="false">
+        <g class="ink">
+          <path d={circle(HUB.x, HUB.y, 5)}></path>
+          {neighbours.map((n) => <path d={n.ring}></path>)}
+        </g>
+        <g class="dim">
+          {neighbours.map((n) => <path d={n.line}></path>)}
+        </g>
+      </svg>
+      <figcaption>
+        <p class="num"><span class="n">{figures[2].n}</span><span class="u">{figures[2].unit}</span></p>
+        <p class="lab text-small">{figures[2].label}</p>
+      </figcaption>
+    </figure>
+
+    <figure>
+      <svg viewBox="0 0 160 100" aria-hidden="true" focusable="false">
+        <g class="ink">
+          {rows.map((r) => <><path d={r.box}></path><path d={r.tick}></path></>)}
+        </g>
+        <g class="dim">
+          {rows.map((r) => <path d={r.name}></path>)}
+        </g>
+      </svg>
+      <figcaption>
+        <p class="num"><span class="n">{figures[3].n}</span><span class="u">{figures[3].unit}</span></p>
+        <p class="lab text-small">{figures[3].label}</p>
+      </figcaption>
+    </figure>
+  </div>
+</section>

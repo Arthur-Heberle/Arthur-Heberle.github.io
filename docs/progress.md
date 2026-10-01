@@ -58,7 +58,7 @@ Five stages, in order. Commit message `agent-h: <stage>`. The source of truth is
 |---|---|---|---|
 | 1 | Page, archive entry, copy | done | `/projects/agente-h/`; copy verbatim bar the two edits Arthur chose (intro, category); `wip` field and a half-filled-circle marker on the row and the status line; `part`/`differently` made optional, EduBra's HTML unchanged (only the CSS hash moved) |
 | 2 | The animation | done | own `story.ts`/`story.css`/`AgenteStory.astro` in `src/projects/agente-h/`, EduBra's files untouched; phone is the only 3D object (standing slab, same bench tilt/turn); ring resets twice (verified); gold only ever with a dark outline (see divergences); JS ~79 KB gzip |
-| 3 | By the numbers | todo | |
+| 3 | By the numbers | done | EduBra's `.numbers`/`[data-numbers]` reused, no motion change; tests are **46**, not the 42 the commit history mentions (`def test_` in backend/tests: 27 + 13 + 6, no parametrize, no duplicate names; pytest is not installed here, so counted, not collected) |
 | 4 | Dashboard screenshots | todo | |
 | 5 | Final check | todo | |
 
