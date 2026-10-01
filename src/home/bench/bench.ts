@@ -169,6 +169,49 @@ function initNotes(bench: HTMLElement, items: HTMLElement[], reduced: boolean) {
   sync()
 }
 
+// ---- lift and turn ----
+// On hover or keyboard focus (hover devices, 768px and up) the object lifts off the mat and turns
+// toward the viewer, one transform on .wb-lift driven by a proxy (translateZ, then the turn that undoes
+// the mat's own turn and tilt, so the phone's chat and the handheld's screen read nearly straight on);
+// the wide shadow fades in under it; then the object's action plays once. The leader line follows the
+// anchor, which moves with the object, so it is re-measured on every frame.
+// The flat ones turn about their near edge, so they rise toward the viewer like a propped-up phone and
+// never dip below the mat; the box turns about its middle.
+const POSE: Record<string, { z: number; rz: number; rx: number; origin: string }> = {
+  edubra: { z: 30, rz: -6, rx: -12, origin: '50% 50%' },
+  agente: { z: 10, rz: -32, rx: -48, origin: '50% 100%' },
+  brasilore: { z: 10, rz: -32, rx: -44, origin: '50% 100%' },
+}
+
+function initLift(item: HTMLElement, onSettled: () => void) {
+  const lift = item.querySelector<HTMLElement>('.wb-lift')
+  const shadow = item.querySelector<HTMLElement>('.wb-shadow-lift')
+  const pose = POSE[item.querySelector<HTMLElement>('[data-wb-desk]')?.dataset.wbDesk ?? '']
+  if (!lift || !shadow || !pose) return () => {}
+  lift.style.transformOrigin = pose.origin
+  const st = { p: 0 }
+  let tw: gsap.core.Tween | undefined
+  const apply = () => {
+    const p = st.p
+    lift.style.transform = p === 0 ? '' : `translateZ(${pose.z * p}px) rotateZ(${pose.rz * p}deg) rotateX(${pose.rx * p}deg)`
+    shadow.style.opacity = String(p)
+    remeasure()
+  }
+  return (up: boolean) => {
+    tw?.kill()
+    tw = gsap.to(st, {
+      p: up ? 1 : 0,
+      duration: up ? 0.38 : 0.28,
+      ease: ease(),
+      onUpdate: apply,
+      onComplete: () => {
+        apply()
+        if (up) onSettled()
+      },
+    })
+  }
+}
+
 export function initBench(bench: HTMLElement) {
   bench.classList.add('wb-live') // the MDF texture is fetched only now
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -195,8 +238,14 @@ export function initBench(bench: HTMLElement) {
     }
     const link = item.querySelector<HTMLElement>('.wb-link')!
     if (hover) {
-      link.addEventListener('mouseenter', play)
-      link.addEventListener('focus', play)
+      // on the desk the object lifts first and its action plays when it has settled; stacked, the action alone
+      const lifted = initLift(item, play)
+      const on = () => (wide.matches ? lifted(true) : play())
+      const off = () => wide.matches && lifted(false)
+      link.addEventListener('mouseenter', on)
+      link.addEventListener('mouseleave', off)
+      link.addEventListener('focus', () => link.matches(':focus-visible') && on())
+      link.addEventListener('blur', off)
     }
     if (stacked || !hover) {
       // no hover here: the action plays once, as the object scrolls into view

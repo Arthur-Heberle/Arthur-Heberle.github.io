@@ -806,3 +806,21 @@
     display: block;
   }
 }
+
+/* ---- lift and turn (hover or keyboard focus, hover devices, 768px and up) ----
+ * bench.ts lifts the object off the mat and turns it toward the viewer with one transform on
+ * .wb-lift. The footprint link keeps a flat, slightly larger hit area on the mat, so an object that
+ * moves out from under the pointer does not end its own hover. The wide, soft shadow is a second,
+ * static layer under the first; only its opacity changes. */
+@media (min-width: 768px) {
+  .wb-link::before {
+    content: '';
+    position: absolute;
+    inset: -6px;
+  }
+  .wb-shadow-lift {
+    inset: -34px -60px -64px -26px;
+    background: radial-gradient(ellipse at 50% 50%, rgb(20 24 28 / 0.3), transparent 72%);
+    opacity: 0;
+  }
+}
