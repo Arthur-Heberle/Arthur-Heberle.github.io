@@ -1,0 +1,17 @@
+---
+// Agente H on the bench: the project page's own 3D phone (Phone.astro, phone.css), scaled down
+// by the sizes set in bench.css. One customer message, the agent's reply and the gold stamp, all
+// from the page's first question; at rest they are all shown, the final state.
+import Phone from '../../projects/agente-h/Phone.astro'
+import { QUESTIONS } from '../../projects/agente-h/questions'
+
+const question = QUESTIONS[0]
+---
+
+<div class="wb-phone" data-wb="agente">
+  <div class="wb-persp">
+    <div class="wb-bench">
+      <Phone msgs={[question.msgs[1]]} reply={question.reply} stamp={question.cls} ids={false} />
+    </div>
+  </div>
+</div>

@@ -25,8 +25,11 @@
 @import "../../projects/edubra/device.css";
 @import "../../projects/edubra/story.css";
 @import "../../projects/edubra/numbers.css";
-/* projects/agente-h: its "How it works" story (built on EduBra's .story classes, so after them) */
+/* projects/agente-h: the phone, shared with the home bench, then its "How it works" story (built on EduBra's .story classes, so after them) */
+@import "../../projects/agente-h/phone.css";
 @import "../../projects/agente-h/story.css";
+/* home: the project bench (borrows the EduBra and Agente H materials above) */
+@import "../../home/bench/bench.css";
 
 /* Lenis's required stylesheet, shipped by the package. Every rule in it is gated on the
  * `lenis` class Lenis puts on <html> at runtime, so it is inert with JS disabled. Last,

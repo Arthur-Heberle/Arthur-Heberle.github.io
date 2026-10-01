@@ -1,0 +1,89 @@
+---
+// The project bench: three objects on one work surface, each one link (the object and its caption
+// together) named by the project's title. Hardware is CSS 3D and software is 2D drawing, in the same
+// three-quarter view as the project pages; the objects are built from the pages' own materials
+// (EdubraObject, AgenteObject, BrasiloreObject). Every object is aria-hidden: the link's name is
+// the title and its description is the caption, so the accessibility tree holds no drawing text.
+//
+// Nothing here moves on its own. bench.ts (loaded when the bench nears the viewport) brings the objects
+// down onto the surface once, and plays each object's action on hover, focus, or, on touch and on
+// phones, once as it scrolls into view. Without it every object shows its final state.
+import { getCollection } from 'astro:content'
+import Tick from '../../shared/components/Tick.astro'
+import { isFilled } from '../../shared/fill'
+import { sortProjects } from '../../projects/sortProjects'
+import EdubraObject from './EdubraObject.astro'
+import AgenteObject from './AgenteObject.astro'
+import BrasiloreObject from './BrasiloreObject.astro'
+
+const projects = sortProjects(await getCollection('projects'))
+const OBJECTS = { edubra: EdubraObject, 'agente-h': AgenteObject, brasilore: BrasiloreObject }
+---
+
+<section class="flex flex-col gap-8 py-16" aria-labelledby="projects-heading">
+  <Tick />
+  <h2 id="projects-heading" class="text-h2 font-sans font-medium" data-anim>Projects</h2>
+  <div class="wb" data-bench>
+    <div class="wb-plane" aria-hidden="true"></div>
+    <ul class="wb-list" role="list">
+      {
+        projects.map((project) => {
+          const Object3D = OBJECTS[project.id as keyof typeof OBJECTS]
+          const { title, line, role, date, status, link } = project.data
+          const external = link.startsWith('http')
+          return (
+            <li class="wb-item">
+              <a
+                class="wb-link"
+                href={link}
+                rel={external ? 'noopener' : undefined}
+                aria-labelledby={`${project.id}-title`}
+                aria-describedby={`${project.id}-line ${project.id}-meta`}
+              >
+                <div class="wb-obj" aria-hidden="true">
+                  <Object3D />
+                </div>
+                <div class="wb-cap">
+                  <h3 id={`${project.id}-title`} class="text-h3 font-sans font-medium">{title}</h3>
+                  <p id={`${project.id}-line`} class="text-small">{line}</p>
+                  <p id={`${project.id}-meta`} class="wb-meta font-mono text-dimension text-graphite-2">
+                    {isFilled(role) && <span>{role}</span>}
+                    {isFilled(date) && <span>{date.replace('-', '.')}</span>}
+                    {
+                      isFilled(status) && (
+                        <span class="wip">
+                          <svg class="status-mark" viewBox="0 0 12 12" aria-hidden="true" focusable="false">
+                            <circle cx="6" cy="6" r="4.5" />
+                            <path d="M6 1.5A4.5 4.5 0 0 0 6 10.5Z" />
+                          </svg>
+                          {status}
+                        </span>
+                      )
+                    }
+                  </p>
+                </div>
+              </a>
+            </li>
+          )
+        })
+      }
+    </ul>
+  </div>
+</section>
+
+<script>
+  // The 3D is set up only when the bench approaches the viewport: bench.ts is a separate chunk,
+  // fetched here. Until then the objects are plain CSS in their final state.
+  const bench = document.querySelector<HTMLElement>('[data-bench]')
+  if (bench) {
+    const near = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return
+        near.disconnect()
+        import('./bench').then((m) => m.initBench(bench))
+      },
+      { rootMargin: '400px 0px' },
+    )
+    near.observe(bench)
+  }
+</script>

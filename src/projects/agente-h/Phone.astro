@@ -1,0 +1,29 @@
+---
+// The customer's phone: a standing slab (back, right edge, top edge) with a screen of 2D chat.
+// Shared by Agente H's "How it works" and the home bench; the CSS is phone.css. The story's
+// script finds the reply and the stamp by id (#hs-reply, #hs-stamp), the bench's by class, so
+// `ids` is false on the home page. The reply is a span a word, which the story writes in word by word.
+interface Props {
+  msgs: string[]
+  reply: string
+  stamp: string
+  ids?: boolean
+}
+const { msgs, reply, stamp, ids = true } = Astro.props
+---
+
+<div class="ph phone3d">
+  <div class="pb"></div>
+  <div class="pr"></div>
+  <div class="pt"></div>
+  <div class="pf">
+    <div class="scr">
+      <div class="who"><i></i><b></b></div>
+      <div class="chat">
+        {msgs.map((m, i) => <p class="bub out" data-b={i}>{m}</p>)}
+        <p class="bub in" id={ids ? 'hs-reply' : undefined}>{reply.split(' ').map((w) => <><span class="rw">{w}</span>{' '}</>)}</p>
+      </div>
+      <p class="stamp" id={ids ? 'hs-stamp' : undefined}>{stamp}</p>
+    </div>
+  </div>
+</div>

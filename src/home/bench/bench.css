@@ -1,0 +1,324 @@
+/* The project bench (Bench.astro): three objects on one work surface, each one link, in the
+ * project pages' three-quarter view. Imported after the project CSS it borrows from: the EduBra
+ * box is a `.device` (device.css gives its materials), the phone is `.phone3d` (phone.css).
+ *
+ * The surface is one flat plane behind all three, seen from above, with a static soft shadow; each
+ * object's perspective origin is set so all three share the surface's vanishing point (--vx, per
+ * column). Below 768px the objects stack and have no surface, only their own soft shadow.
+ *
+ * THE 3D CHAIN, as on the project pages: nothing from an object's perspective element down may get
+ * overflow other than visible, opacity below 1 or a filter if it has 3D children. Only .wb-obj
+ * (above every 3D context) changes opacity and translate, and only leaves inside the screens do. */
+.wb {
+  --zone: 300px; /* the height each object stands in */
+  position: relative;
+}
+.wb-list {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 48px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.wb-item:nth-child(1) {
+  --vx: 150%;
+}
+.wb-item:nth-child(2) {
+  --vx: 50%;
+}
+.wb-item:nth-child(3) {
+  --vx: -50%;
+}
+.wb-link {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  color: inherit;
+  text-decoration: none;
+}
+.wb-link:focus-visible {
+  outline-offset: 8px;
+}
+.wb-obj {
+  position: relative;
+  height: var(--zone);
+}
+/* a soft contact shadow on the surface under each object: a static gradient, never animated */
+.wb-obj::before {
+  content: '';
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  bottom: 14px;
+  height: 36px;
+  background: radial-gradient(ellipse at 50% 50%, rgb(20 24 28 / 0.28), transparent 70%);
+  pointer-events: none;
+}
+.wb-cap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.wb-link:hover .wb-cap h3,
+.wb-link:focus-visible .wb-cap h3 {
+  text-decoration: underline;
+  text-decoration-thickness: var(--hairline);
+  text-underline-offset: 4px;
+}
+/* role, date and status, separated by spacing, not middle dots */
+.wb-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 1.25rem;
+}
+.wb-meta .wip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+/* ---------- the shared work surface (desktop only) ---------- */
+.wb-plane {
+  display: none;
+}
+@media (min-width: 768px) {
+  .wb-list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0 24px;
+  }
+  .wb-plane {
+    display: block;
+    position: absolute;
+    left: -24px;
+    right: -24px;
+    top: calc(var(--zone) - 176px);
+    height: 170px;
+    border: var(--hairline) solid var(--color-line);
+    border-radius: 6px;
+    background: var(--color-sheet);
+    box-shadow:
+      0 6px 0 0 var(--color-line),
+      0 34px 40px -12px rgb(20 24 28 / 0.25);
+    transform-origin: 50% 100%;
+    transform: perspective(900px) rotateX(62deg);
+  }
+}
+@media (max-width: 767px) {
+  .wb-item {
+    --vx: 50%;
+  }
+  .wb {
+    --zone: 320px;
+  }
+}
+
+/* ---------- EduBra: the device box, scaled down ---------- */
+.wb-device {
+  --box-depth: 44px;
+  --pin-h: 5px;
+  --cap-h: 6px;
+  --mdf-tex: none; /* the texture is fetched once the bench is live (bench.ts) */
+  position: absolute;
+  left: 50%;
+  bottom: 16px;
+  width: 236px;
+  margin-left: -118px;
+}
+.wb-live .wb-device {
+  --mdf-tex: url('/textures/mdf.webp');
+}
+.wb-device .stage {
+  perspective-origin: var(--vx, 50%) 10%;
+}
+.wb-device .panel {
+  display: flex;
+}
+.wb-device .btn {
+  cursor: inherit;
+}
+.wb-device .front .engrave {
+  font-size: 22px;
+}
+.wb-device .floor-shadow {
+  display: none;
+}
+
+/* ---------- Agente H: the phone, scaled down ---------- */
+.wb-phone {
+  --hs-gold: #c9a84c;
+  --hs-ink: #1e1c19;
+  --st-line: #6b7075;
+  --st-pin: #1f4f66;
+  --st-paper: #f2efe8;
+  --ph-w: 128px;
+  --ph-h: 276px;
+  --ph-t: 9px;
+  position: absolute;
+  inset: 0;
+}
+.wb-persp {
+  position: absolute;
+  left: 50%;
+  bottom: 12px;
+  width: var(--ph-w);
+  height: calc(var(--ph-h) + 40px);
+  margin-left: calc(var(--ph-w) / -2);
+  perspective: 1500px;
+  perspective-origin: var(--vx, 50%) 50%;
+}
+.wb-bench {
+  position: absolute;
+  left: 0;
+  bottom: 18px;
+  width: 100%;
+  height: var(--ph-t);
+  transform-style: preserve-3d;
+  transform-origin: 50% 100%;
+  transform: rotateX(82deg);
+}
+.wb-phone .bub {
+  font-size: 11px;
+  padding: 5px 8px 6px;
+}
+.wb-phone .chat {
+  gap: 7px;
+  padding: 10px 8px;
+}
+.wb-phone .who {
+  height: 30px;
+}
+.wb-phone .stamp {
+  font-size: 10px;
+  bottom: 12px;
+}
+
+/* ---------- Brasilore: a desk monitor in CSS 3D, a pixel scene on its screen ----------
+ * The scene is Arthur's own art (public/brasilore/), drawn crisp at 1:1: the screen is 210x150 and the
+ * tiles and the character are their native size. */
+.wb-mon {
+  position: absolute;
+  inset: 0;
+}
+.mon {
+  --mon-w: 232px;
+  --mon-h: 172px;
+  --mon-t: 26px; /* thickness */
+  position: absolute;
+  inset: 0;
+  perspective: 1500px;
+  perspective-origin: var(--vx, 50%) 30%;
+}
+.mon-body {
+  position: absolute;
+  left: 50%;
+  top: 52px;
+  width: var(--mon-w);
+  height: var(--mon-h);
+  margin-left: calc(var(--mon-w) / -2);
+  transform-style: preserve-3d;
+  transform-origin: 50% 100%;
+  transform: rotateY(-28deg) rotateX(4deg);
+}
+.mon-body > * {
+  position: absolute;
+}
+.mon-front {
+  inset: 0;
+  border-radius: 10px;
+  background: #1c1d20;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.14);
+}
+.mon-back {
+  inset: 0;
+  border-radius: 10px;
+  background: #141518;
+  transform: translateZ(calc(var(--mon-t) * -1));
+}
+.mon-right {
+  left: 100%;
+  top: 10px;
+  width: var(--mon-t);
+  height: calc(100% - 20px);
+  background: linear-gradient(90deg, #202125, #3a3b40);
+  transform-origin: 0 0;
+  transform: rotateY(90deg);
+}
+.mon-top {
+  left: 10px;
+  top: 0;
+  width: calc(100% - 20px);
+  height: var(--mon-t);
+  background: #2e2f34;
+  transform-origin: 0 0;
+  transform: rotateX(-90deg);
+}
+.mon-neck {
+  left: 50%;
+  top: 100%;
+  width: 36px;
+  height: 30px;
+  margin-left: -18px;
+  background: linear-gradient(90deg, #26272b, #34353a);
+  transform: translateZ(calc(var(--mon-t) * -0.5));
+}
+.mon-foot {
+  left: 50%;
+  top: calc(100% + 28px);
+  width: 124px;
+  height: 10px;
+  margin-left: -62px;
+  border-radius: 5px 5px 2px 2px;
+  background: linear-gradient(#3a3b40, #26272b);
+  transform: translateZ(calc(var(--mon-t) * -0.5));
+}
+.mon-scr {
+  position: absolute;
+  inset: 11px;
+  overflow: hidden;
+  border-radius: 3px;
+  background: #9fd3ea;
+  image-rendering: pixelated;
+}
+.mon-scr img {
+  position: absolute;
+  image-rendering: pixelated;
+}
+.mon-cloud.a {
+  left: 22px;
+  top: 18px;
+}
+.mon-cloud.b {
+  left: 128px;
+  top: 40px;
+}
+/* the ground is the repository's grass tile, 50x50, cropped to its top 38px: no scaling */
+.mon-ground {
+  position: absolute;
+  bottom: 0;
+  height: 38px;
+  background: url('/brasilore/grass.png') repeat-x 0 0;
+  image-rendering: pixelated;
+}
+.mon-ground.left {
+  left: 0;
+  width: 90px;
+}
+.mon-ground.right {
+  left: 138px;
+  right: 0;
+}
+/* at rest she stands on the far side of the gap; the action runs her in from the left */
+.mon-hero {
+  left: 150px;
+  bottom: 38px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wb-device .pin > i,
+  .wb-device .btn .cap {
+    transition: none !important;
+  }
+}

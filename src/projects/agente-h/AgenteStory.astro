@@ -10,6 +10,7 @@
 // (render(1) in story.ts), so it reads without JavaScript and is already the picture reduced
 // motion and the static layout show. The product map, the nearest-neighbour ranking and every
 // position below are computed here once, so story.ts only reads them.
+import Phone from './Phone.astro'
 import { P, poly, arrow, fmtPts, QUERY_LINE, slotsFor, chipW } from './flow'
 import { QUESTIONS } from './questions'
 import { MAP, PRODUCTS as BASE, HULLS, LANDINGS, LABELS } from './map'
@@ -240,21 +241,7 @@ const LEAD_LINES = ['Wants a 3-seat', 'leather sofa.']
           <div class="obj" id="o-phone">
             <div class="bench">
               <div class="shadow"></div>
-              <div class="ph">
-                <div class="pb"></div>
-                <div class="pr"></div>
-                <div class="pt"></div>
-                <div class="pf">
-                  <div class="scr">
-                    <div class="who"><i></i><b></b></div>
-                    <div class="chat">
-                      {MSGS.map((m, i) => <p class="bub out" data-b={i}>{m}</p>)}
-                      <p class="bub in" id="hs-reply">{REPLY.split(' ').map((w) => <><span class="rw">{w}</span>{' '}</>)}</p>
-                    </div>
-                    <p class="stamp" id="hs-stamp">QUALIFIED_LEAD</p>
-                  </div>
-                </div>
-              </div>
+              <Phone msgs={MSGS} reply={REPLY} stamp="QUALIFIED_LEAD" />
             </div>
           </div>
         </div>

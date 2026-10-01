@@ -471,6 +471,19 @@ of invitation in his own voice.
 
 ---
 
+**The home bench** (Arthur's decision, 2026-10-01; it replaces the archive list). Three objects on one
+shared work surface in the three-quarter view, a static soft shadow under it: EduBra's MDF box with the
+yellow PLA cell, black pins and yellow buttons; Agente H's 3D phone; a small desk monitor for Brasilore with
+a 2D pixel scene on its screen (Arthur's own sprites from the Brasilore repository, drawn crisp at 1:1).
+Each object and its caption are one link named by the project's title. The objects come down onto the
+surface once, one after the other, when the bench enters the viewport; after that they stay still until
+hovered or focused, when each plays one action (EduBra's pins spell E, D, U; the phone gets a message, a
+reply and the gold QUALIFIED_LEAD stamp; Brasilore's character runs and jumps a gap). On touch and below
+768px each action plays once as its object scrolls into view; the objects stack, with no surface. Reduced
+motion and no JavaScript show every object in its final state. The 3D is set up (bench.ts, the MDF texture)
+only when the bench is within 400px of the viewport. The materials are the project pages' own: `.device`
+(device.css) and `.phone3d` (phone.css, extracted from the Agente H story unchanged).
+
 ## 10. Quality floor
 
 Build to this without announcing it.
