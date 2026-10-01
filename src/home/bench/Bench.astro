@@ -1,73 +1,116 @@
 ---
 // The project bench: three objects on one work surface, each one link (the object and its caption
-// together) named by the project's title. Hardware is CSS 3D and software is 2D drawing, in the same
-// three-quarter view as the project pages; the objects are built from the pages' own materials
-// (EdubraObject, AgenteObject, BrasiloreObject). Every object is aria-hidden: the link's name is
-// the title and its description is the caption, so the accessibility tree holds no drawing text.
+// together) named by the project's title. Below 768px the objects stand one above the other, as
+// before. From 768px up the surface is one desk seen diagonally from above, a CSS 3D scene: the
+// mat is a slab, the three objects stand on it as real cuboids (DeskEdubra, DeskAgente,
+// DeskBrasilore) beside a caliper and a dashed slot for the next project, and the captions are
+// shown on hover and focus (bench.ts). Every object is aria-hidden: the link's name is the
+// title and its description is the caption, so the accessibility tree holds no drawing text.
 //
 // Nothing here moves on its own. bench.ts (loaded when the bench nears the viewport) brings the objects
 // down onto the surface once, and plays each object's action on hover, focus, or, on touch and on
 // phones, once as it scrolls into view. Without it every object shows its final state.
 import { getCollection } from 'astro:content'
 import Tick from '../../shared/components/Tick.astro'
+import Cub from '../../projects/edubra/Cub.astro'
 import { isFilled } from '../../shared/fill'
 import { sortProjects } from '../../projects/sortProjects'
 import EdubraObject from './EdubraObject.astro'
 import AgenteObject from './AgenteObject.astro'
 import BrasiloreObject from './BrasiloreObject.astro'
+import DeskEdubra from './DeskEdubra.astro'
+import DeskAgente from './DeskAgente.astro'
+import DeskBrasilore from './DeskBrasilore.astro'
 
 const projects = sortProjects(await getCollection('projects'))
 const OBJECTS = { edubra: EdubraObject, 'agente-h': AgenteObject, brasilore: BrasiloreObject }
+const DESK = { edubra: DeskEdubra, 'agente-h': DeskAgente, brasilore: DeskBrasilore }
+
+// The desk, in the mat's own pixels (x to the right, y toward the viewer): where each object
+// stands and how big it is. h is its height off the mat.
+const MAT = { w: 600, d: 380, h: 6 }
+const GEO: Record<string, { x: number; y: number; w: number; d: number; h: number }> = {
+  edubra: { x: 34, y: 30, w: 216, d: 138, h: 60 },
+  'agente-h': { x: 318, y: 22, w: 112, d: 232, h: 8 },
+  brasilore: { x: 40, y: 214, w: 240, d: 124, h: 12 },
+}
+const CALIPER = { x: 306, y: 296, w: 250, d: 22, h: 4 }
+const SLOT = { x: 452, y: 40, w: 120, d: 130 }
 ---
 
 <section class="flex flex-col gap-8 py-16" aria-labelledby="projects-heading">
   <Tick />
   <h2 id="projects-heading" class="text-h2 font-sans font-medium" data-anim>Projects</h2>
   <div class="wb" data-bench>
-    <div class="wb-plane" aria-hidden="true"></div>
-    <ul class="wb-list" role="list">
-      {
-        projects.map((project) => {
-          const Object3D = OBJECTS[project.id as keyof typeof OBJECTS]
-          const { title, line, role, date, status, link } = project.data
-          const external = link.startsWith('http')
-          return (
-            <li class="wb-item">
-              <a
-                class="wb-link"
-                href={link}
-                rel={external ? 'noopener' : undefined}
-                aria-labelledby={`${project.id}-title`}
-                aria-describedby={`${project.id}-line ${project.id}-meta`}
-              >
-                <div class="wb-obj" aria-hidden="true">
-                  <Object3D />
-                </div>
-                <div class="wb-cap">
-                  <h3 id={`${project.id}-title`} class="text-h3 font-sans font-medium">{title}</h3>
-                  <p id={`${project.id}-line`} class="text-small">{line}</p>
-                  <p id={`${project.id}-meta`} class="wb-meta font-mono text-dimension text-graphite-2">
-                    {isFilled(role) && <span>{role}</span>}
-                    {isFilled(date) && <span>{date.replace('-', '.')}</span>}
-                    {
-                      isFilled(status) && (
-                        <span class="wip">
-                          <svg class="status-mark" viewBox="0 0 12 12" aria-hidden="true" focusable="false">
-                            <circle cx="6" cy="6" r="4.5" />
-                            <path d="M6 1.5A4.5 4.5 0 0 0 6 10.5Z" />
-                          </svg>
-                          {status}
-                        </span>
-                      )
-                    }
-                  </p>
-                </div>
-              </a>
-            </li>
-          )
-        })
-      }
-    </ul>
+    <div class="wb-desk">
+      <div class="wb-scene">
+        <div class="wb-mat" style={`width:${MAT.w}px;height:${MAT.d}px`}>
+          <Cub x={0} y={0} w={MAT.w} d={MAT.d} h={MAT.h} cls="dk-mat">
+            <ul class="wb-list" role="list">
+              {
+                projects.map((project) => {
+                  const Object3D = OBJECTS[project.id as keyof typeof OBJECTS]
+                  const DeskObject = DESK[project.id as keyof typeof DESK]
+                  const geo = GEO[project.id]
+                  const { title, line, role, date, status, link } = project.data
+                  const external = link.startsWith('http')
+                  return (
+                    <li class="wb-item" style={`--x:${geo.x}px;--y:${geo.y}px;--w:${geo.w}px;--d:${geo.d}px`}>
+                      <a
+                        class="wb-link"
+                        href={link}
+                        rel={external ? 'noopener' : undefined}
+                        aria-labelledby={`${project.id}-title`}
+                        aria-describedby={`${project.id}-line ${project.id}-meta`}
+                      >
+                        <div class="wb-obj" aria-hidden="true">
+                          <Object3D />
+                        </div>
+                        <div class="wb-desk-obj" aria-hidden="true">
+                          <div class="wb-shadow" />
+                          <div class="wb-lift">
+                            <DeskObject w={geo.w} d={geo.d} h={geo.h} />
+                          </div>
+                        </div>
+                        <div class="wb-cap">
+                          <h3 id={`${project.id}-title`} class="text-h3 font-sans font-medium">{title}</h3>
+                          <p id={`${project.id}-line`} class="text-small">{line}</p>
+                          <p id={`${project.id}-meta`} class="wb-meta font-mono text-dimension text-graphite-2">
+                            {isFilled(role) && <span>{role}</span>}
+                            {isFilled(date) && <span>{date.replace('-', '.')}</span>}
+                            {
+                              isFilled(status) && (
+                                <span class="wip">
+                                  <svg class="status-mark" viewBox="0 0 12 12" aria-hidden="true" focusable="false">
+                                    <circle cx="6" cy="6" r="4.5" />
+                                    <path d="M6 1.5A4.5 4.5 0 0 0 6 10.5Z" />
+                                  </svg>
+                                  {status}
+                                </span>
+                              )
+                            }
+                          </p>
+                        </div>
+                      </a>
+                    </li>
+                  )
+                })
+              }
+            </ul>
+            <div class="wb-slot" aria-hidden="true" style={`left:${SLOT.x}px;top:${SLOT.y}px;width:${SLOT.w}px;height:${SLOT.d}px`}></div>
+            <div class="wb-caliper" aria-hidden="true">
+              <Cub x={CALIPER.x} y={CALIPER.y} w={CALIPER.w} d={CALIPER.d} h={CALIPER.h} cls="dk-cal">
+                <Cub x={0} y={CALIPER.d} w={10} d={46} h={3} cls="dk-jaw" />
+                <Cub x={104} y={CALIPER.d} w={10} d={46} h={3} cls="dk-jaw" />
+                <Cub x={98} y={-3} w={38} d={28} h={3} cls="dk-slider">
+                  <span class="dk-window"></span>
+                </Cub>
+              </Cub>
+            </div>
+          </Cub>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 

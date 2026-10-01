@@ -1,0 +1,58 @@
+---
+// What sits on EduBra's lid on the bench: one Braille cell (standing in for the word; every
+// position carries the letters that raise it, data-in, and at rest it shows U, the final state)
+// and the four yellow buttons. Shared by the stacked object (EdubraObject) and the desk's box
+// (DeskEdubra), so the two never drift. The buttons are spans, not buttons: the whole object is
+// one link. braille.ts gives the dot patterns and icons.ts the button symbols.
+import Glyph from '../../projects/edubra/Glyph.astro'
+import { ICONS } from '../../projects/edubra/icons'
+import { BRAILLE_ALPHABET } from '../../projects/edubra/braille'
+
+const WORD = ['e', 'd', 'u']
+const rest = WORD[WORD.length - 1]
+const positions = [1, 2, 3, 4, 5, 6].map((n) => ({ n, letters: WORD.filter((l) => BRAILLE_ALPHABET[l].includes(n)) }))
+const buttons = [
+  { attr: 'data-play', icon: ICONS.pause },
+  { attr: 'data-back', icon: ICONS.back },
+  { attr: 'data-faster', icon: ICONS.faster },
+  { attr: 'data-slower', icon: ICONS.slower },
+]
+---
+
+<div class="word">
+  <div class="cell">
+    <div class="dots">
+      {
+        positions.map((p) => (
+          <div class:list={['pos', { up: p.letters.includes(rest) }]} data-n={p.n} data-in={p.letters.join('')}>
+            <span class="hole" />
+            <span class="pin">
+              <i class="shade" />
+              <i class="s1" />
+              <i class="s2" />
+              <i class="head" />
+            </span>
+          </div>
+        ))
+      }
+    </div>
+    <div class="label on" data-letter>{rest.toUpperCase()}</div>
+  </div>
+</div>
+<div class="panel">
+  <div class="cross">
+    {
+      buttons.map((b) => (
+        <span class="btn" {...{ [b.attr]: '' }}>
+          <span class="well" />
+          <span class="sd" />
+          <span class="sd2" />
+          <span class="cap">
+            <svg viewBox="0 0 24 24"><Glyph paths={b.icon} /></svg>
+          </span>
+        </span>
+      ))
+    }
+    <div class="speed">1×</div>
+  </div>
+</div>

@@ -1,66 +1,16 @@
 ---
-// EduBra on the bench: the device box, scaled down, built from the project page's own pieces:
-// device.css gives the MDF, the yellow PLA cell, the black pins and the yellow button caps (the
-// root carries `.device`, so every rule there applies), braille.ts gives the dot patterns and
-// icons.ts the button symbols. One Braille cell stands in for the word: the action raises E, then
-// D, then U, so every position carries the letters that raise it (data-in). At rest it shows U,
-// the final state. The buttons are spans, not buttons: the whole object is one link.
-import Glyph from '../../projects/edubra/Glyph.astro'
-import { ICONS } from '../../projects/edubra/icons'
-import { BRAILLE_ALPHABET } from '../../projects/edubra/braille'
-
-const WORD = ['e', 'd', 'u']
-const rest = WORD[WORD.length - 1]
-const positions = [1, 2, 3, 4, 5, 6].map((n) => ({ n, letters: WORD.filter((l) => BRAILLE_ALPHABET[l].includes(n)) }))
-const buttons = [
-  { attr: 'data-play', icon: ICONS.pause },
-  { attr: 'data-back', icon: ICONS.back },
-  { attr: 'data-faster', icon: ICONS.faster },
-  { attr: 'data-slower', icon: ICONS.slower },
-]
+// EduBra on the bench (stacked, below 768px): the device box, scaled down, built from the project
+// page's own pieces: device.css gives the MDF, the yellow PLA cell, the black pins and the yellow
+// button caps (the root carries `.device`, so every rule there applies). The lid's contents are
+// EdubraLid, shared with the desk's box.
+import EdubraLid from './EdubraLid.astro'
 ---
 
 <div class="device wb-device" data-wb="edubra">
   <div class="stage">
     <div class="box">
       <div class="lid">
-        <div class="word">
-          <div class="cell">
-            <div class="dots">
-              {
-                positions.map((p) => (
-                  <div class:list={['pos', { up: p.letters.includes(rest) }]} data-n={p.n} data-in={p.letters.join('')}>
-                    <span class="hole" />
-                    <span class="pin">
-                      <i class="shade" />
-                      <i class="s1" />
-                      <i class="s2" />
-                      <i class="head" />
-                    </span>
-                  </div>
-                ))
-              }
-            </div>
-            <div class="label on" data-letter>{rest.toUpperCase()}</div>
-          </div>
-        </div>
-        <div class="panel">
-          <div class="cross">
-            {
-              buttons.map((b) => (
-                <span class="btn" {...{ [b.attr]: '' }}>
-                  <span class="well" />
-                  <span class="sd" />
-                  <span class="sd2" />
-                  <span class="cap">
-                    <svg viewBox="0 0 24 24"><Glyph paths={b.icon} /></svg>
-                  </span>
-                </span>
-              ))
-            }
-            <div class="speed">1×</div>
-          </div>
-        </div>
+        <EdubraLid />
       </div>
       <div class="front"><span class="engrave" data-text="EduBra"></span></div>
       <div class="side">

@@ -1,0 +1,30 @@
+---
+// Brasilore on the desk (768px and up): a handheld console lying flat, screen up. The scene is
+// Arthur's own art from the Brasilore repository (public/brasilore/), drawn crisp at 1:1 in a
+// window cropped to the gap and the character; at rest she stands past the gap, the final state.
+// The d-pad and the two buttons are CSS.
+import Cub from '../../projects/edubra/Cub.astro'
+
+interface Props {
+  w: number
+  d: number
+  h: number
+}
+const { w, d, h } = Astro.props
+---
+
+<div class="wb-dk wb-dk-hh" data-wb-desk="brasilore">
+  <Cub x={0} y={0} w={w} d={d} h={h} cls="dk-hh">
+    <div class="hh-scr">
+      <div class="hh-scene">
+        <img class="mon-cloud a" src="/brasilore/cloud.png" width="68" height="21" alt="" loading="lazy" decoding="async" />
+        <img class="mon-cloud b" src="/brasilore/cloud.png" width="68" height="21" alt="" loading="lazy" decoding="async" />
+        <div class="mon-ground left"></div>
+        <div class="mon-ground right"></div>
+        <img class="mon-hero" src="/brasilore/emilia.png" width="44" height="60" alt="" loading="lazy" decoding="async" />
+      </div>
+    </div>
+    <div class="hh-dpad"><i></i><i></i></div>
+    <div class="hh-btns"><i></i><i></i></div>
+  </Cub>
+</div>

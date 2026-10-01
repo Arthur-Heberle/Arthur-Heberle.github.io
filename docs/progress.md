@@ -95,6 +95,21 @@ shared surface; the Brasilore art is his own (Emilia.png is the playable charact
 | 4 | The bench | done | `src/home/bench/`; the phone was extracted into `Phone.astro` + `phone.css` (Agente H page checked: screenshots and computed styles byte-identical at 1280 and 375) and EduBra's `ICONS` into `icons.ts`; the box is a `.device` so device.css gives its materials. One shared plane (desktop) with each column's perspective-origin offset so all three share a vanishing point; `bench.ts` loads when the bench is within 400px and adds `.wb-live` (the MDF texture); actions checked on hover, keyboard focus and mobile scroll-in, reduced motion and no-JS show final states; AX tree: three named links with descriptions, no drawing text. Brasilore uses Arthur's own `Emilia.png`, `Grass.png`, `Cloud1.png` (public/brasilore/, one frame, so the run is a translate and a hop). Lighthouse mobile 96-98 in five of six runs (one cold run 83, a 500 ms task in the existing motion script, the noise steps 09/11 document), a11y 100, best practices 100, CLS 0; JS 72.9 KB gzip |
 | 5 | Changelog | done | three entries above the old ones; dates from the commits: the bench `575d5bb` (2026-10-01), Agente H's three questions `7906b09` (2026-10-01; the page itself was `19a720f`, 2026-09-30), the EduBra story and 3D box `8f1cab7`/`41e97c3` (2026-09-30). Home now shows the 3 newest, the 2 older behind "show all" |
 
+### Home bench: diagonal desk, hover labels (2026-10-01, Arthur's brief)
+
+Four stages, in order. Commit message `bench: <stage>`. The brief assumed a straight-down bench with a mat, a
+caliper and a "next project" slot; the committed bench had none of those (a three-quarter plane and standing
+objects), so Arthur decided: stage 1 builds the mat, caliper and slot; Brasilore is a flat handheld on the
+desk and **stays the monitor below 768px**, where nothing changes (checked: the 375px bench is byte-identical
+to before).
+
+| Stage | Step | Status | Notes |
+|---|---|---|---|
+| 1 | The diagonal desk | done | one CSS 3D scene (perspective 1600px) at 768px and up: the mat is a `Cub` slab at `rotateX(55deg) rotateZ(32deg)`; the three objects, the caliper (4px) and the dashed slot stand or lie on it. **Divergences:** (1) the turn is +32deg, not the brief's -22deg: `Cub.astro` only builds the front and right faces, and only a clockwise turn shows the right face, where EduBra's knob and jack are (as at EduBra stage C); (2) the scene is drawn 855px wide and scaled in four CSS steps (`--k` .84/.89/.94/1 at 768/810/860/903px) to fit the column; (3) a flat top face (phone, handheld, jaws) is `transform-style: flat`, and the lid's coplanar layers are lifted 0.1 to 0.5px: both fixed z-fighting seen in the first render; (4) the `.device` wrapper turns off its container query on the desk, since a container flattens the 3D chain. `Phone.astro` got a `bare` prop (screen only; Agente H's page markup unchanged), `EdubraLid.astro` is shared by the stacked and desk boxes. The captions are hidden at 768px and up until stage 2 shows them on hover (the links still carry name and description by `aria-labelledby`/`aria-describedby`) |
+| 2 | Labels on hover | todo | |
+| 3 | Lift and turn | todo | |
+| 4 | Check | todo | |
+
 ---
 
 ## Open questions for Arthur

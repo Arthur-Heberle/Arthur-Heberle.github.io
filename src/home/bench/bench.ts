@@ -70,16 +70,19 @@ export function initBench(bench: HTMLElement) {
   const stacked = matchMedia('(max-width: 767px)').matches
   const hover = matchMedia('(hover: hover)').matches
 
+  const wide = matchMedia('(min-width: 768px)')
+  // each link holds two sets of the same object: the stacked one (below 768px) and the desk's
+  const rootOf = (item: HTMLElement) =>
+    item.querySelector<HTMLElement>(wide.matches ? '[data-wb-desk]' : '[data-wb]')
+
   items.forEach((item) => {
-    const root = item.querySelector<HTMLElement>('[data-wb]')
-    const make = root && ACTIONS[root.dataset.wb ?? '']
-    if (!root || !make) return
-    const action = make(root)
     let running = false
     const play = () => {
-      if (running) return
+      const root = rootOf(item)
+      const make = root && ACTIONS[root.dataset.wb ?? root.dataset.wbDesk ?? '']
+      if (!root || !make || running) return
       running = true
-      action().eventCallback('onComplete', () => (running = false))
+      make(root)().eventCallback('onComplete', () => (running = false))
     }
     const link = item.querySelector<HTMLElement>('.wb-link')!
     if (hover) {
@@ -96,25 +99,25 @@ export function initBench(bench: HTMLElement) {
         },
         { threshold: 0.6 },
       )
-      seen.observe(item.querySelector('.wb-obj')!)
+      seen.observe(item.querySelector(wide.matches ? '.wb-desk-obj' : '.wb-obj')!)
     }
   })
 
   if (stacked) return
-  // arrival: the three objects come down onto the surface, one after the other
-  const objs = items.map((item) => item.querySelector<HTMLElement>('.wb-obj')!)
-  gsap.set(objs, { opacity: 0, y: -36 })
+  // arrival: the three objects come down onto the mat, one after the other. Transform only: an
+  // opacity below 1 would flatten each object's 3D chain while it plays.
+  const lifts = items.map((item) => item.querySelector<HTMLElement>('.wb-lift')!)
+  gsap.set(lifts, { z: 70 })
   const arrive = new IntersectionObserver(
     ([entry]) => {
       if (!entry.isIntersecting) return
       arrive.disconnect()
-      gsap.to(objs, {
-        opacity: 1,
-        y: 0,
+      gsap.to(lifts, {
+        z: 0,
         duration: 0.6,
         stagger: 0.18,
         ease: ease(),
-        onComplete: () => gsap.set(objs, { clearProps: 'opacity,transform' }),
+        onComplete: () => gsap.set(lifts, { clearProps: 'transform' }),
       })
     },
     { threshold: 0.25 },

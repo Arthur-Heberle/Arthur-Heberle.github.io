@@ -1,0 +1,27 @@
+---
+// EduBra on the desk (768px and up): the MDF box as a real cuboid, standing on the mat. The lid
+// carries the yellow PLA cell and the four yellow buttons (EdubraLid, the same as the stacked
+// object); "EduBra" is engraved on the front face and the volume knob and the headphone jack sit
+// on the right face. The wrapper is `.device` for device.css's materials, but with its container
+// query turned off in bench.css: a container would flatten the 3D chain inside the lid.
+import Cub from '../../projects/edubra/Cub.astro'
+import EdubraLid from './EdubraLid.astro'
+
+interface Props {
+  w: number
+  d: number
+  h: number
+}
+const { w, d, h } = Astro.props
+---
+
+<div class="device wb-dk wb-dk-edubra" data-wb-desk="edubra">
+  <Cub x={0} y={0} w={w} d={d} h={h} cls="dk-mdf">
+    <div class="dk-lid"><EdubraLid /></div>
+    <span slot="front" class="engrave" data-text="EduBra"></span>
+    <div slot="right" class="dk-side">
+      <span class="dk-knob"></span>
+      <div class="jack"><i /></div>
+    </div>
+  </Cub>
+</div>

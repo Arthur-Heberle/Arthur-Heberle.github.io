@@ -1,0 +1,22 @@
+---
+// Agente H on the desk (768px and up): the customer's phone lying flat, screen up, a slab 8px
+// thick. The screen is the project page's own (Phone.astro, `bare`: the chat, the reply and the
+// stamp from the first question; at rest all shown, the final state); the body is the cuboid.
+import Cub from '../../projects/edubra/Cub.astro'
+import Phone from '../../projects/agente-h/Phone.astro'
+import { QUESTIONS } from '../../projects/agente-h/questions'
+
+interface Props {
+  w: number
+  d: number
+  h: number
+}
+const { w, d, h } = Astro.props
+const question = QUESTIONS[0]
+---
+
+<div class="wb-dk wb-dk-phone" data-wb-desk="agente">
+  <Cub x={0} y={0} w={w} d={d} h={h} cls="dk-phone">
+    <Phone bare msgs={[question.msgs[1]]} reply={question.reply} stamp={question.cls} ids={false} />
+  </Cub>
+</div>

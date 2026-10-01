@@ -3,27 +3,43 @@
 // Shared by Agente H's "How it works" and the home bench; the CSS is phone.css. The story's
 // script finds the reply and the stamp by id (#hs-reply, #hs-stamp), the bench's by class, so
 // `ids` is false on the home page. The reply is a span a word, which the story writes in word by word.
+// `bare` is the screen alone (no slab, no standing): the home bench's desk lays the phone flat and
+// builds the body itself.
 interface Props {
   msgs: string[]
   reply: string
   stamp: string
   ids?: boolean
+  bare?: boolean
 }
-const { msgs, reply, stamp, ids = true } = Astro.props
+const { msgs, reply, stamp, ids = true, bare = false } = Astro.props
 ---
 
-<div class="ph phone3d">
-  <div class="pb"></div>
-  <div class="pr"></div>
-  <div class="pt"></div>
-  <div class="pf">
-    <div class="scr">
-      <div class="who"><i></i><b></b></div>
-      <div class="chat">
-        {msgs.map((m, i) => <p class="bub out" data-b={i}>{m}</p>)}
-        <p class="bub in" id={ids ? 'hs-reply' : undefined}>{reply.split(' ').map((w) => <><span class="rw">{w}</span>{' '}</>)}</p>
+<div class:list={['ph phone3d', { bare }]}>
+  {!bare && <div class="pb" />}
+  {!bare && <div class="pr" />}
+  {!bare && <div class="pt" />}
+  {
+    bare ? (
+      <div class="scr">
+        <div class="who"><i></i><b></b></div>
+        <div class="chat">
+          {msgs.map((m, i) => <p class="bub out" data-b={i}>{m}</p>)}
+          <p class="bub in" id={ids ? 'hs-reply' : undefined}>{reply.split(' ').map((w) => <><span class="rw">{w}</span>{' '}</>)}</p>
+        </div>
+        <p class="stamp" id={ids ? 'hs-stamp' : undefined}>{stamp}</p>
       </div>
-      <p class="stamp" id={ids ? 'hs-stamp' : undefined}>{stamp}</p>
-    </div>
-  </div>
+    ) : (
+      <div class="pf">
+        <div class="scr">
+          <div class="who"><i></i><b></b></div>
+          <div class="chat">
+            {msgs.map((m, i) => <p class="bub out" data-b={i}>{m}</p>)}
+            <p class="bub in" id={ids ? 'hs-reply' : undefined}>{reply.split(' ').map((w) => <><span class="rw">{w}</span>{' '}</>)}</p>
+          </div>
+          <p class="stamp" id={ids ? 'hs-stamp' : undefined}>{stamp}</p>
+        </div>
+      </div>
+    )
+  }
 </div>

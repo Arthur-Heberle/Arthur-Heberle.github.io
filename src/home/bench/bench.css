@@ -1,14 +1,12 @@
-/* The project bench (Bench.astro): three objects on one work surface, each one link, in the
- * project pages' three-quarter view. Imported after the project CSS it borrows from: the EduBra
- * box is a `.device` (device.css gives its materials), the phone is `.phone3d` (phone.css).
+/* The project bench (Bench.astro): three objects, each one link. Below 768px they stand one above
+ * the other, each in its own zone with a soft shadow. From 768px up they stand on one desk seen
+ * diagonally from above: a CSS 3D scene (the last block of this file), the objects real cuboids built
+ * with the project pages' Cub helper (src/projects/edubra/Cub.astro) from the pages' own materials: the
+ * EduBra box is a `.device` (device.css), the phone's screen is phone.css's.
  *
- * The surface is one flat plane behind all three, seen from above, with a static soft shadow; each
- * object's perspective origin is set so all three share the surface's vanishing point (--vx, per
- * column). Below 768px the objects stack and have no surface, only their own soft shadow.
- *
- * THE 3D CHAIN, as on the project pages: nothing from an object's perspective element down may get
- * overflow other than visible, opacity below 1 or a filter if it has 3D children. Only .wb-obj
- * (above every 3D context) changes opacity and translate, and only leaves inside the screens do. */
+ * THE 3D CHAIN, as on the project pages: nothing from the scene's perspective element down may get
+ * overflow other than visible, opacity below 1 or a filter if it has 3D children. Only leaves inside
+ * the screens change opacity; the objects move with transform only. */
 .wb {
   --zone: 300px; /* the height each object stands in */
   position: relative;
@@ -80,38 +78,28 @@
   gap: 6px;
 }
 
-/* ---------- the shared work surface (desktop only) ---------- */
-.wb-plane {
-  display: none;
-}
-@media (min-width: 768px) {
-  .wb-list {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 0 24px;
-  }
-  .wb-plane {
-    display: block;
-    position: absolute;
-    left: -24px;
-    right: -24px;
-    top: calc(var(--zone) - 176px);
-    height: 170px;
-    border: var(--hairline) solid var(--color-line);
-    border-radius: 6px;
-    background: var(--color-sheet);
-    box-shadow:
-      0 6px 0 0 var(--color-line),
-      0 34px 40px -12px rgb(20 24 28 / 0.25);
-    transform-origin: 50% 100%;
-    transform: perspective(900px) rotateX(62deg);
-  }
-}
+/* ---------- the desk (768px and up): see the block at the end of this file ---------- */
 @media (max-width: 767px) {
   .wb-item {
     --vx: 50%;
   }
   .wb {
     --zone: 320px;
+  }
+  /* the desk's wrappers take no box: the list is laid out exactly as before the desk existed */
+  .wb-desk,
+  .wb-scene,
+  .wb-mat,
+  .wb-mat > .cub,
+  .wb-mat > .cub > .top {
+    display: contents;
+  }
+  .wb-mat > .cub > .front,
+  .wb-mat > .cub > .right,
+  .wb-desk-obj,
+  .wb-slot,
+  .wb-caliper {
+    display: none;
   }
 }
 
@@ -320,5 +308,433 @@
   .wb-device .pin > i,
   .wb-device .btn .cap {
     transition: none !important;
+  }
+}
+
+
+/* ======================= the desk, 768px and up ======================= */
+@media (min-width: 768px) {
+  /* The scene is drawn at 855px wide (the page column's widest) and scaled in steps so it always
+   * fits the column: --k is the column's width over 855, rounded down. */
+  .wb {
+    --k: 0.84;
+    --scene-w: 855px;
+    --scene-h: 560px;
+  }
+  .wb-obj,
+  .wb-cap {
+    display: none;
+  }
+  .wb-desk {
+    position: relative;
+    height: calc(var(--scene-h) * var(--k));
+  }
+  .wb-scene {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: var(--scene-w);
+    height: var(--scene-h);
+    margin-left: calc(var(--scene-w) / -2);
+    transform-origin: 50% 0;
+    scale: var(--k);
+    perspective: 1600px;
+    perspective-origin: 50% 38%;
+  }
+  /* the mat's plane: tilted back and turned clockwise, so the right faces of the cuboids show */
+  .wb-mat {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    margin: -190px 0 0 -300px;
+    transform-style: preserve-3d;
+    transform: rotateX(55deg) rotateZ(32deg);
+  }
+
+  /* the Cub helper's faces (story.css scopes the same rules to .story) */
+  .wb-desk .cub {
+    position: absolute;
+    transform-style: preserve-3d;
+  }
+  .wb-desk .cub > .top {
+    position: absolute;
+    inset: 0;
+    transform-style: preserve-3d;
+  }
+  .wb-desk .cub > .front {
+    position: absolute;
+    left: 0;
+    right: 0;
+    transform-origin: 50% 0;
+  }
+  .wb-desk .cub > .right {
+    position: absolute;
+    top: 0;
+    transform-origin: 0 0;
+  }
+
+  /* the list is the mat's top face; each item is a footprint on it */
+  .wb-list {
+    position: absolute;
+    inset: 0;
+    display: block;
+    transform-style: preserve-3d;
+  }
+  .wb-item {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    width: var(--w);
+    height: var(--d);
+    transform-style: preserve-3d;
+  }
+  .wb-link {
+    position: absolute;
+    inset: 0;
+    display: block;
+    transform-style: preserve-3d;
+  }
+  .wb-desk-obj,
+  .wb-lift,
+  .wb-dk {
+    position: absolute;
+    inset: 0;
+    transform-style: preserve-3d;
+  }
+  /* a soft contact shadow on the mat, under and a little behind each object: a static gradient */
+  .wb-shadow {
+    position: absolute;
+    inset: -8px -22px -26px -6px;
+    background: radial-gradient(ellipse at 50% 50%, rgb(20 24 28 / 0.34), transparent 68%);
+    transform: translateZ(0.4px);
+    pointer-events: none;
+  }
+
+  /* ---- the mat: top lightest, front and right edges darker ---- */
+  .dk-mat > .top {
+    background-color: var(--color-sheet);
+    background-image:
+      linear-gradient(rgb(35 38 42 / 0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(35 38 42 / 0.06) 1px, transparent 1px);
+    background-size: 20px 20px;
+    box-shadow: inset 0 0 0 1px var(--color-line);
+  }
+  .dk-mat > .front {
+    background: #cdd2d0;
+  }
+  .dk-mat > .right {
+    background: #b6bcba;
+  }
+  /* the next project's place: a dashed outline lying on the mat */
+  .wb-slot {
+    position: absolute;
+    border: 1.5px dashed var(--color-graphite-2);
+    transform: translateZ(0.3px);
+  }
+  .wb-caliper {
+    position: absolute;
+    inset: 0;
+    transform-style: preserve-3d;
+    transform: translateZ(0.3px);
+    pointer-events: none;
+  }
+  .dk-cal > .top {
+    background:
+      repeating-linear-gradient(90deg, #5b6066 0 1px, transparent 1px 5px) 0 100% / 100% 7px no-repeat,
+      #cfd3d6;
+  }
+  .dk-cal > .front,
+  .dk-jaw > .front,
+  .dk-slider > .front {
+    background: #9ea3a8;
+  }
+  .dk-cal > .right,
+  .dk-jaw > .right,
+  .dk-slider > .right {
+    background: #82878c;
+  }
+  .dk-jaw > .top {
+    background: #c3c7cb;
+  }
+  .dk-slider > .top {
+    background: #b9bec2;
+  }
+  .dk-window {
+    position: absolute;
+    left: 7px;
+    top: 7px;
+    width: 24px;
+    height: 12px;
+    background: #2a3a30;
+  }
+
+  /* ---- EduBra: MDF, the cell and the buttons on the lid, the knob and the jack on the right ---- */
+  .wb-desk .device {
+    container-type: normal; /* a container would flatten the 3D chain in the lid */
+  }
+  .wb-dk-edubra {
+    --mdf-tex: none; /* the texture is fetched once the bench is live (bench.ts) */
+    --hole-size: 14px;
+    --dot-gap: 6px 7px;
+    --cell-gap: 20px;
+    --cell-inner-gap: 9px;
+    --label-size: 11px;
+    --btn-size: 26px;
+    --cross-gap: 4px;
+    --icon-size: 12px;
+    --knob-size: 24px;
+    --pin-h: 4px;
+    --cap-h: 4px;
+  }
+  .wb-live .wb-dk-edubra {
+    --mdf-tex: url('/textures/mdf.webp');
+  }
+  .dk-mdf > .top {
+    background: var(--mdf) var(--mdf-tex) 0 0 / 512px 512px repeat;
+  }
+  .dk-mdf > .top::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(to bottom, rgb(255 250 240 / 0.18), transparent 55%, rgb(80 55 25 / 0.08));
+  }
+  .dk-mdf > .right {
+    background: #74502f;
+  }
+  .wb-dk-edubra .front .engrave {
+    font-size: 24px;
+  }
+  .dk-lid {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    padding: 10px 14px;
+    transform-style: preserve-3d;
+  }
+  .wb-dk-edubra .word {
+    gap: 0;
+  }
+  .wb-dk-edubra .panel {
+    display: flex;
+    margin-left: 0;
+  }
+  .wb-dk-edubra .btn {
+    cursor: inherit;
+  }
+  .wb-dk-edubra .speed {
+    font-size: 9px;
+  }
+  .dk-side {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+  }
+  .dk-knob {
+    width: var(--knob-size);
+    height: var(--knob-size);
+    border-radius: 50%;
+    background:
+      radial-gradient(circle at 36% 30%, var(--knob-hi) 0 22%, var(--knob) 24% 56%, transparent 58%),
+      repeating-conic-gradient(from 0deg, var(--knob) 0 6deg, #323336 6deg 12deg);
+    box-shadow: 0 0 0 3px var(--knob-side);
+  }
+
+  /* ---- Agente H: the phone lying flat, its screen up ---- */
+  .wb-dk-phone {
+    --hs-gold: #c9a84c;
+    --hs-ink: #1e1c19;
+    --st-line: #6b7075;
+    --st-pin: #1f4f66;
+    --st-paper: #f2efe8;
+  }
+  .dk-phone > .top {
+    border-radius: 14px;
+    background: #1c1d20;
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.14);
+  }
+  .dk-phone > .front {
+    background: #141518;
+  }
+  .dk-phone > .right {
+    background: #0e0f11;
+  }
+  .wb-dk-phone .phone3d {
+    top: 0;
+    width: 100%;
+    height: 100%;
+    transform: none;
+    transform-style: flat;
+  }
+  .wb-dk-phone .scr {
+    inset: 7px;
+    border-radius: 9px;
+  }
+  .wb-dk-phone .who {
+    height: 24px;
+    padding: 0 8px;
+    gap: 6px;
+  }
+  .wb-dk-phone .who i {
+    width: 12px;
+    height: 12px;
+  }
+  .wb-dk-phone .who b {
+    width: 36px;
+  }
+  .wb-dk-phone .chat {
+    gap: 6px;
+    padding: 8px 6px;
+  }
+  .wb-dk-phone .bub {
+    font-size: 9px;
+    padding: 4px 6px 5px;
+    border-radius: 8px;
+  }
+  .wb-dk-phone .stamp {
+    font-size: 8px;
+    bottom: 10px;
+    padding: 3px 6px 4px;
+    border-width: 1.5px;
+  }
+
+  /* ---- Brasilore: a handheld console, the pixel scene on its screen ---- */
+  .dk-hh > .top {
+    border-radius: 12px;
+    background: #2b2c31;
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.12);
+  }
+  .dk-hh > .front {
+    background: #1a1b1e;
+  }
+  .dk-hh > .right {
+    background: #101113;
+  }
+  .hh-scr {
+    position: absolute;
+    left: 52px;
+    top: 14px;
+    width: 136px;
+    height: 94px;
+    overflow: hidden;
+    border-radius: 3px;
+    background: #9fd3ea;
+    box-shadow: 0 0 0 3px #111214;
+    image-rendering: pixelated;
+  }
+  .hh-scene {
+    position: absolute;
+    left: -58px;
+    top: -38px;
+    width: 210px;
+    height: 150px;
+  }
+  .hh-scene img {
+    position: absolute;
+    image-rendering: pixelated;
+  }
+  .hh-dpad {
+    position: absolute;
+    left: 14px;
+    top: 38px;
+    width: 30px;
+    height: 30px;
+  }
+  .hh-dpad i {
+    position: absolute;
+    background: #3d3f46;
+    border-radius: 2px;
+  }
+  .hh-dpad i:first-child {
+    left: 10px;
+    top: 0;
+    width: 10px;
+    height: 30px;
+  }
+  .hh-dpad i:last-child {
+    left: 0;
+    top: 10px;
+    width: 30px;
+    height: 10px;
+  }
+  .hh-btns {
+    position: absolute;
+    inset: 0;
+  }
+  .hh-btns i {
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #7a2a2a;
+    box-shadow: 0 0 0 2px #1a1b1e;
+  }
+  .hh-btns i:first-child {
+    left: 202px;
+    top: 56px;
+  }
+  .hh-btns i:last-child {
+    left: 218px;
+    top: 40px;
+  }
+}
+@media (min-width: 810px) {
+  .wb {
+    --k: 0.89;
+  }
+}
+@media (min-width: 860px) {
+  .wb {
+    --k: 0.94;
+  }
+}
+@media (min-width: 903px) {
+  .wb {
+    --k: 1;
+  }
+}
+
+/* Flat things lying on the mat (the phone, the handheld, the caliper's jaws): their top faces hold only 2D
+ * content, so it is drawn into the face instead of being sorted against it in 3D, which
+ * z-fought (coplanar layers). Only EduBra's lid, whose pins and caps stand up, keeps a 3D chain. */
+@media (min-width: 768px) {
+  .wb-desk .dk-phone > .top,
+  .wb-desk .dk-hh > .top,
+  .wb-desk .dk-jaw > .top,
+  .wb-desk .dk-slider > .top {
+    transform-style: flat;
+  }
+}
+
+/* On the desk the lid is a face of its own, so the things lying in its plane (the PLA insert, the
+ * holes, the button wells) are lifted a hair above it, or they would be sorted against it in 3D and
+ * lose. The pins and caps stand up from there as before. */
+@media (min-width: 768px) {
+  .dk-mdf > .top::before {
+    transform: translateZ(0.1px);
+  }
+  .wb-dk-edubra .dots::before {
+    inset: -5px -5px;
+    transform: translateZ(0.3px);
+  }
+  .wb-dk-edubra .hole {
+    transform: translateZ(0.5px);
+  }
+  .wb-dk-edubra .btn .well {
+    transform: translateZ(0.3px);
+  }
+  .wb-dk-edubra .label,
+  .wb-dk-edubra .speed {
+    transform: translateZ(0.3px);
+  }
+  .wb-shadow {
+    background: radial-gradient(ellipse at 50% 50%, rgb(20 24 28 / 0.5), transparent 70%);
   }
 }
