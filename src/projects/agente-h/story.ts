@@ -13,7 +13,7 @@ import type { Pt } from './flow'
 
 const W = 760
 const H = 560
-const DURATION = 12 // seconds, linear
+const DURATION = 15 // seconds, linear (12 before the reply was written word by word)
 
 type Range = [number, number]
 const clamp = (v: number) => Math.min(1, Math.max(0, v))
@@ -62,13 +62,16 @@ const CHIPS_P = [0.6, 0.62, 0.64] // when each product chip starts to fly; fligh
 const CHIPS_M = [0.61, 0.63, 0.65]
 const FLY = 0.07
 const MINI: Range = [0.72, 0.76]
-const THINK: Range = [0.745, 0.79]
+const ACTIVE: Range = [0.74, 0.9] // the language model is working: its outline is held, a tick steps along
+const ACTIVE_LEVEL = 0.6 // how strong the held outline is
 const REPLY_DOT: Range = [0.77, 0.8]
-const REPLY: Range = [0.79, 0.82]
+const REPLY: Range = [0.8, 0.82] // the reply's bubble arrives empty, at its full size
+const WORDS: Range = [0.8, 0.895] // and the words follow, one by one, the way a model writes
+const WORD_FADE = 0.012
 // ---- 4 Hand off ----
-const STAMP: Range = [0.83, 0.87]
-const DASH: Range = [0.84, 0.9]
-const LEAD: Range = [0.88, 0.97]
+const STAMP: Range = [0.91, 0.94]
+const DASH: Range = [0.86, 0.92]
+const LEAD: Range = [0.93, 0.995]
 
 // The wires draw in as their part appears (stroke-dashoffset, left on once drawn), the data pulses
 // travel them, and each step number fades in with its scene. Order is the flow's: the phone to the
@@ -81,7 +84,7 @@ const WIRE_AT: Range[] = [
   [0.575, 0.595],
   [0.69, 0.715],
   [0.74, 0.77],
-  [0.82, 0.87],
+  [0.89, 0.925],
 ]
 const PULSE_AT: Record<number, Range[]> = {
   0: MSG_AT.map((m) => [m + 0.008, m + 0.03] as Range), // each message goes from the phone to the timer
@@ -93,12 +96,12 @@ const STEPN_AT: Range[] = [T.frame, [0.58, 0.62], DASH]
 const SCENES: Range[] = [
   [0.0, 0.3],
   [0.3, 0.58],
-  [0.58, 0.82],
-  [0.82, 1.2],
+  [0.58, 0.9],
+  [0.9, 1.2],
 ]
 // The camera moves at the scene's start, except the last: it waits until the stamp has landed,
 // so the phone is still in frame for it, and then goes to the dashboard.
-const CAM_AT = [0, 0.3, 0.58, 0.87]
+const CAM_AT = [0, 0.3, 0.58, 0.945]
 
 interface Pt {
   x: number
@@ -112,6 +115,9 @@ interface Story {
   phone: HTMLElement
   bub: HTMLElement[]
   reply: HTMLElement
+  words: HTMLElement[] // the reply, a span a word
+  mtick: SVGElement // the tick under "language model" that steps along as it writes
+  mtickRun: number // how far it travels, in canvas px
   stamp: HTMLElement
   ring: SVGElement
   arc: SVGElement
@@ -204,6 +210,9 @@ function grab(): Story | null {
     phone: $('#o-phone'),
     bub: $$<HTMLElement>('.bub.out'),
     reply: $('#hs-reply'),
+    words: $$<HTMLElement>('#hs-reply .rw'),
+    mtick: $('#hs-mtick'),
+    mtickRun: +$('#hs-mtick').dataset.run!,
     stamp: $('#hs-stamp'),
     ring: $('#hs-ring'),
     arc: $('#hs-arc'),
@@ -359,7 +368,13 @@ function render(p: number) {
   const mt = inout(seg(p, ...MINI))
   at(s.mini, lerp(s.miniFrom.x, s.miniTo.x, mt), lerp(s.miniFrom.y, s.miniTo.y, mt), ` scale(${lerp(1, 0.6, mt)})`)
   op(s.mini, seg(p, MINI[0], MINI[0] + 0.008) * (1 - seg(p, MINI[1] - 0.012, MINI[1])))
-  op(s.modelHi, Math.sin(Math.PI * seg(p, ...THINK))) // the model works: its outline pulses once
+  // the model works while it writes: its outline fades up and is held, and a tick steps along under its name
+  const act = Math.min(seg(p, ACTIVE[0], ACTIVE[0] + 0.02), 1 - seg(p, ACTIVE[1] - 0.02, ACTIVE[1]))
+  op(s.modelHi, ACTIVE_LEVEL * act)
+  const wn = s.words.length
+  const shown = Math.min(wn, Math.floor(seg(p, ...WORDS) * wn + 1e-9))
+  at(s.mtick, s.mtickRun * (shown / wn), 0)
+  op(s.mtick, act)
   const rd = seg(p, ...REPLY_DOT)
   const rp = along([...s.wires[5].pts, s.replyC], inout(rd)) // back along its wire, then over the phone to the reply
   at(s.dot, rp.x, rp.y)
@@ -367,6 +382,10 @@ function render(p: number) {
   const ra = ease(seg(p, ...REPLY))
   s.reply.style.opacity = String(ra)
   s.reply.style.transform = `translateY(${8 * (1 - ra)}px)`
+  s.words.forEach((w, i) => {
+    const a = WORDS[0] + (i / wn) * (WORDS[1] - WORDS[0])
+    w.style.opacity = String(seg(p, a, a + WORD_FADE))
+  })
 
   // 4 Hand off: the stamp lands on the conversation; a lead card slides into the dashboard's New column
   const st = ease(seg(p, ...STAMP))

@@ -220,6 +220,8 @@ const LEAD_LINES = ['Wants a 3-seat', 'leather sofa.']
             <path id="hs-modelframe" class="ln" d={rect(MODEL)}></path>
             <path id="hs-modelhi" class="mhi" d={rect(MODEL)} opacity="0"></path>
             <text class="t15 mid hs-fade" x={MODEL.x + MODEL.w / 2} y={MODEL.y + MODEL.h / 2 + 5}>language model</text>
+            <!-- while the model writes, this tick steps along under its name, one notch a word (data-run is its travel) -->
+            <path id="hs-mtick" class="mtick" data-run={MODEL.w - 28 - 16} d={`M${MODEL.x + 14} ${MODEL.y + MODEL.h - 12}h16`} opacity="0"></path>
           </g>
 
           <!-- 4 Hand off: the owner's dashboard -->
@@ -252,7 +254,7 @@ const LEAD_LINES = ['Wants a 3-seat', 'leather sofa.']
                     <div class="who"><i></i><b></b></div>
                     <div class="chat">
                       {MSGS.map((m, i) => <p class="bub out" data-b={i}>{m}</p>)}
-                      <p class="bub in" id="hs-reply">{REPLY}</p>
+                      <p class="bub in" id="hs-reply">{REPLY.split(' ').map((w) => <><span class="rw">{w}</span>{' '}</>)}</p>
                     </div>
                     <p class="stamp" id="hs-stamp">QUALIFIED_LEAD</p>
                   </div>

@@ -103,6 +103,12 @@ html:not(.js) .hstory .fit {
   fill: var(--st-paper);
   stroke: none;
 }
+.hstory .mtick {
+  fill: none;
+  stroke: var(--st-pin);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
 .hstory .mhi {
   fill: none;
   stroke: var(--st-pin);
