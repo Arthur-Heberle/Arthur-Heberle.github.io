@@ -17,8 +17,8 @@
    * is 7.4:1. */
   --hs-gold: #c9a84c;
   --hs-ink: #1e1c19;
-  --ph-w: 150px; /* the phone: screen width, standing height, thickness */
-  --ph-h: 430px;
+  --ph-w: 168px; /* the phone: screen width, standing height, thickness */
+  --ph-h: 392px;
   --ph-t: 11px;
 }
 
@@ -141,17 +141,19 @@ html:not(.js) .hstory .fit {
   height: 440px;
   perspective: 1500px; /* gentler than the hardware's 900px: the phone is tall and close */
 }
+/* The bench stands the phone almost upright: its table is tipped 82deg, so the screen leans back from
+ * the viewer by 8deg, and the phone itself is turned 12deg about its own vertical axis (below). That is
+ * the most the screen is ever off the straight-on view, so every message reads without distortion. */
 .hstory #o-phone .bench {
-  left: 26px;
+  left: 8px;
   bottom: 18px;
   width: var(--ph-w);
   height: var(--ph-t);
+  transform: rotateX(82deg);
 }
+/* no table in this view, so no table shadow: the back face casts a soft one on the page (below) */
 .hstory .shadow {
-  left: -12px;
-  top: -34px;
-  width: calc(var(--ph-w) + 40px);
-  height: 74px;
+  display: none;
 }
 .hstory .ph {
   position: absolute;
@@ -161,9 +163,8 @@ html:not(.js) .hstory .fit {
   height: var(--ph-h);
   transform-style: preserve-3d;
   transform-origin: 50% 100%;
-  /* turned to the right: the bench's own +20deg turn plus -40deg here is a net -20deg, so the screen
-   * faces right and the left edge shows */
-  transform: rotateZ(-40deg) rotateX(-90deg);
+  /* turned 12deg to the right, so the screen faces right a little and the left edge shows */
+  transform: rotateZ(-12deg) rotateX(-90deg);
 }
 .hstory .ph > * {
   position: absolute;
@@ -178,6 +179,7 @@ html:not(.js) .hstory .fit {
   inset: 0;
   border-radius: 22px;
   background: #141518;
+  box-shadow: 0 18px 28px rgb(30 28 25 / 0.2);
   transform: translateZ(calc(var(--ph-t) * -1));
 }
 .hstory .pr {
@@ -248,6 +250,7 @@ html:not(.js) .hstory .fit {
 }
 .hstory .bub.in {
   align-self: flex-start;
+  max-width: 100%; /* the reply takes the screen's full width, so it wraps in ordinary lines */
   border-color: var(--st-pin);
   border-bottom-left-radius: 3px;
 }
