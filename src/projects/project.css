@@ -61,7 +61,7 @@
 }
 
 /* A work in progress: a half-filled circle, the quiet marker. Shared by the status line under a
- * project's intro and the home archive row's "in progress". Graphite, nothing brighter. */
+ * project's intro and the home bench's "in progress". Graphite, nothing brighter. */
 .status-mark {
   flex: none;
   width: 12px;

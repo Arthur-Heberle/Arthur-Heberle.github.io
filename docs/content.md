@@ -146,84 +146,37 @@ reason. Don't replace it with something more impressive.
 
 ---
 
-## Archive — 7 entries
+## Projects (the bench) and Experience
 
-Schema:
+Arthur's brief, 2026-10-01: the archive list (7 mixed entries, with tag filters) is replaced by two
+collections, `src/content/projects/` and `src/content/experience/`. Copy is verbatim from that brief.
+A `[FILL]` in an optional field (date, role, place, people) is omitted from the page; in prose that
+always renders it is shown as written, and `scripts/check-fill.mjs` fails the build on it.
 
-```yaml
-date: 2026-07          # displayed as 2026.07, monospace
-title: string
-role: string           # required, never omitted
-tags: [code, hardware, teaching, ai, energy]
-links: { repo?, live?, pdf? }
-blurb: string          # two lines maximum
-pinned: boolean
-```
+### Projects (shown on the bench, in this order)
+1. **EduBra — Braille teaching device.** date `2025-06`, role "team of 3, wrote the software, built most of
+   the hardware", tags hardware, teaching, link `/projects/edubra/`. Line: "Teaches Braille to blind and
+   visually impaired people: a voice says the letter, then six pins rise under your finger."
+2. **Agente H — WhatsApp sales agent.** date `2026-05`, role "built alone", tags code, ai, status "in
+   progress", link `/projects/agente-h/`. Line: "A WhatsApp agent that answers customers from a shop's own
+   catalogue and hands the owner the ones ready to buy."
+3. **Brasilore — 2D platformer.** no date, role "team of 2, with Vinicius Romualdo da Silva", tags code, link
+   `https://github.com/Arthur-Heberle/Brasilore` (no project page yet). Line: "A 2D platformer in C++ and SFML."
 
-`role` is required because it turns leadership and teaching into facts repeated down the
-page instead of an adjective claimed once. Nobody believes "I love leadership"; everybody
-believes `taught ~40`.
-
-### 1. EduBra — Braille teaching device `pinned: true`
-- date: `2025-06` (month of the repo's last commit, confirmed by Arthur)
-- role: `team of 3, wrote the software, built most of the hardware` (Arthur, 2026-09-29)
-- tags: `[hardware, teaching]`
-- repo: `github.com/Arthur-Heberle/Oficinas_1`
-- blurb: Converts digital text to tactile Braille. Python on a Raspberry Pi 4, Wi-Fi and
-  multithreading driving six servos, each word spoken aloud first.
-  (Was "simultaneous audio feedback"; the repo plays the audio *before* the pins rise. "and
-  hardware interrupts" dropped 2026-09-30: the paper says the final version replaced the
-  interrupts, which an OS reinstall broke, with a thread that only watches the buttons.)
-- Leads the archive. This is the entry that makes a stranger care in four seconds.
-- Word the set-piece spells: `EDUBRA` — decided with Arthur at step 13. 6 cells, 15 raised
-  dots. Not a schema field (`docs/plans/step-03.md`): passed directly at the one call site
-  that needs it, `src/pages/projects/[slug].astro`.
-
-### 2. Agente H — WhatsApp AI assistant
-- date: `2026-06` — from the build window in `docs/projects/agent-h.md` (~36 commits,
-  2026-05-31 → 2026-06-16), settled at step 14
-- role: `built alone`
-- tags: `[code, ai]`
-- blurb: Personal project. Python, n8n and Postgres vector search: a customer's "sofs"
-  still finds the sofa, and the model gets a filtered catalog, not the whole one.
-  (Rewritten at step 14 from Arthur's own account; the earlier line said "vector database",
-  but the brief records that there is none — it is Postgres with pgvector. Trimmed from the
-  first draft because that wrapped to three lines and blurbs cap at two.)
-
-### 3. RP3 — additive manufacturing process planning
-- date: `2026-07`
-- role: `[FILL: undergraduate researcher, team size]`
-- tags: `[code]`
-- blurb: UTFPR/NUFER research software for process planning in additive manufacturing.
-  C++ and Qt on an applied-research codebase.
-
-### 4. Programming Techniques — academic monitor
-- date: `2026-03`
-- role: `taught ~[FILL]`
-- tags: `[teaching, code]`
-- blurb: C/C++, object-oriented programming and debugging. Supported the course's SFML
-  game project.
-
-### 5. ELETRON energia — energy efficiency assistant
-- date: `2026-01`
-- role: `[FILL]`
-- tags: `[energy]`
-- blurb: HVAC, variable frequency drives and photovoltaic plants. Consumption analysis
-  for cost-benefit and measurement-and-verification reporting, regulatory documentation,
-  field work with energy meters and control panels.
-
-### 6. Brasilore — 2D platformer
-- date: `[FILL]`
-- role: `[FILL]`
-- tags: `[code]`
-- repo: `github.com/Arthur-Heberle/Brasilore`
-- blurb: C++ and SFML. Object-oriented design, design patterns, file handling.
-
-### 7. Calculus II — academic monitor
-- date: `2025-03`
-- role: `taught ~[FILL]`
-- tags: `[teaching]`
-- blurb: Academic support for engineering students. Ran review sessions.
+### Experience (oldest first)
+1. **Calculus II — academic monitor.** UTFPR, 2025-03 to 2025-07, "scholarship monitor, about 4 students a
+   week for 12 weeks". "Review sessions and one-to-one help for engineering students in Calculus II."
+2. **ELETRON energia — energy efficiency.** Curitiba, 2026-01 to 2026-06, "operational team".
+   "Measurement-and-verification calculations and the Excel models behind them, assembled electrical panels,
+   energy-efficiency project reports, and field work with meters, inverters and control panels."
+3. **Programming Techniques — academic monitor.** UTFPR, 2026-03 to 2026-08, "volunteer monitor, about 4
+   students a week for 12 weeks". "C++, object-oriented programming and a lot of pointers, for students
+   building the course's SFML game."
+4. **RP3 — undergraduate research.** NUFER, UTFPR, 2026-07 to now (`end: null`), "undergraduate researcher, a
+   group of about 8 students and 3 professors"; people "Neri Volpato, who founded NUFER, Rodrigo Minetto and
+   Ricardo Dutra da Silva". "RP3 is NUFER's software for planning how a part gets 3D printed: orientation,
+   slicing, supports, filling. I work on the 3D view of the model and on an algorithm that finds the best path
+   of angles for each layer."
 
 ---
 
@@ -231,10 +184,10 @@ believes `taught ~40`.
 
 `design-spec.md` §6's template, one per set-piece project: title and intro (with an optional
 margin note), the set-piece, the project's own sections, "How we built it" (optional), "My
-part", "What I'd do differently", Links. Lives at `/projects/<id>/`, `<id>` matching the archive entry's own filename — decided at
+part", "What I'd do differently", Links. Lives at `/projects/<id>/`, `<id>` matching the project's own filename — decided at
 step 13, since neither spec named a URL.
 
-The prose is an optional `project` object on the archive entry, not markdown body prose —
+The prose is an optional `project` object on the project, not markdown body prose —
 decided at step 13, closing the question `docs/plans/step-03.md` left open. Only an entry with
 its own page needs one. Fields (changed 2026-09-30): `what` (the intro), `note` (optional margin
 note), `built` (optional, a list of paragraphs), `part` (a list), `differently` (a list) and

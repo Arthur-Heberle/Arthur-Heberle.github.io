@@ -1,0 +1,37 @@
+---
+// Experience: a plain, semantic list (title, place, dates, role, people, summary), oldest first.
+// Kept as clean markup on purpose: a later task turns it into an animated timeline. Optional
+// fields (place, role, people) are omitted when missing or still a [FILL] (src/shared/fill.ts).
+import { getCollection } from 'astro:content'
+import Tick from '../../shared/components/Tick.astro'
+import { isFilled } from '../../shared/fill'
+
+const entries = (await getCollection('experience')).sort((a, b) => a.data.start.localeCompare(b.data.start))
+// "2026-07" displays as "2026.07" (design-spec.md §7).
+const show = (month: string) => month.replace('-', '.')
+---
+
+<section class="flex flex-col gap-8 py-16" aria-labelledby="experience-heading">
+  <Tick />
+  <h2 id="experience-heading" class="text-h2 font-sans font-medium" data-anim>Experience</h2>
+  <ol class="experience" role="list" data-anim data-delay="0.06">
+    {
+      entries.map(({ data }) => (
+        <li class="experience-item">
+          <h3 class="text-h3 font-sans font-medium">{data.title}</h3>
+          <p class="experience-meta font-mono text-dimension text-graphite-2">
+            {isFilled(data.place) && <span>{data.place}</span>}
+            <span>
+              <time datetime={data.start}>{show(data.start)}</time>
+              {' – '}
+              {data.end ? <time datetime={data.end}>{show(data.end)}</time> : 'now'}
+            </span>
+          </p>
+          {isFilled(data.role) && <p class="text-small text-graphite-2">{data.role}</p>}
+          {isFilled(data.people) && <p class="text-small text-graphite-2">{data.people}</p>}
+          <p class="measure text-body">{data.summary}</p>
+        </li>
+      ))
+    }
+  </ol>
+</section>

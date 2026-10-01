@@ -5,9 +5,10 @@ role: "team of 3, wrote the software, built most of the hardware"
 tags: [hardware, teaching]
 links:
   repo: https://github.com/Arthur-Heberle/Oficinas_1
-blurb: >-
-  Converts digital text to tactile Braille. Python on a Raspberry Pi 4, Wi-Fi and
-  multithreading driving six servos, each word spoken aloud first.
+link: /projects/edubra/
+line: >-
+  Teaches Braille to blind and visually impaired people: a voice says the letter, then six
+  pins rise under your finger.
 pinned: true
 project:
   what: >-

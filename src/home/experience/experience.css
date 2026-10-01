@@ -1,0 +1,21 @@
+/* The experience list (Experience.astro): one hairline-ruled item per entry, plain for now. */
+.experience {
+  display: flex;
+  flex-direction: column;
+}
+.experience-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-block: 1.5rem;
+  border-top: var(--hairline) solid var(--color-line);
+}
+.experience-item:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+.experience-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem var(--spacing-gutter);
+}

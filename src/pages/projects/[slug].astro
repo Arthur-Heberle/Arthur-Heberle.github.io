@@ -1,6 +1,6 @@
 ---
 // Project page routing — one route per id in PROJECT_PAGES (src/lib/projects.ts), the one
-// list this file and ArchiveRow.astro both read so a linked archive title can never point
+// list this file and the home bench both read so a bench link can never point
 // at a route that doesn't exist. getStaticPaths() is required here: astro.config.mjs
 // declares no `output` key, so the default static output applies.
 //
@@ -22,8 +22,8 @@ import AgenteDashboard from '../../projects/agente-h/AgenteDashboard.astro'
 import { PROJECT_PAGES } from '../../projects/projects'
 
 export async function getStaticPaths() {
-  const archive = await getCollection('archive')
-  const pages = archive.filter((entry) => (PROJECT_PAGES as readonly string[]).includes(entry.id))
+  const projects = await getCollection('projects')
+  const pages = projects.filter((entry) => (PROJECT_PAGES as readonly string[]).includes(entry.id))
   return pages.map((entry) => ({
     params: { slug: entry.id },
     props: { entry },
@@ -31,7 +31,7 @@ export async function getStaticPaths() {
 }
 
 interface Props {
-  entry: CollectionEntry<'archive'>
+  entry: CollectionEntry<'projects'>
 }
 const { entry } = Astro.props
 ---

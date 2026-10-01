@@ -10,7 +10,7 @@
 // one self-contained document, not a set of independent page sections. type.css extends
 // its `.page-main > section` positioning rule to `article` for this file's own Tick.
 //
-// Prose comes from the archive entry's `project` field (src/content.config.ts). It's
+// Prose comes from the project's `project` field (src/content.config.ts). It's
 // required for any entry this template renders — src/pages/projects/[slug].astro only
 // builds a page for an id in PROJECT_PAGES, and giving an entry a page without giving it
 // `project` data is a content mistake, not a state to degrade gracefully from (same
@@ -20,28 +20,28 @@ import type { CollectionEntry } from 'astro:content'
 import { getCollection } from 'astro:content'
 import OriginLink from './OriginLink.astro'
 import TitleBlock from './TitleBlock.astro'
-import { sortArchive } from '../home/archive/sortArchive'
+import { sortProjects } from './sortProjects'
 import { hasProjectPage, projectPageHref } from './projects'
 import MarginNote from '../home/spine/MarginNote.astro'
 import Tick from '../shared/components/Tick.astro'
 
 interface Props {
-  entry: CollectionEntry<'archive'>
+  entry: CollectionEntry<'projects'>
 }
 const { entry } = Astro.props
 const { title, links, project } = entry.data
 
 if (!project) {
   throw new Error(
-    `ProjectPage: "${entry.id}" has no \`project\` field — add one to its archive frontmatter before giving it a project page.`,
+    `ProjectPage: "${entry.id}" has no \`project\` field — add one to its project frontmatter before giving it a project page.`,
   )
 }
 
 const hasLinks = Boolean(links.repo || links.live || project.paper)
 
-// The title block: this project's place in the home archive's own order, and the next entry
+// The title block: this project's place on the home bench, and the next entry
 // if it has a project page of its own. "Project name" is the title before its dash.
-const sorted = sortArchive(await getCollection('archive'))
+const sorted = sortProjects(await getCollection('projects'))
 const at = sorted.findIndex((e) => e.id === entry.id)
 const nameOf = (t: string) => t.split(' — ')[0]
 const following = sorted[at + 1]

@@ -6,13 +6,12 @@ import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { DrawSVGPlugin } from 'gsap/DrawSVGPlugin'
 import { SplitText } from 'gsap/SplitText'
-import { Flip } from 'gsap/Flip'
 import { CustomEase } from 'gsap/CustomEase'
 import Lenis from 'lenis'
 import { storyPlayer } from '../projects/edubra/story'
 import { hstoryPlayer } from '../projects/agente-h/story'
 
-gsap.registerPlugin(ScrollTrigger, DrawSVGPlugin, SplitText, Flip, CustomEase)
+gsap.registerPlugin(ScrollTrigger, DrawSVGPlugin, SplitText, CustomEase)
 
 // respectReducedMotion defaults to true: under prefers-reduced-motion: reduce Lenis forces
 // lerp to 1 and makes programmatic scrolls jump instantly. So the instance is created
@@ -23,19 +22,6 @@ export const lenis = new Lenis()
 lenis.on('scroll', ScrollTrigger.update)
 gsap.ticker.add((time) => lenis.raf(time * 1000))
 gsap.ticker.lagSmoothing(0) // required, or scroll-linked tweens lag the scroll position
-
-/** Nudge scroll by `delta` px with no animation. Lenis owns scroll position from here on,
- *  so window.scrollBy would fight it. Used by Archive.astro's filter/show-all compensation. */
-export function scrollByPx(delta: number) {
-  lenis.scrollTo(lenis.actualScroll + delta, { immediate: true })
-}
-
-/** Recompute every ScrollTrigger's start/end. Required after script-driven DOM mutation
- *  that changes document height — ScrollTrigger's own autoRefreshEvents cover load and
- *  resize, not a filter click. Used by Archive.astro after applyState() shows/hides rows. */
-export function refreshTriggers() {
-  ScrollTrigger.refresh()
-}
 
 /** The one triggered curve (docs/motion-spec.md's values table). motion-spec writes it as
  *  the CSS string `cubic-bezier(0.22, 1, 0.36, 1)`, which GSAP cannot parse —
@@ -213,7 +199,7 @@ function tier1Rule(rule: SVGPathElement, main: HTMLElement) {
  *  number: both callers pass it straight to ScrollTrigger's function-valued start/end,
  *  which are absolute scroll positions (ScrollTrigger.js's _parsePosition skips
  *  element-bounds parsing for a function returning a number) re-evaluated on every
- *  refresh — what keeps them right across resize and the archive filter's height changes. */
+ *  refresh — what keeps them right across resize. */
 function tipScrollFor(el: Element, main: HTMLElement, drawPx: number) {
   return () => {
     const mainBox = main.getBoundingClientRect()
@@ -296,84 +282,6 @@ function tier1Leaders(main: HTMLElement) {
       },
     )
   })
-}
-
-const FLIP_DURATION = 0.4 // motion-spec.md: Flip duration <= 400ms
-const FADE_FEEDBACK = 0.12 // tokens.css --dur-feedback; the reduced-motion cross-fade
-
-type FilterTransition = (mutate: () => void) => void
-
-// Keyed by branch, not a single mutable variable: crossing 768px fires two matchMedia
-// listeners (one branch stopping, one starting), and whichever cleanup happens to run
-// last would otherwise clobber the other's registration. Distinct keys make the result
-// order-independent. Both no-preference branches register the identical function under
-// 'motion', so their relative order never matters; 'reduce' is checked first so reduced
-// motion always wins regardless of registration order.
-const filterTransitions = new Map<string, FilterTransition>()
-
-function registerFilterTransition(key: string, fn: FilterTransition) {
-  filterTransitions.set(key, fn)
-  return () => filterTransitions.delete(key)
-}
-
-/** Archive.astro's one entry point for a filter/show-all change. Runs whichever
- *  transition the active matchMedia branch registered, or the bare mutation if none has
- *  (no branch matched yet, or GSAP failed to load) — the filter must keep working either
- *  way (motion-spec.md's initial-state pattern: a failed GSAP load degrades gracefully). */
-export function filterTransition(mutate: () => void) {
-  const run = filterTransitions.get('reduce') ?? filterTransitions.get('motion')
-  run ? run(mutate) : mutate()
-}
-
-/** Full-motion archive filter (step 11, docs/motion-spec.md's Flip snippet). Surviving
- *  rows travel to their new position; a row leaving the filtered set just disappears
- *  (Flip splices unchanged/entering/leaving comps out of the tweened set on its own,
- *  Flip.js:640-697, so "no exit animation" costs nothing extra here) and a row newly
- *  matching fades in via onEnter, which Flip adds into its own timeline at time 0
- *  (Flip.js:322) — so it can't be left stranded mid-fade by a second click.
- *
- *  No `absolute: true` (motion-spec.md's literal value): verified live that it makes
- *  every row position: absolute for the flight (Flip.js:257's _filterComps short-circuits
- *  entirely when the option is `true`), collapsing <ul>'s height to zero and visibly
- *  dropping everything below the archive (show-all button, changelog, contact) for
- *  400ms. With this step's decided enter/leave behaviour no row is ever painted outside
- *  the document flow, so the option buys nothing here and costs a full-page reflow.
- *
- *  No manual rapid-click guard needed: Flip.getState() calls FlipState.update(), which
- *  runs this.interrupt() (Flip.js:937) and force-completes any in-progress flip on these
- *  targets before recording new state (Flip.js:881-894) — a second click always starts
- *  from clean, settled values. */
-function flipFilter(mutate: () => void) {
-  const state = Flip.getState('.archive-row')
-  mutate()
-  Flip.from(state, {
-    duration: FLIP_DURATION,
-    ease: EASE_OUT,
-    onEnter: (els) => gsap.fromTo(els, { opacity: 0 }, { opacity: 1, duration: FLIP_DURATION, ease: EASE_OUT }),
-  })
-}
-
-/** Reduced-motion archive filter: motion-spec.md's degradation table calls for "filter
- *  cross-fades" here. Kept fully separate from flipFilter() rather than a shared function
- *  with a conditional duration — the spec's two-durations-and-one-curve rule
- *  (motion-spec.md:36) means this uses FADE_FEEDBACK (120ms, tokens.css --dur-feedback),
- *  not FLIP_DURATION, since this is post-click feedback, not a reveal. No travel, no
- *  exit animation — only newly-visible rows fade in. `overwrite: true` stands in for
- *  flipFilter's Flip.getState()-driven interrupt, since there's no Flip call here to do
- *  it: a second rapid click must overwrite (not stack onto) a fade already in flight on
- *  the same rows. */
-function crossfadeFilter(mutate: () => void) {
-  const rows = gsap.utils.toArray<HTMLElement>('.archive-row')
-  const wasHidden = rows.map((row) => row.hidden)
-  mutate()
-  const entering = rows.filter((row, i) => wasHidden[i] && !row.hidden)
-  if (entering.length) {
-    gsap.fromTo(
-      entering,
-      { opacity: 0 },
-      { opacity: 1, duration: FADE_FEEDBACK, ease: EASE_OUT, overwrite: true, clearProps: 'opacity' },
-    )
-  }
 }
 
 const HERO_DUR = 0.6 // --dur-reveal — the sequence's one duration (motion-spec.md:36:
@@ -521,7 +429,7 @@ function heroSequence(withDrawing: boolean) {
 
 const mm = gsap.matchMedia()
 
-mm.add('(min-width: 768px) and (prefers-reduced-motion: no-preference)', (ctx) => {
+mm.add('(min-width: 768px) and (prefers-reduced-motion: no-preference)', () => {
   // EduBra's "How it works" story: autoplays once when 40% visible (no pin, no scrub)
   const offStory = storyPlayer({ autoplay: true, ease: EASE_OUT })
   const offHStory = hstoryPlayer({ autoplay: true, ease: EASE_OUT }) // Agente H's: same engine, its own drawing
@@ -532,20 +440,14 @@ mm.add('(min-width: 768px) and (prefers-reduced-motion: no-preference)', (ctx) =
     tier1Ticks(pageMain)
     tier1Leaders(pageMain)
   }
-  // step 11: the click-triggered filter transition also lives inside matchMedia
-  // (motion-spec.md:100, "nothing outside it") via ctx.add(), which wraps flipFilter so
-  // every tween it creates at click time is tracked by this branch's Context and
-  // reverted with it if the branch stops matching mid-flight.
   heroSequence(true)
-  const offFilter = registerFilterTransition('motion', ctx.add('archiveFilter', flipFilter) as FilterTransition)
   return () => {
-    offFilter()
     offStory()
     offHStory()
   }
 })
 
-mm.add('(max-width: 767px) and (prefers-reduced-motion: no-preference)', (ctx) => {
+mm.add('(max-width: 767px) and (prefers-reduced-motion: no-preference)', () => {
   const offStory = storyPlayer({ autoplay: true, ease: EASE_OUT }) // phones animate too: the story with its camera
   const offHStory = hstoryPlayer({ autoplay: true, ease: EASE_OUT })
   tier2Reveals(false)
@@ -561,18 +463,13 @@ mm.add('(max-width: 767px) and (prefers-reduced-motion: no-preference)', (ctx) =
   // word here; put to Arthur this session, since neither is scrubbed or pinned and
   // design-spec.md §8's degradation contract doesn't name the hero word-arrival.
   heroSequence(false)
-  // step 11: Flip runs at this width too — motion-spec.md's degradation contract strips
-  // pinning, leader lines and set-pieces below 768px, not the filter transition, and the
-  // filter is a click-triggered interaction, not a scroll-linked one.
-  const offFilter = registerFilterTransition('motion', ctx.add('archiveFilter', flipFilter) as FilterTransition)
   return () => {
-    offFilter()
     offStory()
     offHStory()
   }
 })
 
-mm.add('(prefers-reduced-motion: reduce)', (ctx) => {
+mm.add('(prefers-reduced-motion: reduce)', () => {
   const offStory = storyPlayer({ autoplay: false, ease: EASE_OUT }) // never autoplays: final state plus a Play button
   const offHStory = hstoryPlayer({ autoplay: false, ease: EASE_OUT })
   // Final states, nothing animates. toArray guards the empty selector — gsap.set on a
@@ -605,9 +502,7 @@ mm.add('(prefers-reduced-motion: reduce)', (ctx) => {
   heroSplit?.revert()
   heroSplit = null
   clearHeroPending()
-  const offFilter = registerFilterTransition('reduce', ctx.add('archiveFilter', crossfadeFilter) as FilterTransition)
   return () => {
-    offFilter()
     offStory()
     offHStory()
   }

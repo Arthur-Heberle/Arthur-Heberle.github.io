@@ -5,10 +5,11 @@ role: built alone
 tags: [code, ai]
 links:
   repo: https://github.com/Arthur-Heberle/AGENT-H
-blurb: >-
-  A WhatsApp agent that answers customers from a store's own catalogue and hands the
-  owner the ones ready to buy.
-wip: true
+status: in progress
+link: /projects/agente-h/
+line: >-
+  A WhatsApp agent that answers customers from a shop's own catalogue and hands the owner the
+  ones ready to buy.
 project:
   solo: true
   what: >-

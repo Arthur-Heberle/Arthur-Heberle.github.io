@@ -181,8 +181,10 @@ Google Fonts, woff2, latin subset, `font-display: swap`. Preload the display fac
    hero drawing sequence. Contact must be reachable here.
 2. **Spine with margins.** Two or three short paragraphs carrying the through-line,
    with numbered annotation markers pulling to margin notes.
-3. **Archive.** Six entries visible, then "show all". Tag filter. Each row: date, title,
-   role, tags.
+3. **Projects (the bench) and Experience.** Replaces the archive list and its tag filters (Arthur's
+   decision, 2026-10-01; §6's one-for-one rule is his call and he made it: one section out, two in).
+   The bench is three objects on one work surface, each a link; Experience is a plain list for now
+   (a later task turns it into a timeline).
 4. **Changelog.** Three most recent entries, then "show all".
 5. **Contact.** The last leader line of the drawing extends off the spine and terminates
    at his email. The only thing the drawing points at.
@@ -199,8 +201,7 @@ last. "What I'd do differently" is unusual and worth keeping. Every project page
 an **origin link** (a small circle-and-crosshair mark and "Arthur Heberle", one link home; a
 short leader draws out of the mark on hover and focus) and ends with a **title block** in the style
 of an engineering drawing (a thin-ruled box: "Arthur Heberle / index", then "<Project>, sheet NN of
-TT" in mono, NN being the project's place in the home archive's order and TT the number of archive
-entries; "sheet NN+1" links to the next project page when that entry has one). Arthur's decision,
+TT" in mono, NN being the project's place on the home bench and TT the number of projects; "sheet NN+1" links to the next project page when that entry has one). Arthur's decision,
 2026-09-30; it replaced a house-icon "Home" link the same day.
 
 EduBra also carries a **"How it works" scroll story** after the set-piece and its "Try a

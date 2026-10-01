@@ -90,7 +90,7 @@ shared surface; the Brasilore art is his own (Emilia.png is the playable charact
 | Stage | Step | Status | Notes |
 |---|---|---|---|
 | 1 | Never publish a [FILL] | done | `scripts/check-fill.mjs` runs after `astro build` inside the `build` script (the deploy action runs it); `isFilled()` in `src/shared/fill.ts` replaces `Fill.astro` (deleted, with `.fill` CSS): optional fields are omitted, prose renders as written so a marker fails the build (tested with a marker in the changelog, then reverted); identity line is a `<ul>`. The old archive row guards date/role with `isFilled` until stage 2 deletes it |
-| 2 | Split the content | todo | |
+| 2 | Split the content | done | `archive` replaced by `projects` (bench) and `experience`; `Archive`, its filter and the dead Flip code in `motion.ts` removed (`Flip` no longer registered); `sortArchive` became `src/projects/sortProjects.ts`; the title blocks now read "of 03" (three projects), not "of 07"; Experience is a plain `<ol>`, oldest first, with `<time>` dates; `Fill.astro` is gone, so a changelog or contact line is plain text |
 | 3 | The spine | todo | |
 | 4 | The bench | todo | |
 | 5 | Changelog | todo | |
@@ -158,24 +158,9 @@ Blocking or near-blocking. Add to this list rather than guessing.
 - [x] Opening line: rewritten in his words as "I make technical things make sense to
       people who didn't build them." Supporting line, mono identity line, the three spine
       paragraphs and all five margin notes are also final now — see `docs/content.md`.
-- [ ] **6 `[FILL]` markers remain, deliberately open** (`grep -rho "\[FILL" src/content/
-      src/components/Contact.astro | wc -l` → 6; all six of EduBra's resolved after step 14,
-      from the `Oficinas_1` repo and Arthur's own copy). Step 14 resolved 4 of 16: Agente H's date
-      (`2026-06`, from `docs/projects/agent-h.md`'s build window), the contact invitation, and
-      both changelog notes. The rest wait for their own project brief, which is the order
-      Arthur is working in (`docs/projects/README.md`). **Render policy, decided:** an
-      unresolved marker renders visibly as a drafting annotation (`Fill.astro`) — that is
-      what "deliberately still open" looks like on the shipped page.
-
-      | Marker(s) | Field | Unblocked by |
-      |---|---|---|
-      | `rp3.md` | `role` | RP3 brief |
-      | `eletron-energia.md` | `role` | ELETRON brief |
-      | `brasilore.md` ×2 | `date`, `role` | Brasilore brief |
-      | `calculus-ii.md`, `programming-techniques.md` | `role` (`taught ~[FILL]`, student count) | Arthur, directly |
-
-      Re-run the grep after each brief and update this count; when it hits zero this bullet
-      closes.
+- [x] **The `[FILL]` markers are gone** (home part 1, stage 2): the archive entries that held them were replaced
+      by the `projects` and `experience` collections with Arthur's values. A `[FILL]` is now omitted from
+      optional fields and fails the build anywhere else (`scripts/check-fill.mjs`).
 - [ ] **`docs/projects/` is untracked on purpose (decision for Arthur).** Step 14's plan said
       to commit it; on reading it, it holds the deployed Agent H app's live URL next to a
       list of its known security gaps (open CORS, guessable public image URLs, in-memory OTP),
@@ -1760,3 +1745,8 @@ jumps and is correct in real time (checked by sampling the canvas transform each
 3.6 s, to 3 at about 7 s, to 4 at about 10.4 s). The scene-4 framing waits until p = .87, after the stamp
 has landed, so the phone is still in frame for it. Text in the camera framings renders at 11.07px or more.
 Gold contrast: see the open question above. The AGENT-H repo was not modified.
+
+Home part 1 (2026-10-01) — **The archive list is replaced by a project bench and an experience
+section** (Arthur's brief). The archive collection, its tag filter, "show all" and Flip transition are
+removed; the home page is Hero, Spine, Projects (the bench), Experience, Changelog, Contact. design-spec.md
+§6 and content.md are updated. `Flip` is no longer imported, so it ships no JS.
