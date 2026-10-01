@@ -230,6 +230,13 @@ opacity). Reduced motion and no-JS show them drawn. The figures are from the tea
 (`public/docs/edubra-paper.pdf`): Table 1 (2.4 to 2.7 mm a pin, mean 2.5), Table 2 (2.6 to
 3.5 s a letter, about 0.2 s more per pin), section 3.3 (eight servos lost).
 
+**Agente H's page** (Arthur's decision, 2026-09-30) uses the same template, with a different order: title and
+intro, a one-line status (small mono, with a half-filled circle: it is a work in progress), "How it works",
+"By the numbers", "The dashboard" (a paragraph and three screenshots of the real dashboard on demo data),
+"How I built it", "What's next", Links. It has no "My part" and no "What I'd do differently"; the home
+archive row carries an "in progress" marker (mono, lower case, the same half-filled circle). Its story
+and its numbers are described in §9.
+
 ---
 
 ## 7. Content
@@ -433,15 +440,26 @@ Scrubbed, not pinned. A cross-section deposits layer by layer as the reader desc
 every few layers unlocking a line about the research. The purest expression of the
 deposition concept, and literally Arthur's subject matter as motion.
 
-### Agente H — signal through a schematic
+### Agente H — a message in, a lead out
 
-Scrubbed. The architecture drawn as a technical schematic — message in, n8n
-orchestration, vector retrieval, response out — with a signal pulse travelling the path
-as the reader scrolls.
+Changed by Arthur, 2026-09-30; it replaces the earlier "signal through a schematic, explicitly not a chat
+thread". An autoplay "How it works" story on EduBra's engine (one 12 s tween of a progress p, no pin, no
+scrub; Play again, Pause, four step ticks, off-screen pause, a mobile camera with one framing per scene,
+the final state under reduced motion), in four scenes: Wait (a customer's three short messages, and a ring
+timer that empties each time a new one arrives and fills to "30 s" after the third), Find (the question as
+a row of numbers, then a dot on a 2D map of the catalogue; lines to the nearest eight products, the
+closest three highlighted; the typo "sofs" and the label word "sofa" marked), Answer (the products and the
+messages into a prompt card, into a "language model" box, a reply on the phone), Hand off (a QUALIFIED_LEAD
+stamp on the conversation, a lead card into the dashboard's Leads / New column).
 
-**Explicitly not** a chat thread that types itself. Fake chat bubbles are everywhere and
-they make the project read as a product demo instead of engineering. The architecture is
-the interesting part.
+Rule of the section (the site's): software is 2D, hardware is CSS 3D. The only hardware is the customer's
+phone, so it is the only 3D object (a standing slab in EduBra's three-quarter view); its screen is 2D, drawn
+in the site's line style, with no WhatsApp logo and no WhatsApp green. The product's own colours, its gold
+`#C9A84C` and dark `#1E1C19`, are used for the product's things only (the stamp, the lead card, the
+dashboard); data in motion stays the site's blue. Gold is 1.93:1 on the ground (and the darker `#A8893C`
+only 2.81:1), so a gold shape always carries a dark outline and dark text, and is never the boundary on the
+light ground. The drawing is aria-hidden under one `role="img"` label. "By the numbers" is the same
+component as EduBra's: 30 s of silence, 1,536 numbers per product, 8 closest products, 46 automated tests.
 
 ### Contact — the leader line
 

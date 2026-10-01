@@ -60,7 +60,7 @@ Five stages, in order. Commit message `agent-h: <stage>`. The source of truth is
 | 2 | The animation | done | own `story.ts`/`story.css`/`AgenteStory.astro` in `src/projects/agente-h/`, EduBra's files untouched; phone is the only 3D object (standing slab, same bench tilt/turn); ring resets twice (verified); gold only ever with a dark outline (see divergences); JS ~79 KB gzip |
 | 3 | By the numbers | done | EduBra's `.numbers`/`[data-numbers]` reused, no motion change; tests are **46**, not the 42 the commit history mentions (`def test_` in backend/tests: 27 + 13 + 6, no parametrize, no duplicate names; pytest is not installed here, so counted, not collected) |
 | 4 | Dashboard screenshots | done | three 1280x800 webp (catalogue, conversations, leads) in `public/agente-h/`, alt text on each; **taken from the real dashboard files served with a stub API, not the real backend** (no Docker, Postgres or Python deps here, and there is no `seed-en.html`); demo data only |
-| 5 | Final check | todo | |
+| 5 | Final check | done | Lighthouse mobile (preview build): Agente H 97-98 / 100 / 100, CLS 0; home 98-99 / 100 / 100; EduBra 97-98 / 100 / 100; JS ~79 KB gzip. Fixed a CLS of 0.06 found at this stage (below); design-spec §6 and §9 updated |
 
 ---
 
@@ -96,6 +96,9 @@ Blocking or near-blocking. Add to this list rather than guessing.
         first names and conversations, and phone numbers with the nonexistent area code 00. The English
         interface is the dashboard's own. Retake them against a real seeded instance if you want the
         real backend in the shot.
+      - **Residual CLS flake.** Lighthouse reads CLS 0 on all three routes, but under 4x CPU and slow-network
+        throttling an 18px jump of the story section shows up in about one run in four (the text above it
+        re-wrapping as a font swaps in). Not seen at default throttling.
       - **`design-spec.md` §9** said Agente H is a scrubbed schematic and "explicitly not a chat
         thread". The brief replaces it; §6 and §9 are updated at stage 5.
 
@@ -1698,3 +1701,22 @@ icon is gone** (Arthur's brief, 2026-09-30). Replaces the house-icon "Home" link
   2px ring and the leader drawn; no-JS identical at rest; title block text exact, `index` is its only link;
   AX links are "Arthur Heberle, back to home" and "index", none named "Home"; the home archive still has
   7 rows with EduBra first.
+
+Agente H, stage 5 — **a layout shift of 0.06 on the page, found by Lighthouse and fixed.** The story is near
+the top of this page (a short intro and the status line above it), so it is in the first screen on a phone,
+and when `story.ts` added `.is-live` the four stacked captions collapsed to one crossfading slot (`.caps`
+244px to 71px) and everything below moved. EduBra's story sits below the fold, so it never counted there.
+Fix in `src/projects/agente-h/story.css`: for the visitors who will get the live story (JavaScript on,
+motion allowed: `.js` and `prefers-reduced-motion: no-preference`, with a second block below 768px) the
+live layout is applied at first paint, so the classes change nothing; no JavaScript or reduced motion keeps
+the static layout. It also reserves the empty Pause / Play again slot (the button wrapped onto its own
+row and moved things 44px). Residuals measured and removed: the mono status line and the Archivo 500
+headings re-wrapped as fonts swapped, so `Base.astro` gained an opt-in `preloadFonts` prop, used by this
+one route (two fonts, ~30KB). Keep the pre-live rules in step with EduBra's `.story.is-live` / `.is-cam`
+rules.
+
+Agente H, camera and verification notes: the mobile camera lags one scene in a virtual-time capture with big
+jumps and is correct in real time (checked by sampling the canvas transform each second: framing 1 to 2 at
+3.6 s, to 3 at about 7 s, to 4 at about 10.4 s). The scene-4 framing waits until p = .87, after the stamp
+has landed, so the phone is still in frame for it. Text in the camera framings renders at 11.07px or more.
+Gold contrast: see the open question above. The AGENT-H repo was not modified.

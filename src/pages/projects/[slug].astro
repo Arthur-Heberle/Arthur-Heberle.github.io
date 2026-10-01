@@ -36,7 +36,7 @@ interface Props {
 const { entry } = Astro.props
 ---
 
-<Base title={`${entry.data.title} — Arthur Gabriel Pellegrini Heberle`}>
+<Base title={`${entry.data.title} — Arthur Gabriel Pellegrini Heberle`} preloadFonts={entry.id === 'agente-h' ? ['archivo-500-latin.woff2', 'ibm-plex-mono-400-latin.woff2'] : []}>
   <main id="main" tabindex="-1" class="page-main">
     <Rule />
     <ProjectPage entry={entry}>

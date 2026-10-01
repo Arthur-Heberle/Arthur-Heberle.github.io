@@ -273,3 +273,67 @@ html:not(.js) .hstory .fit {
   aspect-ratio: 1280 / 800; /* the box is sized before the image loads, so nothing shifts */
   border: var(--hairline) solid var(--color-graphite-2);
 }
+
+/* ---------- no layout shift when the story goes live ----------
+ * story.ts adds .is-live (and, below 768px, .is-cam) on load, and EduBra's rules for those classes
+ * change the layout: the four stacked captions become one crossfading slot, the step ticks appear,
+ * the phone-sized window replaces the scrolling frame. This story starts near the top of the page,
+ * so that change was a visible shift (CLS 0.06 in Lighthouse mobile: .caps went from 244px to 71px).
+ * So, for exactly the visitors who will get it (JavaScript on, motion allowed: the two matchMedia
+ * branches in motion.ts that call hstoryPlayer with autoplay), the live layout is already there at
+ * first paint, and the classes then change nothing. No JavaScript or reduced motion keeps the
+ * static layout: every caption on the page, the frame scrolling sideways. Caption 1 is the one
+ * showing, as at p = 0. Keep these in step with EduBra's .story.is-live / .is-cam rules. */
+@media (prefers-reduced-motion: no-preference) {
+  .js .hstory .caps {
+    display: grid;
+  }
+  .js .hstory .cap {
+    grid-area: 1 / 1;
+    display: flex;
+    opacity: 0;
+  }
+  .js .hstory .cap:first-child {
+    opacity: 1;
+  }
+  .js .hstory .cap strong {
+    flex: none;
+  }
+  .js .hstory .ticks {
+    display: flex;
+  }
+  /* the Pause / Play again slot is there from the start, empty, so the button appearing at autoplay
+   * (it wraps to its own row below 768px) moves nothing. EduBra's rule hides an empty .controls. */
+  .js .hstory .controls {
+    display: flex;
+    min-width: 104px;
+    min-height: 34px;
+  }
+  .js .hstory .frame {
+    overflow: visible;
+  }
+  .js .hstory .fit {
+    width: 100%;
+  }
+}
+@media (prefers-reduced-motion: no-preference) and (max-width: 767px) {
+  .js .hstory .head {
+    gap: 10px 16px;
+  }
+  .js .hstory .cap {
+    display: block;
+  }
+  .js .hstory .cap b {
+    margin-right: 8px;
+  }
+  .js .hstory .cap span {
+    display: block;
+  }
+  .js .hstory .fit {
+    width: min(100%, calc(80svh * 343 / 380));
+    margin-inline: auto;
+    aspect-ratio: 343 / 380;
+    overflow: hidden;
+    overflow: clip;
+  }
+}

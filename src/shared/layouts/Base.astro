@@ -4,9 +4,13 @@ import '../styles/global.css'
 interface Props {
   title: string
   noindex?: boolean
+  // Extra font files (names in /fonts) to preload, for a page whose first screen sets text in a face
+  // the two below don't cover (Agente H: Archivo 500 headings and the mono status line), where the swap would otherwise re-wrap
+  // that text and shift everything under it.
+  preloadFonts?: string[]
 }
 
-const { title, noindex = false } = Astro.props
+const { title, noindex = false, preloadFonts = [] } = Astro.props
 ---
 
 <html lang="en">
@@ -64,6 +68,11 @@ const { title, noindex = false } = Astro.props
       crossorigin
       href="/fonts/archivo-400-latin.woff2"
     />
+    {
+      preloadFonts.map((f) => (
+        <link rel="preload" as="font" type="font/woff2" crossorigin href={`/fonts/${f}`} />
+      ))
+    }
   </head>
   <body>
     <!-- Every page rendering this layout must give its main content element id="main":
