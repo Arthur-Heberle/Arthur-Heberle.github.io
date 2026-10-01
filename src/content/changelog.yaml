@@ -1,4 +1,13 @@
 # Written by Arthur, never generated from commits. Newest first.
+- id: "2026-10-01-bench"
+  date: "2026-10-01"
+  note: "The home page has a bench now. Projects on top, experience below."
+- id: "2026-10-01-agente-h"
+  date: "2026-10-01"
+  note: "Agente H has its own page. You can ask it three questions."
+- id: "2026-09-30-edubra"
+  date: "2026-09-30"
+  note: "The EduBra page now shows how the device works, with the box in 3D."
 - id: "2026-09-20-live"
   date: "2026-09-20"
   note: "First version is live. The EduBra page is the one I'd look at first."
