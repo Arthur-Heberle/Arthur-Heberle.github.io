@@ -10,7 +10,7 @@ interface Props {
   entry: CollectionEntry<'archive'>
 }
 const { entry } = Astro.props
-const { date, title, role, tags, links, blurb } = entry.data
+const { date, title, role, tags, links, blurb, wip } = entry.data
 // "2026-07" displays as "2026.07" (design-spec.md §7); an unresolved [FILL] date is
 // left as-is for Fill to render as a drafting annotation.
 const displayDate = date.includes('[FILL') ? date : date.replace('-', '.')
@@ -38,6 +38,17 @@ const projectHref = hasProjectPage(entry.id) ? projectPageHref(entry.id) : null
     <p class="flex flex-wrap gap-x-gutter gap-y-1 text-small text-graphite-2">
       <span><Fill value={role} /></span>
       <span>{tags.join(', ')}</span>
+      {
+        wip && (
+          <span class="wip font-mono">
+            <svg class="status-mark" viewBox="0 0 12 12" aria-hidden="true" focusable="false">
+              <circle cx="6" cy="6" r="4.5" />
+              <path d="M6 1.5A4.5 4.5 0 0 0 6 10.5Z" />
+            </svg>
+            in progress
+          </span>
+        )
+      }
     </p>
     <p class="measure text-body">{blurb}</p>
     {

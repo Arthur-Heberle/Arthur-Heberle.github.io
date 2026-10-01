@@ -60,6 +60,37 @@
   }
 }
 
+/* A work in progress: a half-filled circle, the quiet marker. Shared by the status line under a
+ * project's intro and the home archive row's "in progress". Graphite, nothing brighter. */
+.status-mark {
+  flex: none;
+  width: 12px;
+  aspect-ratio: 1;
+}
+.status-mark circle {
+  fill: none;
+  stroke: var(--color-graphite-2);
+  stroke-width: 1.2;
+}
+.status-mark path {
+  fill: var(--color-graphite-2);
+  stroke: none;
+}
+.status {
+  display: flex;
+  max-width: var(--container-measure);
+  align-items: baseline;
+  gap: 10px;
+  color: var(--color-graphite-2);
+  font-size: var(--text-dimension);
+  letter-spacing: var(--text-dimension--letter-spacing);
+  line-height: 1.5;
+}
+.status .status-mark {
+  /* sits on the first line's x-height rather than its baseline */
+  translate: 0 1px;
+}
+
 /* The title block: a thin-ruled box, two rows, left aligned. */
 .titleblock {
   width: fit-content;

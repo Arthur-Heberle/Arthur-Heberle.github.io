@@ -27,6 +27,8 @@ const archive = defineCollection({
       .default({}),
     blurb: z.string().min(1),
     pinned: z.boolean().default(false),
+    // Still being built: the home row shows an "in progress" marker (ArchiveRow.astro).
+    wip: z.boolean().default(false),
     // The project-page prose (design-spec.md §6), optional because only entries with their
     // own page (src/projects/projects.ts's PROJECT_PAGES) need it — the other six archive
     // entries are untouched by adding this. Each paragraph may itself be an unresolved
@@ -35,9 +37,13 @@ const archive = defineCollection({
       .object({
         what: z.string().min(1), // the intro: what and why
         note: z.string().min(1).optional(), // a margin note beside `what` (no label, no marker)
-        built: z.array(z.string().min(1)).optional(), // "How we built it"
-        part: z.array(z.string().min(1)).min(1), // "My part": team, role and what he did
-        differently: z.array(z.string().min(1)).min(1), // "What I'd do differently"
+        built: z.array(z.string().min(1)).optional(), // "How we built it" ("How I built it" when `solo`)
+        solo: z.boolean().default(false), // built alone: the built heading says "I", not "we"
+        status: z.string().min(1).optional(), // a one-line status under the intro (work in progress)
+        next: z.array(z.string().min(1)).optional(), // "What's next"
+        // "My part" and "What I'd do differently" are EduBra's; a project may carry neither.
+        part: z.array(z.string().min(1)).min(1).optional(), // "My part": team, role and what he did
+        differently: z.array(z.string().min(1)).min(1).optional(), // "What I'd do differently"
         // A document for the Links section. Kept off `links.pdf` so the home page's archive
         // row, which shows every link an entry has, stays as it was.
         paper: z.object({ href: z.string().startsWith('/'), label: z.string().min(1) }).optional(),

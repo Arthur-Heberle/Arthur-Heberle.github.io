@@ -2,8 +2,9 @@
 // The project page template — design-spec.md §6, "one per set-piece project". Order: title and
 // intro (with an optional margin note), the set-piece (default slot), the `after` slot (a
 // project's own sections: EduBra's "How it works" story and "By the numbers"), "How we built
-// it" (optional), "My part", "What I'd do differently", Links. The set-piece sits in the header
-// group, tight under the intro.
+// it" (optional; "How I built it" when `solo`), "What's next" (optional), "My part" and "What I'd
+// do differently" (each optional), Links. The set-piece sits in the header group, tight under the
+// intro. A work in progress adds a one-line status under the intro.
 //
 // One <article>, not several sibling <section>s like the home page — a project page is
 // one self-contained document, not a set of independent page sections. type.css extends
@@ -76,6 +77,18 @@ const next =
         </p>
       )
     }
+    {
+      project.status && (
+        // work in progress: one small mono line and a quiet marker, a half-filled circle
+        <p class="status text-dimension font-mono" data-anim data-delay="0.12">
+          <svg class="status-mark" viewBox="0 0 12 12" aria-hidden="true" focusable="false">
+            <circle cx="6" cy="6" r="4.5" />
+            <path d="M6 1.5A4.5 4.5 0 0 0 6 10.5Z" />
+          </svg>
+          <span>{project.status}</span>
+        </p>
+      )
+    }
     <slot />
   </div>
 
@@ -85,7 +98,7 @@ const next =
     project.built && (
       <section class="flex flex-col gap-3" aria-labelledby="project-built-heading">
         <h2 id="project-built-heading" class="text-h3 font-sans font-medium" data-anim>
-          How we built it
+          {project.solo ? 'How I built it' : 'How we built it'}
         </h2>
         {project.built.map((text, i) => (
           <p class="measure text-body" data-anim data-delay={i === 0 ? '0.06' : undefined}>
@@ -96,29 +109,50 @@ const next =
     )
   }
 
-  <section class="flex flex-col gap-3" aria-labelledby="project-part-heading">
-    <h2 id="project-part-heading" class="text-h3 font-sans font-medium" data-anim>My part</h2>
-    {
-      project.part.map((text, i) => (
-        <p class="measure text-body" data-anim data-delay={i === 0 ? '0.06' : undefined}>
-          <Fill value={text} />
-        </p>
-      ))
-    }
-  </section>
+  {
+    project.next && (
+      <section class="flex flex-col gap-3" aria-labelledby="project-next-heading">
+        <h2 id="project-next-heading" class="text-h3 font-sans font-medium" data-anim>
+          What's next
+        </h2>
+        {project.next.map((text, i) => (
+          <p class="measure text-body" data-anim data-delay={i === 0 ? '0.06' : undefined}>
+            <Fill value={text} />
+          </p>
+        ))}
+      </section>
+    )
+  }
 
-  <section class="flex flex-col gap-3" aria-labelledby="project-differently-heading">
-    <h2 id="project-differently-heading" class="text-h3 font-sans font-medium" data-anim>
-      What I'd do differently
-    </h2>
-    {
-      project.differently.map((text, i) => (
-        <p class="measure text-body" data-anim data-delay={i === 0 ? '0.06' : undefined}>
-          <Fill value={text} />
-        </p>
-      ))
-    }
-  </section>
+  {
+    project.part && (
+      <section class="flex flex-col gap-3" aria-labelledby="project-part-heading">
+        <h2 id="project-part-heading" class="text-h3 font-sans font-medium" data-anim>
+          My part
+        </h2>
+        {project.part.map((text, i) => (
+          <p class="measure text-body" data-anim data-delay={i === 0 ? '0.06' : undefined}>
+            <Fill value={text} />
+          </p>
+        ))}
+      </section>
+    )
+  }
+
+  {
+    project.differently && (
+      <section class="flex flex-col gap-3" aria-labelledby="project-differently-heading">
+        <h2 id="project-differently-heading" class="text-h3 font-sans font-medium" data-anim>
+          What I'd do differently
+        </h2>
+        {project.differently.map((text, i) => (
+          <p class="measure text-body" data-anim data-delay={i === 0 ? '0.06' : undefined}>
+            <Fill value={text} />
+          </p>
+        ))}
+      </section>
+    )
+  }
 
   {
     hasLinks && (

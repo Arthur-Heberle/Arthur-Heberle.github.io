@@ -1,0 +1,23 @@
+---
+// Agente H's "How it works". Stage 1 ships the heading and the four captions (Arthur's copy,
+// verbatim); stage 2 adds the drawing and its player.
+const CAPTIONS = [
+  { n: 1, title: 'Wait', text: 'Customers send three short messages instead of one. The agent waits until they stop typing, so it answers once.' },
+  { n: 2, title: 'Find', text: 'The question becomes a point on a map of the catalogue. The closest products win, even with a typo.' },
+  { n: 3, title: 'Answer', text: 'A language model writes the reply with those products in front of it, and it goes back on WhatsApp.' },
+  { n: 4, title: 'Hand off', text: 'If the customer is ready to buy, the owner gets a lead with a one-line summary.' },
+]
+---
+
+<section class="story hstory" data-hstory aria-labelledby="how">
+  <div class="head">
+    <h2 id="how" class="text-h2 font-sans font-medium">How it works</h2>
+    <div class="caps">
+      {
+        CAPTIONS.map((c) => (
+          <p class="cap"><b>{c.n}</b><strong>{c.title}</strong><span>{c.text}</span></p>
+        ))
+      }
+    </div>
+  </div>
+</section>

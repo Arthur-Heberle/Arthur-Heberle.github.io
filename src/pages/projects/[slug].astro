@@ -16,6 +16,9 @@ import ProjectPage from '../../projects/ProjectPage.astro'
 import EdubraDevice from '../../projects/edubra/EdubraDevice.astro'
 import EdubraStory from '../../projects/edubra/EdubraStory.astro'
 import EdubraNumbers from '../../projects/edubra/EdubraNumbers.astro'
+import AgenteStory from '../../projects/agente-h/AgenteStory.astro'
+import AgenteNumbers from '../../projects/agente-h/AgenteNumbers.astro'
+import AgenteDashboard from '../../projects/agente-h/AgenteDashboard.astro'
 import { PROJECT_PAGES } from '../../projects/projects'
 
 export async function getStaticPaths() {
@@ -40,6 +43,9 @@ const { entry } = Astro.props
       {entry.id === 'edubra' && <EdubraDevice word="EDUBRA" />}
       {entry.id === 'edubra' && <EdubraStory slot="after" />}
       {entry.id === 'edubra' && <EdubraNumbers slot="after" />}
+      {entry.id === 'agente-h' && <AgenteStory slot="after" />}
+      {entry.id === 'agente-h' && <AgenteNumbers slot="after" />}
+      {entry.id === 'agente-h' && <AgenteDashboard slot="after" />}
     </ProjectPage>
   </main>
 </Base>

@@ -20,6 +20,16 @@
   }
 }
 
+/* "in progress": a work in progress's marker in the row's meta line. Mono, lower case, the
+ * same size as the dimension strings, with the half-filled circle (.status-mark, project.css). */
+.archive-row .wip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--text-dimension);
+  letter-spacing: var(--text-dimension--letter-spacing);
+}
+
 /* Step 05 — archive tag filter. Absent without JS rather than present-but-inert: a
  * visible control that does nothing is worse than no control (implementation-plan.md's
  * step 05 acceptance explicitly allows "absent or inert"). The `js` class is set by an

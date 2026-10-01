@@ -49,11 +49,41 @@ team's paper, `public/docs/edubra-paper.pdf`.
 | 4 | New sections | done | By the numbers, How we built it, My part, What I'd do differently, Links last; the paper is linked from `project.paper`, not `links.pdf` |
 | 5 | Final check | done | blurb trimmed, home row still points here; Lighthouse mobile 98 / 100 / 100 on EduBra and home; JS ~74 KB gzip |
 
+### Agente H project page (2026-09-30, Arthur's brief)
+
+Five stages, in order. Commit message `agent-h: <stage>`. The source of truth is the repo
+`github.com/Arthur-Heberle/AGENT-H` (cloned at `../AGENT-H`: ARCHITECTURE.md, backend/).
+
+| Stage | Step | Status | Notes |
+|---|---|---|---|
+| 1 | Page, archive entry, copy | done | `/projects/agente-h/`; copy verbatim bar the two edits Arthur chose (intro, category); `wip` field and a half-filled-circle marker on the row and the status line; `part`/`differently` made optional, EduBra's HTML unchanged (only the CSS hash moved) |
+| 2 | The animation | todo | |
+| 3 | By the numbers | todo | |
+| 4 | Dashboard screenshots | todo | |
+| 5 | Final check | todo | |
+
 ---
 
 ## Open questions for Arthur
 
 Blocking or near-blocking. Add to this list rather than guessing.
+
+- [ ] **Agente H page, flags from the 2026-09-30 brief** (none blocking; each a call made with Arthur
+      or against the repo):
+      - **The wait is not a true debounce in the repo.** The brief, `ARCHITECTURE.md` ("Waits 30s
+        debounce") and the animation say the ring resets on each new message. The n8n query in
+        `backend/README.md` and `WHATSAPP_AGENT_ARCHITECTURE.md` (every 30 s,
+        `created_at < NOW() - 30 s` on pending messages, grouped by customer) answers once the
+        *first* pending message is 30 s old; a new message does not restart the clock. Arthur: draw it
+        as briefed, with the ring running faster than real time and labelled "30 s". If the workflow
+        should reset, it needs `MAX(created_at)` in the filter.
+      - **Date:** `2026-05`, as briefed. Step 14 had set `2026-06` (last commits 2026-06-16).
+      - **Intro, one edit:** the brief's "day or night" became "during the hours the owner sets",
+        because the repo has per-business `business_hours` and a 6–22 h gate in n8n. Arthur's choice.
+      - **How I built it, one edit:** "name, description or specs" became "name, category,
+        description or specs" (`product_service._needs_reembed` also checks category). Arthur's choice.
+      - **`design-spec.md` §9** said Agente H is a scrubbed schematic and "explicitly not a chat
+        thread". The brief replaces it; §6 and §9 are updated at stage 5.
 
 - [ ] **EduBra page, flags from the 2026-09-30 brief** (none blocking; each was a call I made):
       - The story's jack callout now reads "Out to your headphones or speaker" (the brief relabelled
