@@ -62,6 +62,18 @@ Five stages, in order. Commit message `agent-h: <stage>`. The source of truth is
 | 4 | Dashboard screenshots | done | three 1280x800 webp (catalogue, conversations, leads) in `public/agente-h/`, alt text on each; **taken from the real dashboard files served with a stub API, not the real backend** (no Docker, Postgres or Python deps here, and there is no `seed-en.html`); demo data only |
 | 5 | Final check | done | Lighthouse mobile (preview build): Agente H 97-98 / 100 / 100, CLS 0; home 98-99 / 100 / 100; EduBra 97-98 / 100 / 100; JS ~79 KB gzip. Fixed a CLS of 0.06 found at this stage (below); design-spec §6 and §9 updated |
 
+### Agente H improvement pass (2026-10-01, Arthur's brief)
+
+Seven stages, in order. Commit message `agent-h: <stage>`. Decisions Arthur made for stage 7: the
+"something to sleep on" top 3 are Serenno queen bed, Lugano wardrobe, Provençal dressing table (the
+dressing table is added to the map's beds cluster; the CSV has one bed only); the other two questions show
+one customer bubble, one chip and no typo highlight; caption 2 gets his two sentences while those questions
+are chosen.
+
+| Stage | Step | Status | Notes |
+|---|---|---|---|
+| 1 | Accessibility, and make it a rule | done | **Nothing to fix: both pages were already clean.** AX tree (CDP `Accessibility.getFullAXTree`, headless Chromium, not Brave) at 1280 and 375, JS on / reduced motion / JS off: every text node inside `.canvas` (EduBra 17, Agente H 39) checked for an exact match in the tree, none found; no duplicate text; the drawing is one `image` node with the section description. Rule added to CLAUDE.md Hard rules. EduBra's reduced-motion callout buttons ("Audio jack: ...") are real controls, not drawing text, and were left |
+
 ---
 
 ## Open questions for Arthur

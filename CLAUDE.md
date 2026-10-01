@@ -88,6 +88,10 @@ Tailwind v4 integration details change between versions and this document may be
 Check the official docs rather than relying on memory, particularly for the Tailwind v4
 Vite plugin setup and the Astro Pages deployment action.
 
+**Every set-piece drawing is aria-hidden with one role=img description for the section.**
+Before a project page counts as done, check the accessibility tree: it contains no drawing
+text and no duplicates.
+
 **Animate only `transform`, `opacity` and `stroke-dashoffset`.** Never width, height,
 color, box-shadow, filter or blur. This is a performance constraint, not a preference.
 
