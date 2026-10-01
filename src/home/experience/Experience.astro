@@ -19,7 +19,7 @@ import Laptop from './objects/Laptop.astro'
 import Printer from './objects/Printer.astro'
 
 const entries = (await getCollection('experience')).sort((a, b) => a.data.start.localeCompare(b.data.start))
-const { spans, ticks } = layout(
+const { spans, ticks, pct } = layout(
   entries.map((e) => e.data),
   monthOf(new Date()),
 )
@@ -29,16 +29,19 @@ const { spans, ticks } = layout(
 // (aria-describedby); the drawings themselves are aria-hidden.
 const SIN = Math.sin((32 * Math.PI) / 180)
 const COS = Math.cos((32 * Math.PI) / 180)
-const OBJECTS: Record<string, { fw: number; fd: number; Object: any; Flat?: any; desc: string }> = {
+// `tot` is the object's drawn height in px (unscaled), which the stacked layout reserves.
+const OBJECTS: Record<string, { fw: number; fd: number; tot: number; Object: any; Flat?: any; desc: string }> = {
   'calculus-ii': {
     fw: 84,
     fd: 44,
+    tot: 112,
     Object: Chalkboard,
     desc: 'A small chalkboard on a stand: chalk draws a curve and an integral sign, then the area under the curve fills in.',
   },
   'eletron-energia': {
     fw: 64,
     fd: 34,
+    tot: 92,
     Object: Meter,
     Flat: MeterChart,
     desc: 'An energy meter whose display counts up kWh, beside a chart of consumption before and after, with the gap between the two lines marked as savings.',
@@ -46,16 +49,19 @@ const OBJECTS: Record<string, { fw: number; fd: number; Object: any; Flat?: any;
   'programming-techniques': {
     fw: 120,
     fd: 56,
+    tot: 142,
     Object: Laptop,
     desc: "A laptop showing a class diagram: Entity, with Player and Enemy inheriting from it, and a Level holding Entities. The class names are illustrative of the course's SFML game, not its real code.",
   },
   rp3: {
     fw: 80,
     fd: 64,
+    tot: 116,
     Object: Printer,
     desc: 'A 3D printer building a part, each layer at a different angle.',
   },
 }
+const yearAt = pct(12) // where 2026 starts on the axis
 // "2026-07" displays as "2026.07" (design-spec.md §7).
 const show = (month: string) => month.replace('-', '.')
 ---
@@ -96,7 +102,7 @@ const show = (month: string) => month.replace('-', '.')
                     <span class="font-mono text-dimension text-graphite-2">now</span>
                   </span>
                 )}
-                <div class="xp-obj" aria-hidden="true" data-obj={id} style={`--bw:${bw}px;--bh:${bh}px;--fw:${obj.fw}px;--fd:${obj.fd}px`}>
+                <div class="xp-obj" aria-hidden="true" data-obj={id} style={`--bw:${bw}px;--bh:${bh}px;--fw:${obj.fw}px;--fd:${obj.fd}px;--tot:${obj.tot}px`}>
                   <div class="xp-scene">
                     <div class="xp-plane">
                       <div class="xp-lift">
@@ -114,6 +120,20 @@ const show = (month: string) => month.replace('-', '.')
                     {data.end ? <time datetime={data.end}>{show(data.end)}</time> : 'now'}
                   </p>
                 </div>
+              </div>
+              <!-- below 768px: this entry's period against a short 2025-to-now scale -->
+              <div class="xp-mini" aria-hidden="true">
+                <span class="xp-mini-line" />
+                <span class="xp-mini-tick" style="left:0" />
+                <span class="xp-mini-tick" style={`left:${yearAt}%`} />
+                <span class="xp-mini-tick" style="left:calc(100% - 1px)" />
+                <span class="xp-mini-label font-mono text-dimension text-graphite-2" style="left:0">2025</span>
+                <span class="xp-mini-label font-mono text-dimension text-graphite-2" style={`left:${yearAt}%`}>2026</span>
+                <span class="xp-mini-label font-mono text-dimension text-graphite-2" style="right:0">now</span>
+                <span class="xp-mini-bar" />
+                {span.open && (
+                  <svg class="xp-mini-open" viewBox="0 0 12 16" width="12" height="16" focusable="false"><path d="M1 1 L10 8 L1 15" /></svg>
+                )}
               </div>
               <div class="xp-detail" id={`xp-d-${id}`}>
                 <!-- the callout's heading: a visual repeat of the label, so aria-hidden (the list item carries the real one) -->

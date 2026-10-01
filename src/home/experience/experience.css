@@ -39,8 +39,419 @@
 .xp-axis,
 .xp-bar,
 .xp-open,
-.xp-obj {
+.xp-mini {
   display: none;
+}
+
+/* ---------- the object: a CSS 3D scene on the bench's diagonal camera (every width) ---------- */
+.xp-scene {
+  position: absolute;
+  inset: 0;
+  perspective: 1600px;
+  perspective-origin: 50% 50%;
+}
+/* the plane the object stands on: tilted back and turned clockwise (so right faces show), as the
+ * bench's mat; --fw by --fd is the object's footprint, centred in the object's box */
+.xp-plane {
+  position: absolute;
+  left: calc((var(--bw) - var(--fw)) / 2);
+  top: calc((var(--bh) - var(--fd)) / 2);
+  width: var(--fw);
+  height: var(--fd);
+  transform-style: preserve-3d;
+  transform: rotateX(55deg) rotateZ(32deg);
+}
+.xp-lift {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+}
+
+/* the Cub helper's faces (the bench's block, scoped to this section) */
+.xp-obj .cub {
+  position: absolute;
+  transform-style: preserve-3d;
+}
+.xp-obj .cub > .top {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+}
+.xp-obj .cub > .front {
+  position: absolute;
+  left: 0;
+  right: 0;
+  transform-origin: 50% 0;
+}
+.xp-obj .cub > .right {
+  position: absolute;
+  top: 0;
+  transform-origin: 0 0;
+}
+
+/* ---------- materials: muted, the bench's greys and wood; no logos ---------- */
+.xp-turn {
+  transform: rotateZ(-20deg); /* a face that carries a drawing is turned to face the viewer */
+}
+.xp-wood > .top {
+  background: #b79a72;
+}
+.xp-wood > .front {
+  background: #8f7550;
+}
+.xp-wood > .right {
+  background: #7a6342;
+}
+
+/* Calculus II: the board's face is chalk on slate, in a wooden frame */
+.xp-board > .top {
+  background: #8f7550;
+}
+.xp-board > .front {
+  background: #34423c;
+  box-shadow: inset 0 0 0 3px #8f7550;
+}
+.xp-board > .right {
+  background: #7a6342;
+}
+.xp-board svg {
+  display: block;
+  padding: 0;
+  overflow: visible;
+}
+.ch-base,
+.ch-curve,
+.ch-int {
+  fill: none;
+  stroke: #e6e9e3;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.ch-base {
+  stroke-opacity: 0.55;
+  stroke-width: 1;
+}
+.ch-area {
+  fill: #e6e9e3;
+  fill-opacity: 0.28;
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+
+/* ELETRON: a wall meter, its display and terminals on the face */
+.xp-meter > .top {
+  background: #cfd3d6;
+}
+.xp-meter > .front {
+  background: #b3b8bc;
+}
+.xp-meter > .right {
+  background: #82878c;
+}
+.mt-face {
+  position: absolute;
+  inset: 0;
+}
+.mt-lcd {
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  top: 7px;
+  height: 17px;
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 2px;
+  padding: 5px 3px 0;
+  background: #2a3a30;
+  color: #b9d6b2;
+  font-family: var(--font-mono);
+  box-shadow: 0 0 0 1.5px #6c7176;
+}
+.mt-lcd b {
+  font-size: 9px;
+  font-weight: 400;
+}
+.mt-lcd i {
+  font-size: 5px;
+  font-style: normal;
+}
+.mt-dial {
+  position: absolute;
+  left: 15px;
+  top: 28px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #e3e6e8;
+  box-shadow: inset 0 0 0 1.5px #6c7176;
+}
+.mt-terms {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 3px;
+  display: flex;
+  justify-content: space-between;
+}
+.mt-terms u {
+  width: 8px;
+  height: 4px;
+  background: #6c7176;
+}
+/* the chart beside it: a flat 2D drawing in the site's line style */
+.mt-chart {
+  position: absolute;
+  left: calc(var(--bw) + 14px);
+  bottom: 0;
+  width: 160px;
+  height: 84px;
+  overflow: visible;
+}
+.mc-axis,
+.mc-before,
+.mc-after {
+  fill: none;
+  stroke-width: 1.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.mc-axis {
+  stroke: var(--color-graphite-2);
+  stroke-width: 1;
+}
+.mc-before {
+  stroke: var(--color-graphite-2);
+}
+.mc-after {
+  stroke: var(--color-measure);
+  stroke-width: 1.6;
+}
+.mc-gap {
+  fill: var(--color-measure);
+  fill-opacity: 0.22;
+  transform-box: fill-box;
+  transform-origin: 0 50%;
+}
+.mc-t {
+  fill: var(--color-graphite-2);
+  font-family: var(--font-mono);
+  font-size: 8px;
+}
+.mc-sav {
+  fill: var(--color-measure);
+}
+
+/* Programming Techniques: a laptop, aluminium over a dark screen */
+.xp-lap > .top {
+  background:
+    linear-gradient(#aeb3b8, #aeb3b8) 50% 76% / 38% 22% no-repeat,
+    repeating-linear-gradient(90deg, #8d9297 0 1px, transparent 1px 5px) 50% 24% / 88% 38% no-repeat,
+    #cfd3d6;
+}
+.xp-lap > .front {
+  background: #9ea3a8;
+}
+.xp-lap > .right {
+  background: #82878c;
+}
+.lp-hinge {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 3px;
+  transform-style: preserve-3d;
+  transform-origin: 50% 0;
+  transform: rotateX(12deg);
+}
+.xp-scr > .top {
+  background: #2c2e33;
+}
+.xp-scr > .front {
+  background: var(--color-sheet);
+  box-shadow: inset 0 0 0 3px #2c2e33;
+}
+.xp-scr > .right {
+  background: #2c2e33;
+}
+.xp-scr svg {
+  display: block;
+}
+.un-box rect {
+  fill: var(--color-sheet);
+  stroke: var(--color-graphite);
+  stroke-width: 1;
+}
+.un-box text {
+  fill: var(--color-graphite);
+  font-family: var(--font-mono);
+  font-size: 6.6px;
+}
+.un-inh,
+.un-ptr {
+  fill: none;
+  stroke: var(--color-graphite);
+  stroke-width: 1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.un-tri {
+  fill: var(--color-sheet);
+  stroke: var(--color-graphite);
+  stroke-width: 1;
+  stroke-linejoin: round;
+}
+.un-ptr {
+  stroke: var(--color-signal);
+}
+
+/* RP3: a printer's frame, a bed, a gantry and head, and the part's layers */
+.xp-frame > .top {
+  background: #6c7176;
+}
+.xp-frame > .front {
+  background: #52575c;
+}
+.xp-frame > .right {
+  background: #41454a;
+}
+.xp-bed > .top {
+  background: #cfd3d6;
+}
+.xp-bed > .front {
+  background: #aeb3b8;
+}
+.xp-bed > .right {
+  background: #959aa0;
+}
+.xp-head > .top {
+  background: #8d9297;
+}
+.xp-head > .front {
+  background: #6c7176;
+}
+.xp-head > .right {
+  background: #52575c;
+}
+.xp-nozzle > .top,
+.xp-nozzle > .front,
+.xp-nozzle > .right {
+  background: #3a3d41;
+}
+.xp-part > .top {
+  background: #b9c4c9;
+}
+.xp-part > .front {
+  background: #8fa0a8;
+}
+.xp-part > .right {
+  background: #77888f;
+}
+.xp-part > .top svg {
+  display: block;
+}
+.pr-fill {
+  fill: none;
+  stroke: #5b6a71;
+  stroke-width: 0.9;
+}
+.pr-layer,
+.pr-pop,
+.pr-gantry,
+.pr-head,
+.pr-noz {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+}
+.pr-gantry {
+  transform: translateZ(34px); /* where the gantry ends: the nozzle just above the last layer */
+}
+.pr-head {
+  transform: translateZ(-8px);
+}
+.pr-noz {
+  transform: translateZ(-4px);
+}
+
+/* ---------- below 768px: no horizontal timeline ----------
+ * Each experience stands on its own, in order: its object, a small bar showing its period against a short
+ * 2025-to-now scale, then its title, dates, role and summary. The object is scaled (--s2) about its
+ * bottom-left corner, and the box reserves the height it takes (--tot, its drawn height). */
+@media (max-width: 767px) {
+  .xp-row {
+    --s2: 1.1;
+    gap: 0.75rem;
+    padding-block: 2rem;
+  }
+  .xp-track {
+    display: contents;
+  }
+  .xp-obj {
+    order: 1;
+    position: relative;
+    display: block;
+    width: var(--bw);
+    height: var(--bh);
+    margin-top: calc(var(--tot) * var(--s2) - var(--bh));
+    scale: var(--s2);
+    transform-origin: 0 100%;
+  }
+  .xp-mini {
+    order: 2;
+    position: relative;
+    display: block;
+    height: 36px;
+    margin-top: 0.5rem;
+  }
+  .xp-label {
+    order: 3;
+  }
+  .xp-row .xp-title {
+    font-size: var(--text-h3);
+    line-height: var(--text-h3--line-height);
+  }
+  .xp-detail {
+    order: 4;
+  }
+  /* the scale: a hairline from 2025.01 to the end of the current month, ticks at the years and at "now" */
+  .xp-mini-line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 4px;
+    height: 1px;
+    background: var(--color-graphite);
+  }
+  .xp-mini-tick {
+    position: absolute;
+    bottom: 4px;
+    width: 1px;
+    height: 7px;
+    background: var(--color-graphite);
+  }
+  .xp-mini-label {
+    position: absolute;
+    bottom: 14px;
+  }
+  .xp-mini-bar {
+    position: absolute;
+    left: var(--a);
+    width: calc(var(--b) - var(--a));
+    bottom: 1px;
+    height: 6px;
+    background: var(--color-graphite);
+  }
+  .xp-mini-open {
+    position: absolute;
+    left: var(--b);
+    bottom: -3px;
+    fill: none;
+    stroke: var(--color-graphite);
+    stroke-width: 1;
+    transform: translateX(-11px);
+  }
 }
 
 @media (min-width: 768px) {
@@ -185,336 +596,6 @@
     height: var(--bh);
     scale: calc(var(--k) * var(--s));
     transform-origin: 0 100%;
-  }
-  .xp-scene {
-    position: absolute;
-    inset: 0;
-    perspective: 1600px;
-    perspective-origin: 50% 50%;
-  }
-  /* the plane the object stands on: tilted back and turned clockwise (so right faces show), as the
-   * bench's mat; --fw by --fd is the object's footprint, centred in the object's box */
-  .xp-plane {
-    position: absolute;
-    left: calc((var(--bw) - var(--fw)) / 2);
-    top: calc((var(--bh) - var(--fd)) / 2);
-    width: var(--fw);
-    height: var(--fd);
-    transform-style: preserve-3d;
-    transform: rotateX(55deg) rotateZ(32deg);
-  }
-  .xp-lift {
-    position: absolute;
-    inset: 0;
-    transform-style: preserve-3d;
-  }
-
-  /* the Cub helper's faces (the bench's block, scoped to this section) */
-  .xp-obj .cub {
-    position: absolute;
-    transform-style: preserve-3d;
-  }
-  .xp-obj .cub > .top {
-    position: absolute;
-    inset: 0;
-    transform-style: preserve-3d;
-  }
-  .xp-obj .cub > .front {
-    position: absolute;
-    left: 0;
-    right: 0;
-    transform-origin: 50% 0;
-  }
-  .xp-obj .cub > .right {
-    position: absolute;
-    top: 0;
-    transform-origin: 0 0;
-  }
-
-  /* ---------- materials: muted, the bench's greys and wood; no logos ---------- */
-  .xp-turn {
-    transform: rotateZ(-20deg); /* a face that carries a drawing is turned to face the viewer */
-  }
-  .xp-wood > .top {
-    background: #b79a72;
-  }
-  .xp-wood > .front {
-    background: #8f7550;
-  }
-  .xp-wood > .right {
-    background: #7a6342;
-  }
-
-  /* Calculus II: the board's face is chalk on slate, in a wooden frame */
-  .xp-board > .top {
-    background: #8f7550;
-  }
-  .xp-board > .front {
-    background: #34423c;
-    box-shadow: inset 0 0 0 3px #8f7550;
-  }
-  .xp-board > .right {
-    background: #7a6342;
-  }
-  .xp-board svg {
-    display: block;
-    padding: 0;
-    overflow: visible;
-  }
-  .ch-base,
-  .ch-curve,
-  .ch-int {
-    fill: none;
-    stroke: #e6e9e3;
-    stroke-width: 1.4;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-  }
-  .ch-base {
-    stroke-opacity: 0.55;
-    stroke-width: 1;
-  }
-  .ch-area {
-    fill: #e6e9e3;
-    fill-opacity: 0.28;
-    transform-box: fill-box;
-    transform-origin: 50% 100%;
-  }
-
-  /* ELETRON: a wall meter, its display and terminals on the face */
-  .xp-meter > .top {
-    background: #cfd3d6;
-  }
-  .xp-meter > .front {
-    background: #b3b8bc;
-  }
-  .xp-meter > .right {
-    background: #82878c;
-  }
-  .mt-face {
-    position: absolute;
-    inset: 0;
-  }
-  .mt-lcd {
-    position: absolute;
-    left: 6px;
-    right: 6px;
-    top: 7px;
-    height: 17px;
-    display: flex;
-    align-items: baseline;
-    justify-content: flex-end;
-    gap: 2px;
-    padding: 5px 3px 0;
-    background: #2a3a30;
-    color: #b9d6b2;
-    font-family: var(--font-mono);
-    box-shadow: 0 0 0 1.5px #6c7176;
-  }
-  .mt-lcd b {
-    font-size: 9px;
-    font-weight: 400;
-  }
-  .mt-lcd i {
-    font-size: 5px;
-    font-style: normal;
-  }
-  .mt-dial {
-    position: absolute;
-    left: 15px;
-    top: 28px;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background: #e3e6e8;
-    box-shadow: inset 0 0 0 1.5px #6c7176;
-  }
-  .mt-terms {
-    position: absolute;
-    left: 8px;
-    right: 8px;
-    bottom: 3px;
-    display: flex;
-    justify-content: space-between;
-  }
-  .mt-terms u {
-    width: 8px;
-    height: 4px;
-    background: #6c7176;
-  }
-  /* the chart beside it: a flat 2D drawing in the site's line style */
-  .mt-chart {
-    position: absolute;
-    left: calc(var(--bw) + 14px);
-    bottom: 0;
-    width: 160px;
-    height: 84px;
-    overflow: visible;
-  }
-  .mc-axis,
-  .mc-before,
-  .mc-after {
-    fill: none;
-    stroke-width: 1.2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-  }
-  .mc-axis {
-    stroke: var(--color-graphite-2);
-    stroke-width: 1;
-  }
-  .mc-before {
-    stroke: var(--color-graphite-2);
-  }
-  .mc-after {
-    stroke: var(--color-measure);
-    stroke-width: 1.6;
-  }
-  .mc-gap {
-    fill: var(--color-measure);
-    fill-opacity: 0.22;
-    transform-box: fill-box;
-    transform-origin: 0 50%;
-  }
-  .mc-t {
-    fill: var(--color-graphite-2);
-    font-family: var(--font-mono);
-    font-size: 8px;
-  }
-  .mc-sav {
-    fill: var(--color-measure);
-  }
-
-  /* Programming Techniques: a laptop, aluminium over a dark screen */
-  .xp-lap > .top {
-    background:
-      linear-gradient(#aeb3b8, #aeb3b8) 50% 76% / 38% 22% no-repeat,
-      repeating-linear-gradient(90deg, #8d9297 0 1px, transparent 1px 5px) 50% 24% / 88% 38% no-repeat,
-      #cfd3d6;
-  }
-  .xp-lap > .front {
-    background: #9ea3a8;
-  }
-  .xp-lap > .right {
-    background: #82878c;
-  }
-  .lp-hinge {
-    position: absolute;
-    left: 0;
-    top: 0;
-    height: 3px;
-    transform-style: preserve-3d;
-    transform-origin: 50% 0;
-    transform: rotateX(12deg);
-  }
-  .xp-scr > .top {
-    background: #2c2e33;
-  }
-  .xp-scr > .front {
-    background: var(--color-sheet);
-    box-shadow: inset 0 0 0 3px #2c2e33;
-  }
-  .xp-scr > .right {
-    background: #2c2e33;
-  }
-  .xp-scr svg {
-    display: block;
-  }
-  .un-box rect {
-    fill: var(--color-sheet);
-    stroke: var(--color-graphite);
-    stroke-width: 1;
-  }
-  .un-box text {
-    fill: var(--color-graphite);
-    font-family: var(--font-mono);
-    font-size: 6.6px;
-  }
-  .un-inh,
-  .un-ptr {
-    fill: none;
-    stroke: var(--color-graphite);
-    stroke-width: 1;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-  }
-  .un-tri {
-    fill: var(--color-sheet);
-    stroke: var(--color-graphite);
-    stroke-width: 1;
-    stroke-linejoin: round;
-  }
-  .un-ptr {
-    stroke: var(--color-signal);
-  }
-
-  /* RP3: a printer's frame, a bed, a gantry and head, and the part's layers */
-  .xp-frame > .top {
-    background: #6c7176;
-  }
-  .xp-frame > .front {
-    background: #52575c;
-  }
-  .xp-frame > .right {
-    background: #41454a;
-  }
-  .xp-bed > .top {
-    background: #cfd3d6;
-  }
-  .xp-bed > .front {
-    background: #aeb3b8;
-  }
-  .xp-bed > .right {
-    background: #959aa0;
-  }
-  .xp-head > .top {
-    background: #8d9297;
-  }
-  .xp-head > .front {
-    background: #6c7176;
-  }
-  .xp-head > .right {
-    background: #52575c;
-  }
-  .xp-nozzle > .top,
-  .xp-nozzle > .front,
-  .xp-nozzle > .right {
-    background: #3a3d41;
-  }
-  .xp-part > .top {
-    background: #b9c4c9;
-  }
-  .xp-part > .front {
-    background: #8fa0a8;
-  }
-  .xp-part > .right {
-    background: #77888f;
-  }
-  .xp-part > .top svg {
-    display: block;
-  }
-  .pr-fill {
-    fill: none;
-    stroke: #5b6a71;
-    stroke-width: 0.9;
-  }
-  .pr-layer,
-  .pr-pop,
-  .pr-gantry,
-  .pr-head,
-  .pr-noz {
-    position: absolute;
-    inset: 0;
-    transform-style: preserve-3d;
-  }
-  .pr-gantry {
-    transform: translateZ(34px); /* where the gantry ends: the nozzle just above the last layer */
-  }
-  .pr-head {
-    transform: translateZ(-8px);
-  }
-  .pr-noz {
-    transform: translateZ(-4px);
   }
 }
 @media (min-width: 810px) {

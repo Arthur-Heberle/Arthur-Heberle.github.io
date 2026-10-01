@@ -346,6 +346,7 @@ export function initTimeline(root: HTMLElement) {
     const obj = row.querySelector<HTMLElement>('.xp-obj')!
     const action = ACTIONS[obj.dataset.obj ?? '']?.(obj)
     let running = false
+    let played = false
     return {
       row,
       bar: row.querySelector<HTMLElement>('.xp-bar')!,
@@ -357,8 +358,15 @@ export function initTimeline(root: HTMLElement) {
       play: (fresh = false) => {
         if (!action || running || reduced) return
         running = true
+        played = true
         if (!fresh) action.reset()
         action.run().eventCallback('onComplete', () => (running = false))
+      },
+      // an action still waiting at its start state goes straight to its final state
+      settle: () => {
+        if (!action || played || running) return
+        played = true
+        action.run().progress(1, false)
       },
     }
   })
@@ -368,6 +376,25 @@ export function initTimeline(root: HTMLElement) {
   initDetails(root, rows, reduced, {
     onOpen: (row) => arrived && parts.find((p) => p.row === row)?.play(),
   })
+
+  // below 768px: no timeline. Each object waits at its start state, and its action plays once as it
+  // scrolls into view. Widening the window past 768px leaves unplayed objects on their final state.
+  if (!reduced && !wide.matches) {
+    parts.forEach((p) => {
+      p.action?.reset()
+      const seen = new IntersectionObserver(
+        ([entry]) => {
+          if (!entry.isIntersecting) return
+          seen.disconnect()
+          p.play(true)
+        },
+        { threshold: 0.6 },
+      )
+      seen.observe(p.row.querySelector('.xp-obj')!)
+    })
+    wide.addEventListener('change', () => wide.matches && parts.forEach((p) => p.settle()))
+    return
+  }
 
   const axisLine = root.querySelector<HTMLElement>('.xp-axis-line')
   const ticks = [...root.querySelectorAll<HTMLElement>('.xp-tick')]
