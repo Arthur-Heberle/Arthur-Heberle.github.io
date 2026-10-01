@@ -54,6 +54,11 @@ html:not(.js) .hstory .fit {
   stroke: var(--st-pin);
   stroke-width: 4;
 }
+/* the flow's step numbers, one beside each group, the captions' own 1 to 4 */
+.hstory .stepn {
+  fill: var(--color-graphite);
+  font-weight: 500;
+}
 .hstory .hull {
   fill: none;
   stroke: var(--color-line);

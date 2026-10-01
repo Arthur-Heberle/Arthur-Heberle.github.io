@@ -10,6 +10,8 @@
 // (render(1) in story.ts), so it reads without JavaScript and is already the picture reduced
 // motion and the static layout show. The product map, the nearest-neighbour ranking and every
 // position below are computed here once, so story.ts only reads them.
+import { P, poly, arrow, fmtPts } from './flow'
+import type { Pt } from './flow'
 const CAPTIONS = [
   { n: 1, title: 'Wait', text: 'Customers send three short messages instead of one. The agent waits until they stop typing, so it answers once.' },
   { n: 2, title: 'Find', text: 'The question becomes a point on a map of the catalogue. The closest products win, even with a typo.' },
@@ -41,7 +43,6 @@ const SLOTS = [
 ]
 const NUMS_Y = 58
 const NUMS = '0.12  -0.48  0.07  ...  1,536 numbers'
-const NUMS_END = { x: QX + 7.8 * NUMS.length + 10, y: NUMS_Y - 4 }
 
 // ---- the map of the catalogue: names from catalogo_moveis.csv, in English ----
 const MAP = { x: 392, y: 78, w: 366, h: 296 }
@@ -92,6 +93,22 @@ const ROW_M = [268, 288, 308] // message chips
 const chipW = (t: string, em = 7.2) => +(t.length * em + 12).toFixed(1)
 const rect = (r: { x: number; y: number; w: number; h: number }) => `M${r.x} ${r.y}H${r.x + r.w}V${r.y + r.h}H${r.x}Z`
 
+// ---- the flow: wires between the parts, in the order the captions tell it ----
+// The phone's own ends (its right edge, the stamp) are measured by story.ts from the 3D phone; these
+// resting values are what shows with no JavaScript, and they sit under the phone anyway.
+const PHONE_R = 184
+const STAMP_AT = P(100, 380)
+const LANE = 446
+const WIRES: Pt[][] = [
+  [P(PHONE_R - 2, RING.y), P(RING.x - RING.r - 5, RING.y)], // the phone to the silence timer
+  [P(RING.x + RING.r + 5, RING.y), P(344, RING.y), P(344, QY - 5), P(QX - 9, QY - 5)], // the timer to the query line
+  [P(379, QY + 6), P(379, Q.y), P(Q.x - 9, Q.y)], // the query to its point on the map
+  [P(MAP.x, 252), P(CARD.x + CARD.w + 1, 252)], // the map to the prompt card
+  [P(CX, CARD.y + CARD.h), P(CX, MODEL.y - 1)], // the prompt card to the language model
+  [P(MODEL.x, MODEL.y + MODEL.h / 2), P(PHONE_R - 2, MODEL.y + MODEL.h / 2)], // the reply, back to the phone
+  [STAMP_AT, P(STAMP_AT.x, LANE), P(392, LANE)], // the phone to the leads board
+]
+
 // ---- the owner's dashboard (the product's own gold and dark, #C9A84C and #1E1C19) ----
 const DASH = { x: 392, y: 394, w: 366, h: 160 }
 const SIDE = 70
@@ -137,10 +154,24 @@ const LEAD_LINES = ['Wants a 3-seat', 'leather sofa.']
       <div class="canvas" role="img" aria-label={LABEL}>
         <!-- 2D, under the phone: the timer, the query, the map, the prompt, the model, the dashboard -->
         <svg class="layer" id="hs-base" viewBox="0 0 760 560" width="760" height="560" aria-hidden="true" focusable="false">
+          <!-- the flow: the phone, the timer, the query, the map, the prompt, the model, back to the phone,
+               then the leads board. story.ts draws each wire in as its part appears and re-points the
+               phone's ends at the 3D phone; the points are also the path the pulses and dots travel. -->
+          <g id="hs-wires">
+            {
+              WIRES.map((pts, i) => (
+                <>
+                  <path class="ln wire" data-w={i} data-pts={fmtPts(pts)} d={poly(pts)}></path>
+                  <path class="ln warrow" data-w={i} d={arrow(pts)}></path>
+                </>
+              ))
+            }
+          </g>
           <!-- 1 Wait: the silence timer next to the phone -->
           <g id="hs-ring">
             <circle class="ln" cx={RING.x} cy={RING.y} r={RING.r}></circle>
             <circle id="hs-arc" class="arc" cx={RING.x} cy={RING.y} r={RING.r} transform={`rotate(-90 ${RING.x} ${RING.y})`} stroke-dasharray={CIRC} stroke-dashoffset="0"></circle>
+            <text class="mono s13 stepn" x={RING.x - RING.r} y={RING.y - RING.r - 6}>1</text>
             <text id="hs-ringtxt" class="mono s15 mid" x={RING.x} y={RING.y + 5}>30 s</text>
             <text class="mono s12 dim mid" x={RING.x} y={RING.y + RING.r + 20}>silence timer</text>
           </g>
@@ -156,6 +187,7 @@ const LEAD_LINES = ['Wants a 3-seat', 'leather sofa.']
 
           <!-- the catalogue as a map -->
           <path id="hs-frame" class="ln" d={rect(MAP)}></path>
+          <text class="mono s13 stepn hs-stepn" x={MAP.x} y={MAP.y - 6}>2</text>
           <text class="mono s12 dim hs-fade" x={MAP.x + 8} y={MAP.y + 18}>the catalogue, as a map</text>
           <g class="hs-fade" id="hs-hulls">
             {HULLS.map((h) => <path class="hull" d={hull(h)}></path>)}
@@ -190,6 +222,7 @@ const LEAD_LINES = ['Wants a 3-seat', 'leather sofa.']
           <circle id="hs-qdot" cx={Q.x} cy={Q.y} r="6" class="fill-pin"></circle>
 
           <!-- 3 Answer: the prompt card, and the language model -->
+          <text class="mono s13 stepn hs-stepn" x={CARD.x} y={CARD.y - 6}>3</text>
           <g id="hs-card">
             <path class="paper" d={rect(CARD)}></path>
             <path id="hs-cardframe" class="ln" d={rect(CARD)}></path>
@@ -207,6 +240,7 @@ const LEAD_LINES = ['Wants a 3-seat', 'leather sofa.']
           </g>
 
           <!-- 4 Hand off: the owner's dashboard -->
+          <text class="mono s13 stepn hs-stepn" x={DASH.x} y={DASH.y - 6}>4</text>
           <g id="hs-dash">
             <path class="paper" d={rect(DASH)}></path>
             <path id="hs-dashframe" class="ln" d={rect(DASH)}></path>
@@ -279,6 +313,8 @@ const LEAD_LINES = ['Wants a 3-seat', 'leather sofa.']
             <text class="mono s12 chip mid" y="4">prompt</text>
           </g>
           <circle id="hs-dot" class="fill-pin" r="5" opacity="0"></circle>
+          <!-- data pulses, one on each of three wires (the query dot, the prompt, the reply and the lead are the others) -->
+          {[0, 1, 3].map((w) => <circle class="fill-pin pulse" data-w={w} r="5" opacity="0"></circle>)}
 
           <!-- the lead, landed in the dashboard's "New" column: the product's gold with its dark -->
           <g id="hs-lead" transform={`translate(${LEAD.x} ${LEAD.y})`}>

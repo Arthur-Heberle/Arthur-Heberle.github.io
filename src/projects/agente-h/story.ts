@@ -8,6 +8,8 @@
 //
 // Scenes, as fractions of p (the brief): Wait 0-.30, Find .30-.58, Answer .58-.82, Hand off .82-1.
 import { gsap } from 'gsap'
+import { arrow, parsePts, poly } from './flow'
+import type { Pt } from './flow'
 
 const W = 760
 const H = 560
@@ -68,6 +70,26 @@ const STAMP: Range = [0.83, 0.87]
 const DASH: Range = [0.84, 0.9]
 const LEAD: Range = [0.88, 0.97]
 
+// The wires draw in as their part appears (stroke-dashoffset, left on once drawn), the data pulses
+// travel them, and each step number fades in with its scene. Order is the flow's: the phone to the
+// timer, the timer to the query, the query to the map, the map to the prompt, the prompt to the model,
+// the reply back to the phone, the phone to the leads board.
+const WIRE_AT: Range[] = [
+  [0.005, 0.03],
+  [0.225, 0.255],
+  [0.29, 0.33],
+  [0.575, 0.595],
+  [0.69, 0.715],
+  [0.74, 0.77],
+  [0.82, 0.87],
+]
+const PULSE_AT: Record<number, Range[]> = {
+  0: MSG_AT.map((m) => [m + 0.008, m + 0.03] as Range), // each message goes from the phone to the timer
+  1: [[0.255, 0.29]], // the full timer lets the query through
+  3: [[0.595, 0.63]], // the closest products go to the prompt
+}
+const STEPN_AT: Range[] = [T.frame, [0.58, 0.62], DASH]
+
 const SCENES: Range[] = [
   [0.0, 0.3],
   [0.3, 0.58],
@@ -103,6 +125,10 @@ interface Story {
   lens: number[]
   prods: { g: SVGElement; rank: number; hi: SVGElement[]; word: SVGElement | null; pt: Pt }[]
   nl: { el: SVGGeometryElement; len: number; rank: number; hi: boolean }[]
+  wires: { el: SVGGeometryElement; arrow: SVGElement; pts: Pt[]; len: number }[]
+  pulses: { el: SVGElement; w: number }[]
+  stepn: SVGElement[]
+  lane: number // the y the lead card travels along, under the phone
   qdot: SVGElement
   chipA: SVGElement[]
   chipP: SVGElement[]
@@ -116,13 +142,11 @@ interface Story {
   lead: SVGElement
   leadEnd: Pt
   slots: Pt[]
-  numsEnd: Pt
   qAt: Pt
   // measured at rest, in canvas px
   bubC: Pt[]
   replyC: Pt
   stampC: Pt
-  modelL: Pt
   caps: HTMLElement[]
   ticks: HTMLElement[]
   tickBtns: HTMLButtonElement[]
@@ -192,6 +216,15 @@ function grab(): Story | null {
     lens: [],
     prods,
     nl: $$<SVGGeometryElement>('.nl').map((el) => ({ el, len: 1, rank: +el.dataset.rank!, hi: el.classList.contains('hi') })),
+    wires: $$<SVGGeometryElement>('.wire').map((el) => ({
+      el,
+      arrow: $<SVGElement>(`.warrow[data-w="${el.dataset.w}"]`),
+      pts: parsePts(el.dataset.pts!),
+      len: 1,
+    })),
+    pulses: $$<SVGElement>('.pulse').map((el) => ({ el, w: +el.dataset.w! })),
+    stepn: $$<SVGElement>('.hs-stepn'),
+    lane: 446,
     qdot: $('#hs-qdot'),
     chipA: $$<SVGElement>('.chipA'),
     chipP,
@@ -205,12 +238,10 @@ function grab(): Story | null {
     lead: $('#hs-lead'),
     leadEnd: translateOf($('#hs-lead')),
     slots: $$<SVGElement>('.chipA').map(translateOf),
-    numsEnd: { x: num($('#hs-nums'), 'x') + 7.8 * $('#hs-nums').textContent!.length + 10, y: num($('#hs-nums'), 'y') - 4 },
     qAt: { x: num($('#hs-qdot'), 'cx'), y: num($('#hs-qdot'), 'cy') },
     bubC: [],
     replyC: { x: 0, y: 0 },
     stampC: { x: 0, y: 0 },
-    modelL: { x: mb.x, y: mb.y + mb.height / 2 },
     caps: $$<HTMLElement>('.cap'),
     ticks: $$<HTMLElement>('.ticks u'),
     tickBtns: $$<HTMLButtonElement>('.ticks button'),
@@ -292,7 +323,8 @@ function render(p: number) {
   s.prods.forEach((pr, i) => op(pr.g, ease(seg(p, 0.32 + i * 0.004, 0.35 + i * 0.004))))
   op(s.nums, seg(p, ...T.nums) * (1 - seg(p, ...T.numsOut)))
   const dt = inout(seg(p, ...T.dot))
-  s.qdot.setAttribute('transform', `translate(${lerp(s.numsEnd.x - s.qAt.x, 0, dt)} ${lerp(s.numsEnd.y - s.qAt.y, 0, dt)})`)
+  const qp = along([...s.wires[2].pts, s.qAt], dt) // the dot leaves the query line and follows its wire to the map
+  s.qdot.setAttribute('transform', `translate(${qp.x - s.qAt.x} ${qp.y - s.qAt.y})`)
   op(s.qdot, seg(p, T.dot[0], T.dot[0] + 0.005))
   s.nl.forEach((n) => {
     const t = n.hi ? ease(seg(p, ...T.top)) : ease(seg(p, T.lines + n.rank * 0.004, T.lines + n.rank * 0.004 + 0.02))
@@ -326,7 +358,7 @@ function render(p: number) {
   op(s.mini, seg(p, MINI[0], MINI[0] + 0.008) * (1 - seg(p, MINI[1] - 0.012, MINI[1])))
   op(s.modelHi, Math.sin(Math.PI * seg(p, ...THINK))) // the model works: its outline pulses once
   const rd = seg(p, ...REPLY_DOT)
-  const rp = along([s.modelL, { x: s.modelL.x - 14, y: s.modelL.y }, s.replyC], inout(rd))
+  const rp = along([...s.wires[5].pts, s.replyC], inout(rd)) // back along its wire, then over the phone to the reply
   at(s.dot, rp.x, rp.y)
   op(s.dot, rd > 0 && rd < 1 ? 1 : 0)
   const ra = ease(seg(p, ...REPLY))
@@ -338,13 +370,23 @@ function render(p: number) {
   s.stamp.style.opacity = String(seg(p, STAMP[0], STAMP[0] + 0.012))
   s.stamp.style.transform = `translateX(-50%) rotate(-8deg) scale(${lerp(1.7, 1, st)})`
   const lt = inout(seg(p, ...LEAD))
-  const lane = Math.max(s.stampC.y, 440) + 6
-  const lp = along(
-    [s.stampC, { x: s.stampC.x, y: lane }, { x: s.leadEnd.x, y: lane }, s.leadEnd],
-    lt,
-  )
+  const lp = along([...s.wires[6].pts, { x: s.leadEnd.x, y: s.lane }, s.leadEnd], lt) // out under the phone and along its wire
   at(s.lead, lp.x, lp.y, ` scale(${lerp(0.7, 1, ease(seg(p, LEAD[0], LEAD[0] + 0.03)))})`)
   op(s.lead, seg(p, LEAD[0], LEAD[0] + 0.012))
+
+  // the flow: the wires draw in, the pulses run along them, the step numbers arrive with their scene
+  s.wires.forEach((w, i) => {
+    w.el.style.strokeDashoffset = String(w.len * (1 - ease(seg(p, ...WIRE_AT[i]))))
+    op(w.arrow, seg(p, WIRE_AT[i][1] - 0.012, WIRE_AT[i][1]))
+  })
+  s.pulses.forEach(({ el, w }) => {
+    const r = PULSE_AT[w].find(([a, b]) => p >= a && p < b)
+    if (!r) return op(el, 0)
+    const q = along(s.wires[w].pts, inout(seg(p, ...r)))
+    at(el, q.x, q.y)
+    op(el, 1)
+  })
+  s.stepn.forEach((el, i) => op(el, seg(p, ...STEPN_AT[i])))
 
   // captions and step ticks (static layout: every caption is on the page, nothing to drive)
   if (s.live) {
@@ -445,6 +487,20 @@ function wire() {
   s.bubC = s.bub.map(centre)
   s.replyC = centre(s.reply)
   s.stampC = centre(s.stamp)
+  // the three wires that end on the phone: its right edge (a little inside, so the line tucks under
+  // the body) and the stamp, from which the lead leaves downward under it
+  const pf = s.phone.querySelector('.pf')!.getBoundingClientRect()
+  const edge = (pf.right - c.left) / s.k - 2
+  s.lane = Math.max(s.stampC.y, 440) + 6
+  const [w1, , , , , w6, w7] = s.wires
+  w1.pts[0].x = edge
+  w6.pts[1].x = edge
+  w7.pts = [s.stampC, { x: s.stampC.x, y: s.lane }, { x: w7.pts[2].x, y: s.lane }]
+  s.wires.forEach((w) => {
+    w.el.setAttribute('d', poly(w.pts))
+    w.arrow.setAttribute('d', arrow(w.pts))
+    w.len = measure(w.el)
+  })
   render(keep) // puts everything back to where the story has it
 }
 

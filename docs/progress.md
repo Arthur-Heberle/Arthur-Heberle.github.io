@@ -74,6 +74,7 @@ are chosen.
 |---|---|---|---|
 | 1 | Accessibility, and make it a rule | done | **Nothing to fix: both pages were already clean.** AX tree (CDP `Accessibility.getFullAXTree`, headless Chromium, not Brave) at 1280 and 375, JS on / reduced motion / JS off: every text node inside `.canvas` (EduBra 17, Agente H 39) checked for an exact match in the tree, none found; no duplicate text; the drawing is one `image` node with the section description. Rule added to CLAUDE.md Hard rules. EduBra's reduced-motion callout buttons ("Audio jack: ...") are real controls, not drawing text, and were left |
 | 2 | Copy | done | first "What's next" item replaced verbatim in `src/content/archive/agente-h.md`; checked in the built page |
+| 3 | Show the flow | done | seven wires in `#hs-base` (new `flow.ts` holds the point lists, shared by the markup and `story.ts`): phone, timer, query line, map, prompt card, model, back to the phone, leads board; each draws in by `stroke-dashoffset` as its part appears and ends in a small chevron. Step numbers 1 to 4 (mono) at the timer, map, card and dashboard. Pulses: one per message on phone-to-timer, timer-to-query, map-to-card; the query dot, the reply dot and the lead card now follow their wires instead of straight lines. The three phone ends are measured from the 3D phone in `wire()`. Final state and reduced motion show every wire. A first run broke the story (`$$` collapsed by `String.replace` in an edit script), caught by the page's own error and fixed |
 
 ---
 
