@@ -3,7 +3,7 @@
 // (docs/motion-spec.md) — defined once here, reused for both the visible rows and the
 // ones inside "show all".
 import type { CollectionEntry } from 'astro:content'
-import Fill from '../../shared/components/Fill.astro'
+import { isFilled } from '../../shared/fill'
 import { hasProjectPage, projectPageHref } from '../../projects/projects'
 
 interface Props {
@@ -12,8 +12,8 @@ interface Props {
 const { entry } = Astro.props
 const { date, title, role, tags, links, blurb, wip } = entry.data
 // "2026-07" displays as "2026.07" (design-spec.md §7); an unresolved [FILL] date is
-// left as-is for Fill to render as a drafting annotation.
-const displayDate = date.includes('[FILL') ? date : date.replace('-', '.')
+// omitted from the row (src/shared/fill.ts).
+const displayDate = isFilled(date) ? date.replace('-', '.') : null
 const hasLinks = Boolean(links.repo || links.live || links.pdf)
 // Step 13: the only entry point to a project page. hasProjectPage() reads the one list
 // src/pages/projects/[slug].astro's getStaticPaths() also reads, so a linked title can
@@ -22,9 +22,7 @@ const projectHref = hasProjectPage(entry.id) ? projectPageHref(entry.id) : null
 ---
 
 <li class="archive-row bg-sheet px-6" data-tags={tags.join(' ')}>
-  <p class="text-dimension font-mono text-graphite-2">
-    <Fill value={displayDate} />
-  </p>
+  <p class="text-dimension font-mono text-graphite-2">{displayDate}</p>
   <div class="flex flex-col gap-2">
     <h3 class="text-h3 font-sans font-medium">
       {projectHref ? (
@@ -36,7 +34,7 @@ const projectHref = hasProjectPage(entry.id) ? projectPageHref(entry.id) : null
       )}
     </h3>
     <p class="flex flex-wrap gap-x-gutter gap-y-1 text-small text-graphite-2">
-      <span><Fill value={role} /></span>
+      {isFilled(role) && <span>{role}</span>}
       <span>{tags.join(', ')}</span>
       {
         wip && (

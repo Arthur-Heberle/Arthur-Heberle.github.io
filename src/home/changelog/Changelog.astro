@@ -3,7 +3,6 @@
 // Today there are only two entries, so no "show all" control renders at all — nothing
 // to hide yet.
 import { getCollection } from 'astro:content'
-import Fill from '../../shared/components/Fill.astro'
 import Tick from '../../shared/components/Tick.astro'
 
 const entries = await getCollection('changelog')
@@ -22,7 +21,7 @@ const rest = sorted.slice(VISIBLE)
       visible.map((entry) => (
         <li class="flex flex-wrap gap-x-gutter gap-y-1 text-small">
           <span class="font-mono text-dimension text-graphite-2">{entry.data.date.replace(/-/g, '.')}</span>
-          <Fill value={entry.data.note} />
+          {entry.data.note}
         </li>
       ))
     }
@@ -35,7 +34,7 @@ const rest = sorted.slice(VISIBLE)
           {rest.map((entry) => (
             <li class="flex flex-wrap gap-x-gutter gap-y-1 text-small">
               <span class="font-mono text-dimension text-graphite-2">{entry.data.date.replace(/-/g, '.')}</span>
-              <Fill value={entry.data.note} />
+              {entry.data.note}
             </li>
           ))}
         </ul>

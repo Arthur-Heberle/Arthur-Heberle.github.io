@@ -63,14 +63,3 @@ body {
 .feedback:focus-visible {
   opacity: 0.7;
 }
-
-/* A resolved value renders as itself. An unresolved `[FILL]` marker renders as a
- * drafting annotation — mono, small, secondary — so a gap in the content looks like an
- * unresolved dimension on a technical drawing rather than a broken page. */
-.fill {
-  font-family: var(--font-mono);
-  font-size: var(--text-dimension);
-  letter-spacing: var(--text-dimension--letter-spacing);
-  color: var(--color-graphite-2);
-}
-

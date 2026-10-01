@@ -15,9 +15,8 @@
 // builds a page for an id in PROJECT_PAGES, and giving an entry a page without giving it
 // `project` data is a content mistake, not a state to degrade gracefully from (same
 // stance as braille.ts throwing on an unmapped letter). An unresolved [FILL] value inside
-// `project` still renders correctly — Fill.astro's policy is unchanged.
+// `project` is shown as written, so the post-build check (scripts/check-fill.mjs) fails the build.
 import type { CollectionEntry } from 'astro:content'
-import Fill from '../shared/components/Fill.astro'
 import { getCollection } from 'astro:content'
 import OriginLink from './OriginLink.astro'
 import TitleBlock from './TitleBlock.astro'
@@ -65,7 +64,7 @@ const next =
         // the home page's rail: prose, gutter (where the leader is drawn), margin
         <div class="rail" data-anim-scope>
           <p class="rail-prose text-body" data-anim data-delay="0.06">
-            <Fill value={project.what} />
+            {project.what}
           </p>
           <div class="rail-margin flex flex-col">
             <MarginNote>{project.note}</MarginNote>
@@ -73,7 +72,7 @@ const next =
         </div>
       ) : (
         <p class="measure text-body" data-anim data-delay="0.06">
-          <Fill value={project.what} />
+          {project.what}
         </p>
       )
     }
@@ -102,7 +101,7 @@ const next =
         </h2>
         {project.built.map((text, i) => (
           <p class="measure text-body" data-anim data-delay={i === 0 ? '0.06' : undefined}>
-            <Fill value={text} />
+            {text}
           </p>
         ))}
       </section>
@@ -117,7 +116,7 @@ const next =
         </h2>
         {project.next.map((text, i) => (
           <p class="measure text-body" data-anim data-delay={i === 0 ? '0.06' : undefined}>
-            <Fill value={text} />
+            {text}
           </p>
         ))}
       </section>
@@ -132,7 +131,7 @@ const next =
         </h2>
         {project.part.map((text, i) => (
           <p class="measure text-body" data-anim data-delay={i === 0 ? '0.06' : undefined}>
-            <Fill value={text} />
+            {text}
           </p>
         ))}
       </section>
@@ -147,7 +146,7 @@ const next =
         </h2>
         {project.differently.map((text, i) => (
           <p class="measure text-body" data-anim data-delay={i === 0 ? '0.06' : undefined}>
-            <Fill value={text} />
+            {text}
           </p>
         ))}
       </section>

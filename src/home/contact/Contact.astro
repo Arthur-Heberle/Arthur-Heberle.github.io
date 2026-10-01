@@ -3,7 +3,6 @@
 // Email is the one the drawing points at and comes first; WhatsApp is published too
 // (decided at step 14). wa.me needs the country code, so the number Arthur gave as
 // `49 99194-2504` is +55 (Brazil) + 49 (area code) in the href.
-import Fill from '../../shared/components/Fill.astro'
 import Tick from '../../shared/components/Tick.astro'
 
 const email = 'a.gp.heberle@gmail.com'
@@ -16,7 +15,7 @@ const invitation =
   <Tick />
   <h2 id="contact-heading" class="text-h2 font-sans font-medium" data-anim>Contact</h2>
   <p class="measure text-body" data-anim data-delay="0.06">
-    <Fill value={invitation} />
+    {invitation}
   </p>
   <!-- The one thing the drawing points at (design-spec.md §9) — signal, not graphite. -->
   <a class="feedback font-mono text-body text-signal no-underline" href={`mailto:${email}`}>

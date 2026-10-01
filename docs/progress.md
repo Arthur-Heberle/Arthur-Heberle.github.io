@@ -80,6 +80,21 @@ are chosen.
 | 6 | The model writes | done | the reply is a span a word, in a bubble that is at its final size from the start; the words fade in one by one (opacity only) while "language model" shows a held outline (60% opacity) and a short blue tick that steps along under its name, one notch a word. No dots. Reduced motion and no JS: the full reply at once, no tick. **Timeline moved:** the story is 15 s, not 12, and scene 3 ends at p = .9 (was .82), so the words (p .80 to .895, about 1.4 s) are not cut off by the stamp; the stamp, dashboard, lead, the leads wire and the mobile camera's last move are shifted to follow |
 | 7 | Ask the shop | done | "Try another question" under the drawing: three real buttons (`aria-pressed`), "a 3 seat sofa" by default, with the brief's mono note under them; hidden with no JavaScript. Choosing one swaps the drawing (`applyQuestion` in `story.ts`, data in `questions.ts` and `map.ts`) and replays scenes 2 to 4 (reduced motion: shows the end at once; choosing the same one again replays). Per question: the customer's one bubble and query line (no typo mark), where the dot lands, the eight lines and the closest three, the prompt chips, the reply, the stamp, and the lead. "Something to sleep on": Serenno queen bed, Lugano wardrobe, Provençal dressing table, reply with R$ 2,190, GENERAL_QUESTION, no lead. "Do you sell cars?": lands far from every cluster (nearest product 112px away), reply as briefed, OUT_OF_SCOPE, no lead. A stamp that is not a lead is plain (paper, not gold) and the leads wire is not drawn. Caption 2 gets Arthur's sentence while its question is chosen; the role=img description says the visitor can try other questions and describes each outcome. Checked in the page: each question's landing, top 3, reply and classification read back; operable with Tab, Enter and Space; label collisions 0 for all three; AX tree has no drawing text after choosing either. Chips now size to the product name's real width (5.7px a character). Mobile framing 3 starts higher (y 100) so the reply, which sits higher with one bubble, is in frame. JS ~82 KB gzip in total (under 90), CLS 0 on both project pages (layout-shift observer, 375 and 1280) |
 
+### Home page, part 1: projects bench and experience (2026-10-01, Arthur's brief)
+
+Five stages, in order. Commit message `home: <stage>`. The experience timeline animation is a separate
+later task and is not built here. Decisions Arthur made: a `[FILL]` in optional metadata is omitted, in
+always-shown prose it fails the build; the experience list is oldest first; on mobile the objects have no
+shared surface; the Brasilore art is his own (Emilia.png is the playable character).
+
+| Stage | Step | Status | Notes |
+|---|---|---|---|
+| 1 | Never publish a [FILL] | done | `scripts/check-fill.mjs` runs after `astro build` inside the `build` script (the deploy action runs it); `isFilled()` in `src/shared/fill.ts` replaces `Fill.astro` (deleted, with `.fill` CSS): optional fields are omitted, prose renders as written so a marker fails the build (tested with a marker in the changelog, then reverted); identity line is a `<ul>`. The old archive row guards date/role with `isFilled` until stage 2 deletes it |
+| 2 | Split the content | todo | |
+| 3 | The spine | todo | |
+| 4 | The bench | todo | |
+| 5 | Changelog | todo | |
+
 ---
 
 ## Open questions for Arthur

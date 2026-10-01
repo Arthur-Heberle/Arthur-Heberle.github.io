@@ -22,9 +22,10 @@ const email = 'a.gp.heberle@gmail.com'
     </a>
   </div>
 
-  <p class="flex flex-wrap gap-x-gutter gap-y-1 font-mono text-dimension text-graphite-2">
-    {identity.map((item) => <span>{item}</span>)}
-  </p>
+  <!-- a real list, so a screen reader doesn't read the three facts as one run-on phrase -->
+  <ul role="list" class="flex flex-wrap gap-x-gutter gap-y-1 font-mono text-dimension text-graphite-2">
+    {identity.map((item) => <li>{item}</li>)}
+  </ul>
 
   <!-- data-hero-display: the one element step 12's word-arrival sequence splits and
        animates. Read by Base.astro's flash-guard CSS and motion.ts's heroSequence(). -->
