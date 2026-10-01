@@ -471,16 +471,26 @@ of invitation in his own voice.
 
 ---
 
-**The home bench** (Arthur's decision, 2026-10-01; it replaces the archive list). Three objects on one
-shared work surface in the three-quarter view, a static soft shadow under it: EduBra's MDF box with the
-yellow PLA cell, black pins and yellow buttons; Agente H's 3D phone; a small desk monitor for Brasilore with
-a 2D pixel scene on its screen (Arthur's own sprites from the Brasilore repository, drawn crisp at 1:1).
-Each object and its caption are one link named by the project's title. The objects come down onto the
-surface once, one after the other, when the bench enters the viewport; after that they stay still until
-hovered or focused, when each plays one action (EduBra's pins spell E, D, U; the phone gets a message, a
-reply and the gold QUALIFIED_LEAD stamp; Brasilore's character runs and jumps a gap). On touch and below
-768px each action plays once as its object scrolls into view; the objects stack, with no surface. Reduced
-motion and no JavaScript show every object in its final state. The 3D is set up (bench.ts, the MDF texture)
+**The home bench** (Arthur's decision, 2026-10-01; it replaces the archive list). From 768px up it is one desk
+seen diagonally from above, a CSS 3D scene: a mat slab (rotated back 55deg and turned 32deg clockwise, so the
+right faces of the cuboids show), with a caliper (4px thick) and a dashed outline for the next project lying on
+it, and the three objects standing or lying on it as real cuboids (the project pages' `Cub` helper), each with a
+static soft shadow: EduBra's MDF box (60px tall, "EduBra" engraved on the front, the knob and the headphone jack
+on the right face, the yellow PLA cell and the four yellow buttons on the lid); Agente H's phone lying flat
+(8px, screen up, the page's own chat screen); Brasilore's handheld lying flat (12px, screen up, Arthur's own
+pixel sprites drawn crisp at 1:1). Labels are hidden: hover or keyboard focus on an object draws a leader line
+(graphite-2, with a small signal-red dot on the object, measured from the anchor inside the object, re-measured
+on resize) to that project's label (title, line, mono meta) in a fixed free corner, then fades the label in;
+one at a time. The object lifts off the mat and turns toward the viewer (so the phone's chat and the handheld's
+screen read straight on), its wide shadow fades in, then its action plays once (EduBra's pins spell E, D, U;
+the phone gets a message, a reply and the gold QUALIFIED_LEAD stamp; Brasilore's character runs and jumps a
+gap). Without hover (`@media (hover: none)`) all three labels and lines are shown and nothing lifts; reduced
+motion shows and hides the labels at once and nothing lifts or plays; with no JavaScript the labels show with
+no lines. A mono hint, "Point at something on the desk.", sits under the desk on hover devices. Each object
+and its caption are one link named by the project's title, described by its caption (kept in the link, hidden
+from sight), so the accessibility tree has three named links with descriptions and no drawing text. Below 768px
+the objects stand one above the other with their captions, no shared surface, and the monitor stands for
+Brasilore; each action plays once as its object scrolls into view. The 3D is set up (bench.ts, the MDF texture)
 only when the bench is within 400px of the viewport. The materials are the project pages' own: `.device`
 (device.css) and `.phone3d` (phone.css, extracted from the Agente H story unchanged).
 
