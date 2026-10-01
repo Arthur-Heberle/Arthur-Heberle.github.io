@@ -59,11 +59,11 @@ html:not(.js) .hstory .fit {
   fill: var(--color-graphite);
   font-weight: 500;
 }
+/* a cluster is a faint tint, not an outline: no label ever has a ring to cross */
 .hstory .hull {
-  fill: none;
-  stroke: var(--color-line);
-  stroke-width: 1.25;
-  stroke-dasharray: 3 5;
+  fill: var(--st-line);
+  fill-opacity: 0.1;
+  stroke: none;
 }
 .hstory .pdot {
   fill: var(--st-line);
@@ -73,14 +73,17 @@ html:not(.js) .hstory .fit {
   stroke: var(--st-pin);
   stroke-width: 2;
 }
+/* the eight nearest products: the closest three thick and blue, the other five thin and faint */
 .hstory .nl {
   fill: none;
   stroke: var(--st-line);
   stroke-width: 1;
+  opacity: 0.5;
 }
 .hstory .nl.hi {
   stroke: var(--st-pin);
-  stroke-width: 2;
+  stroke-width: 2.5;
+  opacity: 1;
 }
 /* a highlight is a copy stacked on the original and crossfaded on opacity (colour is not animated) */
 .hstory .lbl-hi {

@@ -11,6 +11,7 @@
 // motion and the static layout show. The product map, the nearest-neighbour ranking and every
 // position below are computed here once, so story.ts only reads them.
 import { P, poly, arrow, fmtPts } from './flow'
+import { MAP, PRODUCTS as BASE, HULLS, LANDINGS, LABELS } from './map'
 import type { Pt } from './flow'
 const CAPTIONS = [
   { n: 1, title: 'Wait', text: 'Customers send three short messages instead of one. The agent waits until they stop typing, so it answers once.' },
@@ -44,31 +45,12 @@ const SLOTS = [
 const NUMS_Y = 58
 const NUMS = '0.12  -0.48  0.07  ...  1,536 numbers'
 
-// ---- the map of the catalogue: names from catalogo_moveis.csv, in English ----
-const MAP = { x: 392, y: 78, w: 366, h: 296 }
-const Q = { x: 508, y: 214 } // where the query lands
-type Anchor = 'start' | 'middle' | 'end'
-interface Prod { id: string; name: string; x: number; y: number; lx: number; ly: number; a: Anchor; word?: string }
-const PRODUCTS: Prod[] = [
-  { id: 'rubi', name: 'Rubi 3-seat sofa', x: 530, y: 190, lx: 538, ly: 194, a: 'start', word: 'sofa' },
-  { id: 'dublin', name: 'Dublin 2-seat sofa', x: 542, y: 240, lx: 550, ly: 244, a: 'start' },
-  { id: 'veneza', name: 'Veneza corner sofa', x: 470, y: 238, lx: 470, ly: 258, a: 'middle' },
-  { id: 'amelie', name: 'Amélie armchair', x: 458, y: 184, lx: 458, ly: 170, a: 'middle' },
-  { id: 'toscana', name: 'Toscana table', x: 660, y: 112, lx: 660, ly: 100, a: 'middle' },
-  { id: 'oslo', name: 'Oslo coffee table', x: 712, y: 144, lx: 712, ly: 162, a: 'middle' },
-  { id: 'round', name: 'Round side table', x: 652, y: 150, lx: 644, ly: 154, a: 'end' },
-  { id: 'milano', name: 'Milano chair', x: 622, y: 302, lx: 622, ly: 320, a: 'middle' },
-  { id: 'berlim', name: 'Berlim office chair', x: 706, y: 274, lx: 714, ly: 292, a: 'end' },
-  { id: 'serenno', name: 'Serenno queen bed', x: 452, y: 326, lx: 460, ly: 330, a: 'start' },
-  { id: 'lugano', name: 'Lugano wardrobe', x: 522, y: 352, lx: 530, ly: 356, a: 'start' },
-]
-// loose clusters, drawn as dashed hulls with their name
-const HULLS = [
-  { name: 'sofas', cx: 498, cy: 214, rx: 100, ry: 56, tx: 408, ty: 124 },
-  { name: 'tables', cx: 670, cy: 134, rx: 78, ry: 46, tx: 756, ty: 94 },
-  { name: 'chairs', cx: 664, cy: 288, rx: 80, ry: 38, tx: 756, ty: 250 },
-  { name: 'beds', cx: 492, cy: 340, rx: 86, ry: 32, tx: 408, ty: 360 },
-]
+// ---- the map of the catalogue: names from catalogo_moveis.csv, in English (src/projects/agente-h/map.ts) ----
+const Q = LANDINGS.sofa // where the query lands
+const LAB = LABELS.sofa // where this question's labels go
+const WORD: Record<string, string> = { rubi: 'sofa' } // the word of a label the typo "sofs" is matched to
+const PRODUCTS = BASE.map((p) => ({ ...p, word: WORD[p.id] }))
+type Prod = (typeof PRODUCTS)[number]
 const hull = (h: { cx: number; cy: number; rx: number; ry: number }) =>
   `M${h.cx - h.rx} ${h.cy}a${h.rx} ${h.ry} 0 1 0 ${2 * h.rx} 0a${h.rx} ${h.ry} 0 1 0 ${-2 * h.rx} 0`
 const dist = (p: { x: number; y: number }) => Math.hypot(p.x - Q.x, p.y - Q.y)
@@ -102,7 +84,7 @@ const LANE = 446
 const WIRES: Pt[][] = [
   [P(PHONE_R - 2, RING.y), P(RING.x - RING.r - 5, RING.y)], // the phone to the silence timer
   [P(RING.x + RING.r + 5, RING.y), P(344, RING.y), P(344, QY - 5), P(QX - 9, QY - 5)], // the timer to the query line
-  [P(379, QY + 6), P(379, Q.y), P(Q.x - 9, Q.y)], // the query to its point on the map
+  [P(379, QY + 6), P(379, 214), P(MAP.x - 2, 214)], // the query to the map (the dot goes on to its point)
   [P(MAP.x, 252), P(CARD.x + CARD.w + 1, 252)], // the map to the prompt card
   [P(CX, CARD.y + CARD.h), P(CX, MODEL.y - 1)], // the prompt card to the language model
   [P(MODEL.x, MODEL.y + MODEL.h / 2), P(PHONE_R - 2, MODEL.y + MODEL.h / 2)], // the reply, back to the phone
@@ -191,12 +173,13 @@ const LEAD_LINES = ['Wants a 3-seat', 'leather sofa.']
           <text class="mono s12 dim hs-fade" x={MAP.x + 8} y={MAP.y + 18}>the catalogue, as a map</text>
           <g class="hs-fade" id="hs-hulls">
             {HULLS.map((h) => <path class="hull" d={hull(h)}></path>)}
-            {HULLS.map((h) => <text class="s12 dim" x={h.tx} y={h.ty} text-anchor={h.tx > 700 ? 'end' : 'start'}>{h.name}</text>)}
+            {HULLS.map((h) => <text class="s12 dim" x={LAB['hull-' + h.name].x} y={LAB['hull-' + h.name].y}>{h.name}</text>)}
           </g>
 
           <!-- the nearest eight: a line to each; the closest three are drawn again, in blue -->
           {nearest.map((p, i) => <path class="nl" data-rank={i} d={`M${Q.x} ${Q.y}L${p.x} ${p.y}`}></path>)}
           {top.map((p, i) => <path class="nl hi" data-rank={i} d={`M${Q.x} ${Q.y}L${p.x} ${p.y}`}></path>)}
+          <text id="hs-tag" class="mono s12 dim" x={LAB.tag.x} y={LAB.tag.y}>8 closest</text>
 
           {
             PRODUCTS.map((p, i) => {
@@ -205,12 +188,12 @@ const LEAD_LINES = ['Wants a 3-seat', 'leather sofa.']
               return (
                 <g class="prod" data-i={i} data-rank={r}>
                   <circle class="pdot" cx={p.x} cy={p.y} r="4"></circle>
-                  <text class="plabel s12" x={p.lx} y={p.ly} text-anchor={p.a}>{p.name}</text>
+                  <text class="plabel s12" x={LAB[p.id].x} y={LAB[p.id].y}>{p.name}</text>
                   {inTop && <circle class="phi" cx={p.x} cy={p.y} r="8"></circle>}
-                  {inTop && <text class="plabel s12 lbl-hi" x={p.lx} y={p.ly} text-anchor={p.a}>{p.name}</text>}
+                  {inTop && <text class="plabel s12 lbl-hi" x={LAB[p.id].x} y={LAB[p.id].y}>{p.name}</text>}
                   {
                     p.word && (
-                      <text class="plabel s12 hiw" x={p.lx} y={p.ly} text-anchor={p.a}>
+                      <text class="plabel s12 hiw" x={LAB[p.id].x} y={LAB[p.id].y}>
                         <tspan class="ghost">{wordParts(p)[0]}</tspan><tspan class="word">{wordParts(p)[1]}</tspan><tspan class="ghost">{wordParts(p)[2]}</tspan>
                       </text>
                     )

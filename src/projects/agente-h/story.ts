@@ -129,6 +129,7 @@ interface Story {
   pulses: { el: SVGElement; w: number }[]
   stepn: SVGElement[]
   lane: number // the y the lead card travels along, under the phone
+  tag: SVGElement // the "8 closest" note
   qdot: SVGElement
   chipA: SVGElement[]
   chipP: SVGElement[]
@@ -225,6 +226,7 @@ function grab(): Story | null {
     pulses: $$<SVGElement>('.pulse').map((el) => ({ el, w: +el.dataset.w! })),
     stepn: $$<SVGElement>('.hs-stepn'),
     lane: 446,
+    tag: $('#hs-tag'),
     qdot: $('#hs-qdot'),
     chipA: $$<SVGElement>('.chipA'),
     chipP,
@@ -330,6 +332,7 @@ function render(p: number) {
     const t = n.hi ? ease(seg(p, ...T.top)) : ease(seg(p, T.lines + n.rank * 0.004, T.lines + n.rank * 0.004 + 0.02))
     n.el.style.strokeDashoffset = String(n.len * (1 - t))
   })
+  op(s.tag, seg(p, T.lines + 0.02, T.lines + 0.05))
   const top = seg(p, ...T.top)
   const word = seg(p, ...T.word)
   s.prods.forEach((pr) => {
