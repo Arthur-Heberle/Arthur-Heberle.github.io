@@ -1,5 +1,7 @@
 ---
-// Programming Techniques: a laptop, screen open. The screen is a 2D UML class diagram, each class a box
+// Programming Techniques: a laptop, screen open, no brand or logo. The base is a slab with a keyboard deck
+// (rows of keys, a space bar, a trackpad) drawn on its top face; the lid is a thin slab with a dark bezel, a
+// camera, and a window on the screen with a title bar. The window shows a 2D UML class diagram, each class a box
 // with name, attributes and methods compartments: Entity, with Player and Enemy inheriting from it, and a
 // Level that holds a pointer to an Entity; under it, a few lines of C++. The names and code are illustrative
 // of the course's SFML game, not its real code (the figure's description says so). Action (experience.ts):
@@ -8,7 +10,8 @@
 import Cub from '../../../projects/edubra/Cub.astro'
 
 const W = 160
-const H = 96
+const D = 76
+const H = 104
 const boxes = [
   { n: 'Level', a: '- entities', m: '+ spawn()', x: 6, y: 6, w: 54, h: 24 },
   { n: 'Entity', a: '# pos: Vec2', m: '+ update()', x: 96, y: 6, w: 54, h: 24 },
@@ -16,34 +19,71 @@ const boxes = [
   { n: 'Enemy', a: '- speed: float', m: '+ chase()', x: 108, y: 44, w: 46, h: 24 },
 ]
 const code = ['Entity* e = level.get(0);', 'e->update(dt);', 'delete e;']
+
+// the keyboard: a short row of function keys, three rows of keys, a bottom row with a space bar
+type Key = { x: number; y: number; w: number; h: number }
+const keys: Key[] = []
+const X0 = 8
+const X1 = 152
+const GAP = 1.1
+const row = (y: number, h: number, widths: number[]) => {
+  const total = widths.reduce((a, b) => a + b, 0)
+  const unit = (X1 - X0 - GAP * (widths.length - 1)) / total
+  let x = X0
+  widths.forEach((w) => {
+    keys.push({ x, y, w: w * unit, h })
+    x += w * unit + GAP
+  })
+}
+row(6, 4.4, Array(13).fill(1))
+row(11.6, 6.6, [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1.6])
+row(19.3, 6.6, [1.5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1.1])
+row(27, 6.6, [1.8, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2.2])
+row(34.7, 6.6, [2.3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1.7])
+row(42.4, 6.6, [1.2, 1.2, 1.2, 1.2, 5.6, 1.2, 1.2, 1.2])
 ---
 
 <div class="xp-scene" style="--m:2;--fw:160px;--fd:76px;--dy:46px">
   <div class="xp-plane">
     <div class="xp-lift">
-      <Cub x={0} y={0} w={W} d={76} h={4} cls="xp-lap xp-turn">
+      <Cub x={0} y={0} w={W} d={D} h={3.5} cls="xp-lap xp-turn">
+        <svg class="lp-deck" viewBox={`0 0 ${W} ${D}`} width="100%" height="100%" focusable="false">
+          <rect class="lp-well" x="5" y="4" width="150" height="48" rx="2" />
+          {keys.map((k) => <rect class="lp-key" x={k.x.toFixed(2)} y={k.y} width={k.w.toFixed(2)} height={k.h} rx="1" />)}
+          <rect class="lp-pad" x="56" y="57" width="48" height="15" rx="2" />
+          <path class="lp-notch" d="M72 74.6 H88" />
+        </svg>
+        <div class="lp-hinge-bar" style={`width:${W - 40}px`}></div>
         <div class="lp-hinge" style={`width:${W}px`}>
-          <Cub x={0} y={0} w={W} d={3} h={H} cls="xp-scr">
+          <Cub x={0} y={0} w={W} d={2.5} h={H} cls="xp-scr">
             <svg slot="front" viewBox={`0 0 ${W} ${H}`} width="100%" height="100%" focusable="false">
-              <g class="un-boxes">
-                {
-                  boxes.map((b) => (
-                    <g class="un-box">
-                      <rect x={b.x} y={b.y} width={b.w} height={b.h} />
-                      <path d={`M${b.x} ${b.y + 8} H${b.x + b.w} M${b.x} ${b.y + 16} H${b.x + b.w}`} />
-                      <text class="un-name" x={b.x + b.w / 2} y={b.y + 5.8} text-anchor="middle">{b.n}</text>
-                      <text x={b.x + 2.5} y={b.y + 13.6}>{b.a}</text>
-                      <text x={b.x + 2.5} y={b.y + 21.6}>{b.m}</text>
-                    </g>
-                  ))
-                }
-              </g>
-              <path class="un-inh" d="M81 44 V37 H123 V30" />
-              <path class="un-inh" d="M131 44 V37 H123" />
-              <path class="un-tri" d="M123 30 L119.4 35.5 L126.6 35.5 Z" />
-              <path class="un-ptr" d="M60 18 H94 M89.5 15 L94 18 L89.5 21" />
-              <g class="un-code">
-                {code.map((c, i) => <text x="8" y={78 + i * 7}>{c}</text>)}
+              <rect class="lp-glass" x="4" y="5" width="152" height="95" rx="1.5" />
+              <circle class="lp-cam" cx="80" cy="2.6" r="1" />
+              <rect class="lp-bar" x="4" y="5" width="152" height="7.5" rx="1.5" />
+              <circle class="lp-dot lp-d1" cx="9" cy="8.75" r="1.4" />
+              <circle class="lp-dot lp-d2" cx="13.4" cy="8.75" r="1.4" />
+              <circle class="lp-dot lp-d3" cx="17.8" cy="8.75" r="1.4" />
+              <g transform="translate(9.5 14) scale(0.88)">
+                <g class="un-boxes">
+                  {
+                    boxes.map((b) => (
+                      <g class="un-box">
+                        <rect x={b.x} y={b.y} width={b.w} height={b.h} />
+                        <path d={`M${b.x} ${b.y + 8} H${b.x + b.w} M${b.x} ${b.y + 16} H${b.x + b.w}`} />
+                        <text class="un-name" x={b.x + b.w / 2} y={b.y + 5.8} text-anchor="middle">{b.n}</text>
+                        <text x={b.x + 2.5} y={b.y + 13.6}>{b.a}</text>
+                        <text x={b.x + 2.5} y={b.y + 21.6}>{b.m}</text>
+                      </g>
+                    ))
+                  }
+                </g>
+                <path class="un-inh" d="M81 44 V37 H123 V30" />
+                <path class="un-inh" d="M131 44 V37 H123" />
+                <path class="un-tri" d="M123 30 L119.4 35.5 L126.6 35.5 Z" />
+                <path class="un-ptr" d="M60 18 H94 M89.5 15 L94 18 L89.5 21" />
+                <g class="un-code">
+                  {code.map((c, i) => <text x="8" y={78 + i * 7}>{c}</text>)}
+                </g>
               </g>
             </svg>
           </Cub>

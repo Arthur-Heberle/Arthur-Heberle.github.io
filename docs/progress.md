@@ -165,6 +165,12 @@ coordinates, clipped to it, and the part's svg is `overflow: hidden`; in the act
 layer, the head slides along the bar (x) and the bed moves front to back (y), so the nozzle traces each line
 while it is drawn (about 8 s for six layers, alongside the monitor's own animation).
 
+Experience, a more realistic laptop (2026-10-02, Arthur's request): the Programming Techniques laptop has a
+silver base with rounded corners and a keyboard deck drawn on its top face (a row of function keys, four rows
+of dark keys, a space bar, a trackpad, a front notch), a hinge bar, and a thin lid with a dark bezel, a camera
+dot, and a window with a title bar (three small dots) around the UML diagram and code. No brand or logo. The
+action is unchanged (same classes).
+
 Scoped colours (like the EduBra and Agente H materials, not tokens, used nowhere else): the RP3 screen's reds,
 greens, blue and greys (the real software's own colours) and the ELETRON analyzer's black enclosure and greens.
 

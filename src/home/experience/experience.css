@@ -462,18 +462,46 @@
   fill-opacity: 0.7;
 }
 
-/* Programming Techniques: a laptop, aluminium over a light screen */
+/* Programming Techniques: a laptop, silver aluminium base with dark keys, a thin lid with a dark bezel */
 .xp-lap > .top {
-  background:
-    linear-gradient(#aeb3b8, #aeb3b8) 50% 76% / 38% 22% no-repeat,
-    repeating-linear-gradient(90deg, #8d9297 0 1px, transparent 1px 5px) 50% 24% / 88% 38% no-repeat,
-    #cfd3d6;
+  background: linear-gradient(165deg, #dcdfe1, #bfc3c7);
+  border-radius: 4px;
 }
 .xp-lap > .front {
-  background: #9ea3a8;
+  background: linear-gradient(#a9aeb3, #8f949a);
+  border-radius: 0 0 4px 4px;
 }
 .xp-lap > .right {
-  background: #82878c;
+  background: #7d8288;
+  border-radius: 0 4px 4px 0;
+}
+.lp-well {
+  fill: #c9ccd0;
+  stroke: #a7abb0;
+  stroke-width: 0.4;
+}
+.lp-key {
+  fill: #2a2c30;
+  stroke: #4a4d52;
+  stroke-width: 0.3;
+}
+.lp-pad {
+  fill: #cdd0d4;
+  stroke: #9ca0a5;
+  stroke-width: 0.5;
+}
+.lp-notch {
+  stroke: #9ca0a5;
+  stroke-width: 0.8;
+  stroke-linecap: round;
+}
+.lp-hinge-bar {
+  position: absolute;
+  left: 20px;
+  top: -1px;
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(#5a5e63, #3a3d41);
 }
 .lp-hinge {
   position: absolute;
@@ -485,14 +513,38 @@
   transform: rotateX(12deg);
 }
 .xp-scr > .top {
-  background: #2c2e33;
+  background: #4a4d52;
+  border-radius: 4px 4px 0 0;
 }
 .xp-scr > .front {
-  background: var(--color-sheet);
-  box-shadow: inset 0 0 0 3px #2c2e33;
+  background: #17181b;
+  border-radius: 4px 4px 1px 1px;
 }
 .xp-scr > .right {
-  background: #2c2e33;
+  background: #8f949a;
+}
+.lp-glass {
+  fill: var(--color-sheet);
+}
+.lp-cam {
+  fill: #3b3e44;
+  stroke: #54575d;
+  stroke-width: 0.3;
+}
+.lp-bar {
+  fill: #dfe2e1;
+}
+.lp-dot {
+  fill: #b9bdbf;
+}
+.lp-d1 {
+  fill: #d9776c;
+}
+.lp-d2 {
+  fill: #e0b857;
+}
+.lp-d3 {
+  fill: #6fb27a;
 }
 .un-box rect {
   fill: var(--color-sheet);
