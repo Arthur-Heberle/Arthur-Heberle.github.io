@@ -1,25 +1,42 @@
-/* Annotation markers linking spine prose to margin notes. Mono because a callout number
- * is a count, not a label. --graphite-2, not --signal: the signal budget (design-spec.md
- * §5, roughly eight appearances) is spent on leader terminations and links, not on every
- * one of these. */
-.marker {
-  font-family: var(--font-mono);
-  font-size: var(--text-dimension);
-  color: var(--color-graphite-2);
-  text-decoration: none;
-}
-
 /* The three-column rail: prose, gutter, margin. The gutter column carries no content of
  * its own — it's where leader lines are drawn — so it's named but never targeted by a
  * grid-area. Below 768px the margin collapses under the prose, in source order, which is
- * what makes each note land directly after its paragraph with no JS. */
+ * what makes each note land directly after its paragraph with no JS. A project page uses
+ * this rail with one paragraph and one note; the home spine adds .rail-spine below. */
 .rail {
+  position: relative;
   display: grid;
   grid-template-columns: minmax(0, var(--container-measure)) var(--spacing-gutter) var(--container-margin);
-  grid-template-areas: 'p1 gutter a' 'p2 gutter b';
-  row-gap: 1.25rem; /* ordinary paragraph spacing: the notes column never pushes paragraph 2 down */
+  grid-template-areas: 'prose gutter margin';
 }
 .rail-prose {
+  grid-area: prose;
+}
+.rail-margin {
+  grid-area: margin;
+  align-self: start;
+}
+@media (max-width: 767px) {
+  .rail {
+    grid-template-columns: 1fr;
+    grid-template-areas: 'prose' 'margin';
+    row-gap: 1rem;
+  }
+}
+
+/* The home spine: two paragraphs one under the other, at ordinary paragraph spacing. Each
+ * paragraph's notes sit in the margin column in the paragraph's own row, but take no height
+ * there (the margin column never pushes paragraph 2 down): spine.ts stands each note beside
+ * the line of its balloon and sizes the rail to fit. Without JavaScript the <noscript> rule in
+ * Spine.astro gives the groups their natural height back. Below 768px the notes follow their
+ * paragraph in the flow. */
+.rail-spine {
+  grid-template-areas: 'p1 gutter a' 'p2 gutter b';
+  row-gap: 1.25rem;
+  align-content: start; /* spare height (the min-height below) must not stretch the rows */
+  min-height: 33.5rem; /* about where spine.ts's placement ends; avoids a jump when it runs */
+}
+.rail-spine .rail-prose {
   margin: 0;
 }
 .rail-prose-1 {
@@ -28,9 +45,9 @@
 .rail-prose-2 {
   grid-area: p2;
 }
-.rail-margin {
-  align-self: start;
-  height: 0; /* the notes overflow downward; they take no row height */
+.rail-spine .rail-margin {
+  position: relative;
+  height: 0;
 }
 .rail-margin-a {
   grid-area: a;
@@ -39,30 +56,75 @@
   grid-area: b;
 }
 @media (max-width: 767px) {
-  .rail {
-    grid-template-columns: 1fr;
+  .rail-spine {
     grid-template-areas: 'p1' 'a' 'p2' 'b';
-    row-gap: 1rem;
+    min-height: 0;
   }
-  .rail-margin {
+  .rail-spine .rail-margin {
     height: auto;
   }
 }
 
-/* One margin note. The leader line is absolutely positioned into the rail's gutter
- * column, so it never takes up layout space of its own — reserved by the rail's grid
- * track instead, which is what design-spec.md §10's "no layout shift" box asks for here. */
+/* Callout balloon, as on a technical drawing: an 18px ring with its number. One mark used
+ * for the marker in the text and the one that starts its note. The highlight is a second ring
+ * stacked on it, crossfaded on opacity: a border colour can't transition (motion-spec.md's
+ * property rule). Mono because a callout number is a count. */
+.balloon {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 18px;
+  height: 18px;
+  margin-inline: 3px;
+  border: 1.5px solid var(--color-graphite-2);
+  border-radius: 50%;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1;
+  color: var(--color-graphite-2);
+  text-decoration: none;
+  vertical-align: middle;
+}
+.balloon::after {
+  content: '';
+  position: absolute;
+  inset: -1.5px;
+  border: 1.5px solid var(--color-signal);
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity var(--dur-feedback) var(--ease-out);
+}
+.balloon[data-linked] {
+  color: var(--color-signal);
+}
+.balloon[data-linked]::after {
+  opacity: 1;
+}
+
+/* One margin note. */
 .note + .note {
   margin-top: 1.5rem;
 }
 .note {
   position: relative;
 }
-/* The marker, then the label on its own line (mono, graphite), then the text below. */
+/* Placed beside its balloon's line (spine.ts sets `top`). */
+.rail-spine.notes-placed .note {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  margin: 0;
+}
+/* The balloon, then the label on its own line (mono, graphite), then the text below. */
 .note-head {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 0.5rem;
+}
+.note-head .balloon {
+  margin-inline: 0;
 }
 .note-label {
   font-family: var(--font-mono);
@@ -73,6 +135,40 @@
   margin: 0.25rem 0 0;
 }
 
+/* The spine's leader lines: one overlay over the rail, in the rail's own pixels, drawn by
+ * spine.ts from each balloon in the text to the one that starts its note. Visible at rest
+ * (graphite-2, 1px); the signal copy stacked on it crossfades in when the pair is linked. */
+.spine-leaders {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+.spine-leaders path {
+  fill: none;
+  stroke-width: 1;
+}
+.spine-leaders .leader-base {
+  stroke: var(--color-graphite-2);
+}
+.spine-leaders .leader-hi {
+  stroke: var(--color-signal);
+  opacity: 0;
+  transition: opacity var(--dur-feedback) var(--ease-out);
+}
+.spine-leaders g[data-linked] .leader-hi {
+  opacity: 1;
+}
+@media (max-width: 767px) {
+  .spine-leaders {
+    display: none;
+  }
+}
+
+/* A project page's plain note keeps the old drawn leader (motion.ts's tier1Leaders scrubs
+ * it). Absolute in the rail's gutter column, so it takes no layout space of its own. */
 .leader {
   position: absolute;
   top: 0.4em;
@@ -86,24 +182,12 @@
     display: none;
   }
 }
-
-/* Step 10 — marker<->note highlight. Additive only: note content is never hover-dependent
- * (design-spec.md §10), this just links the pair. opacity, not a stroke swap —
- * motion-spec.md's property rule — at the one feedback duration and curve. The note's own
- * text lifts --graphite-2 -> --graphite instantly, with no transition, for the same reason
- * color can't be animated; precedent is .control[aria-pressed='true'] below. Specificity
- * (0,2,1) is deliberate: it beats the text-graphite-2 utility (0,1,0) on .note-text but
- * doesn't reach the nested <strong> or the back-link .marker, which keep their own colors.
- * No <768px override needed: .leader is already display:none there, so only the text lift
- * survives, which is harmless. */
 .leader-hi {
   opacity: 0;
-  transition: opacity var(--dur-feedback) var(--ease-out);
 }
-.note[data-linked] .leader-hi {
-  opacity: 1;
-}
+
+/* The note's own text lifts --graphite-2 -> --graphite instantly when its pair is linked,
+ * with no transition (color can't be animated); precedent is .control[aria-pressed='true']. */
 .note[data-linked] .note-text {
   color: var(--color-graphite);
 }
-

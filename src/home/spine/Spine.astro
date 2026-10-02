@@ -4,6 +4,11 @@
 // the `notes` collection, keyed here by label rather than by file order, since the
 // spine's marker order (reading, working on, languages, chess, guitar) doesn't match
 // the notes directory's alphabetical listing.
+//
+// The markers are callout balloons (an 18px ring and its number, like a technical drawing's).
+// From 768px up spine.ts places each note beside its marker's line and draws a leader from the
+// balloon in the text to the one that starts its note; below that, or without JavaScript, the
+// notes follow their paragraph in the flow and each balloon is still a real link to its note.
 import { getCollection } from 'astro:content'
 import MarginNote from './MarginNote.astro'
 import Tick from '../../shared/components/Tick.astro'
@@ -14,22 +19,26 @@ const byLabel = Object.fromEntries(notes.map((note) => [note.data.label, note]))
 
 <section class="flex flex-col pb-16 pt-8" aria-label="About">
   <Tick />
-  <div class="rail" data-anim-scope>
+  <noscript><style>.rail-spine .rail-margin { height: auto }</style></noscript>
+  <div class="rail rail-spine" data-anim-scope data-spine>
+    <svg class="spine-leaders" aria-hidden="true"></svg>
     <p class="rail-prose rail-prose-1 text-body" data-anim>
       I build things that sit between software and the physical world. A device that
       turns digital text into Braille. A WhatsApp agent that sells from a shop's own
       catalogue. A 2D platformer in C++. The part I'm best at is the handover: getting
       the thing understood by the people who have to use it, sign it off, or pay for
       it.<a
-        class="feedback marker"
+        class="balloon"
         id="marker-reading"
         href="#note-reading"
-        aria-label="note 1, reading">1</a
+        aria-label="note 1, reading"
+        aria-describedby="note-reading">1</a
       > And I build my own projects when nobody asked me to.<a
-        class="feedback marker"
+        class="balloon"
         id="marker-working-on"
         href="#note-working-on"
-        aria-label="note 2, working on">2</a
+        aria-label="note 2, working on"
+        aria-describedby="note-working-on">2</a
       >
     </p>
     <div class="rail-margin rail-margin-a flex flex-col">
@@ -40,17 +49,23 @@ const byLabel = Object.fromEntries(notes.map((note) => [note.data.label, note]))
     <p class="rail-prose rail-prose-2 text-body" data-anim>
       Outside all of that I keep a few things going that lead nowhere in particular.
       Languages I don't strictly need.<a
-        class="feedback marker"
+        class="balloon"
         id="marker-languages"
         href="#note-languages"
-        aria-label="note 3, languages">3</a
-      > Chess.<a class="feedback marker" id="marker-chess" href="#note-chess" aria-label="note 4, chess"
-        >4</a
+        aria-label="note 3, languages"
+        aria-describedby="note-languages">3</a
+      > Chess.<a
+        class="balloon"
+        id="marker-chess"
+        href="#note-chess"
+        aria-label="note 4, chess"
+        aria-describedby="note-chess">4</a
       > A guitar I've played for years and still sing badly over.<a
-        class="feedback marker"
+        class="balloon"
         id="marker-guitar"
         href="#note-guitar"
-        aria-label="note 5, guitar">5</a
+        aria-label="note 5, guitar"
+        aria-describedby="note-guitar">5</a
       > I'm not planning to get good at that one.
     </p>
     <div class="rail-margin rail-margin-b flex flex-col">
@@ -62,31 +77,6 @@ const byLabel = Object.fromEntries(notes.map((note) => [note.data.label, note]))
 </section>
 
 <script>
-  // Marker -> note linking (implementation-plan.md step 10: "hovering a marker highlights
-  // its note and its line"). Purely additive: with JS off, or if this never runs, the note
-  // and its leader are already fully visible and the marker is still a real anchor link to
-  // it — nothing here is required content. Keyboard focus produces the identical state,
-  // gated on :focus-visible so a mouse click doesn't leave a note lit after the pointer has
-  // moved away. Interaction, not animation, so it lives here rather than in motion.ts and
-  // outside gsap.matchMedia() — this state must work below 768px too, where leaders don't
-  // exist but the highlight class is still harmless (type.css scopes the visible effect to
-  // .leader-hi and .note-text, and .leader is already display:none there).
-  document
-    .querySelectorAll<HTMLAnchorElement>('.rail-prose .marker[href^="#note-"]')
-    .forEach((marker) => {
-      const note = document.querySelector<HTMLElement>(marker.getAttribute('href')!)
-      if (!note) return
-      const on = () => {
-        note.dataset.linked = ''
-      }
-      const off = () => {
-        delete note.dataset.linked
-      }
-      marker.addEventListener('mouseenter', on)
-      marker.addEventListener('mouseleave', off)
-      marker.addEventListener('focus', () => {
-        if (marker.matches(':focus-visible')) on()
-      })
-      marker.addEventListener('blur', off)
-    })
+  import { initSpine } from './spine'
+  initSpine()
 </script>
