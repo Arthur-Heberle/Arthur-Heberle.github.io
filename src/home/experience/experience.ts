@@ -37,24 +37,31 @@ function strokes(paths: SVGGeometryElement[]) {
 const all = <T extends Element>(root: Element, s: string) => [...root.querySelectorAll<T>(s)]
 
 function chalkboard(root: HTMLElement): Action {
-  const lineEls = all<SVGGeometryElement>(root, '.ch-line')
+  const lineEls = all<SVGGeometryElement>(root, '.ch-line:not(.ch-late)')
   const lines = strokes(lineEls)
   const hatchEls = all<SVGPathElement>(root, '.ch-hatch')
   const hatch = strokes(hatchEls)
+  // the cross-out, the boxes and the check are drawn once the writing is there
+  const lateEls = all<SVGGeometryElement>(root, '.ch-late')
+  const late = strokes(lateEls)
   const texts = all<SVGTextElement>(root, '.ch-tx')
-  const marks = [...lineEls, ...hatchEls, ...texts]
+  const marks = [...lineEls, ...hatchEls, ...lateEls, ...texts]
+  const STEP = 0.1
   return {
     reset: () => {
       lines.reset()
       hatch.reset()
+      late.reset()
       gsap.set(texts, { opacity: 0 })
     },
     run: () => {
       const tl = gsap.timeline({ onComplete: () => gsap.set(marks, { clearProps: CLEAR }) })
-      // the curve, the axes and the surface are drawn, the area is hatched left to right, then the formulas are written
+      // the curve, the axes and the surface are drawn, the area is hatched, then the lines are written in order
       lines.draw(tl, 0, 0.8, 0.05)
       hatch.draw(tl, 1.0, 0.25, 0.03)
-      tl.to(texts, { opacity: 1, duration: 0.3, stagger: 0.18 }, 1.6)
+      tl.to(texts, { opacity: 1, duration: 0.25, stagger: STEP }, 1.5)
+      // then the attempt is struck out, the answers are boxed and the check is underlined
+      late.draw(tl, 1.5 + texts.length * STEP + 0.2, 0.4, 0.15)
       return tl
     },
   }

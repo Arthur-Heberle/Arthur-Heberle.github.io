@@ -1,73 +1,113 @@
 ---
-// Calculus II: a free-standing chalkboard, just the board in its wooden frame. Its face is a 2D chalk drawing
-// in two halves: Calculus II on the left (a curve with the area under it hatched, integration by parts, the
-// Taylor series of e^x, a series sum) and Calculus III on the right (the paraboloid z = x² + y², the gradient,
-// a double integral and a line integral). Action (experience.ts): the lines are drawn, the area is hatched,
-// then the written formulas appear one by one.
+// Calculus II: a free-standing chalkboard in its wooden frame, with a chalk tray along its foot holding three
+// pieces of chalk and an eraser. The face is a 2D chalk drawing in two halves, and it looks worked on:
+// Calculus II on the left (y = 3x² from 0 to 2 with the area under it hatched, and the integral of 3x² dx
+// from 0 to 2 worked out: a first attempt struck through, the correct steps, 8 boxed, a scratch check) and
+// Calculus III on the right (the paraboloid z = x² + y² and the double integral of x + y over 0 ≤ x ≤ 1,
+// 0 ≤ y ≤ 2: 3 boxed). Faint ghosts of erased writing and eraser swipes sit in the free corner, and chalk dust
+// along the foot. The maths is checked: the integral of 3x² from 0 to 2 is 2³ − 0³ = 8; the inner integral of
+// x + y over x is ½ + y, and ∫₀² (½ + y) dy = 1 + 2 = 3.
+// Action (experience.ts): the lines are drawn, the area is hatched, the written lines appear one by one, then the
+// cross-out, the boxes and the check are drawn. The tray, chalk and eraser are still.
 import Cub from '../../../projects/edubra/Cub.astro'
+import Cable from './Cable.astro'
 
-// the curve: one cubic on the 150 x 96 face, sampled to close the area under it
-const P = [
-  [10, 50],
-  [22, 20],
-  [42, 18],
-  [62, 40],
-]
-const at = (t: number) => {
-  const u = 1 - t
-  return [0, 1].map((k) => u ** 3 * P[0][k] + 3 * u * u * t * P[1][k] + 3 * u * t * t * P[2][k] + t ** 3 * P[3][k])
-}
+// y = 3x² on 0 ≤ x ≤ 2, drawn on the 150 x 96 face: x = 0 at 12, 17 units a step; the baseline is at 52 and the
+// curve reaches 36 up at x = 2 (a quadratic Bézier with its control point on the baseline is exactly a parabola)
+const X0 = 12
+const X1 = 46
 const BASE = 52
-const N = 40
-const pts = Array.from({ length: N + 1 }, (_, i) => at(0.3 + (i / N) * 0.62))
-const curve = `M${P[0]} C${P[1]} ${P[2]} ${P[3]}`
-const x0 = pts[0][0]
-const x1 = pts[N][0]
-const yAt = (x: number) => {
-  for (let i = 1; i <= N; i++) {
-    if (pts[i][0] >= x) {
-      const [ax, ay] = pts[i - 1]
-      const [bx, by] = pts[i]
-      return ay + ((by - ay) * (x - ax)) / (bx - ax || 1)
-    }
-  }
-  return pts[N][1]
-}
-// the hatching: a vertical line every 2.2 units, square to the baseline, from it up to the curve
+const RISE = 36
+const curve = `M${X0} ${BASE} Q${(X0 + X1) / 2} ${BASE} ${X1} ${BASE - RISE}`
+const yAt = (x: number) => BASE - RISE * ((x - X0) / (X1 - X0)) ** 2
+// the hatching: a vertical line every 2.1 units, square to the baseline, from it up to the curve
 const hatch: string[] = []
-for (let x = x0 + 1.5; x < x1 - 0.5; x += 2.2) hatch.push(`M${x.toFixed(1)} ${BASE} V${Math.min(BASE - 1, yAt(x)).toFixed(1)}`)
+for (let x = X0 + 1.2; x < X1 - 0.4; x += 2.1) hatch.push(`M${x.toFixed(1)} ${BASE} V${Math.min(BASE - 1, yAt(x)).toFixed(1)}`)
 
-// the paraboloid z = x² + y²: rings at five heights (radius grows with the square root of the height)
-const rings = [0.25, 0.5, 0.75, 1].map((z) => ({ cy: 56 - 30 * z, r: 28 * Math.sqrt(z) }))
+// the paraboloid z = x² + y²: rings at four heights (radius grows with the square root of the height)
+const rings = [0.25, 0.5, 0.75, 1].map((z) => ({ cy: 52 - 28 * z, r: 26 * Math.sqrt(z) }))
+
+// the tray: along the foot of the board, in front of it
+const TRAY = { x: -2, y: 6, w: 154, d: 11, h: 4 }
+const chalk = [
+  { x: 104, y: 4, len: 12, r: 1.15, a: 10, cls: 'ch-c1' },
+  { x: 118, y: 6.4, len: 10, r: 1.15, a: -14, cls: 'ch-c2' },
+  { x: 131, y: 3.6, len: 5, r: 1.15, a: 38, cls: 'ch-c1' },
+]
 ---
 
-<div class="xp-scene" style="--m:2.5;--fw:150px;--fd:10px;--dy:10px">
+<div class="xp-scene" style="--m:2.4;--fw:150px;--fd:22px;--dx:7px;--dy:95px">
   <div class="xp-plane">
     <div class="xp-lift">
-      <Cub x={0} y={2} w={150} d={6} h={96} cls="xp-board xp-turn">
-        <svg slot="front" viewBox="0 0 150 96" width="100%" height="100%" focusable="false">
-          <text class="ch-tx ch-h" x="6" y="9">Calculus II</text>
-          <text class="ch-tx ch-h" x="82" y="9">Calculus III</text>
-          <path class="ch-line ch-div" d="M75 4 V92" />
+      <div class="an-pose xp-turn" style="left:0;top:2px;width:150px;height:6px">
+        <Cub x={0} y={0} w={150} d={6} h={96} cls="xp-board">
+          <svg slot="front" viewBox="0 0 150 96" width="100%" height="100%" focusable="false">
+            <!-- what was wiped: ghosts of erased writing and the eraser's swipes -->
+            <g class="ch-ghost" transform="rotate(-3 62 28)">
+              <text x="50" y="26">x² + 4</text>
+              <text x="52" y="33">= ?</text>
+            </g>
+            <path class="ch-swipe" d="M49 18 Q60 15 72 19 M48 27 Q61 23 73 28 M50 36 Q61 33 72 37" />
 
-          <!-- Calculus II: area under a curve, hatched -->
-          {hatch.map((d) => <path class="ch-hatch" d={d} />)}
-          <path class="ch-line ch-base" d={`M6 ${BASE} H68 M8 56 V16`} />
-          <path class="ch-line ch-curve" d={curve} />
-          <text class="ch-tx" x="38" y="16">∫ f(x) dx</text>
-          <text class="ch-tx" x="6" y="68">∫ u dv = uv − ∫ v du</text>
-          <text class="ch-tx" x="6" y="79">eˣ = Σ xⁿ / n!</text>
-          <text class="ch-tx" x="6" y="90">Σ 1/n² = π²/6</text>
+            <g transform="rotate(-1 30 9)"><text class="ch-tx ch-h" x="6" y="9">Calculus II</text></g>
+            <g transform="rotate(1 100 9)"><text class="ch-tx ch-h" x="82" y="9">Calculus III</text></g>
+            <path class="ch-line ch-div" d="M75 4 V84" />
 
-          <!-- Calculus III: a surface, its gradient, and two integrals -->
-          <path class="ch-line ch-surf" d="M112 58 V18 M110 22 L112 17 L114 22" />
-          {rings.map((g) => <ellipse class="ch-line ch-surf" cx="112" cy={g.cy.toFixed(1)} rx={g.r.toFixed(1)} ry={(g.r * 0.24).toFixed(1)} />)}
-          <text class="ch-tx" x="80" y="16">z = x² + y²</text>
-          <text class="ch-tx" x="79" y="68">∇f = (∂f/∂x, ∂f/∂y)</text>
-          <text class="ch-tx" x="79" y="79">∬ f(x, y) dA</text>
-          <text class="ch-tx" x="79" y="90">∮ F · dr</text>
-        </svg>
-      </Cub>
+            <!-- Calculus II: y = 3x² from 0 to 2, the area under it hatched -->
+            {hatch.map((d) => <path class="ch-hatch" d={d} />)}
+            <path class="ch-line ch-base" d={`M8 ${BASE} H60 M${X0} ${BASE + 3} V14`} />
+            <path class="ch-line ch-base" d={`M${X0} ${BASE - 1.2} V${BASE + 1.4} M${X1} ${BASE - 1.2} V${BASE + 1.4}`} />
+            <path class="ch-line ch-curve" d={curve} />
+            <text class="ch-tx ch-s" x={X0 - 1} y={BASE + 8} text-anchor="middle">0</text>
+            <text class="ch-tx ch-s" x={X1} y={BASE + 8} text-anchor="middle">2</text>
+            <text class="ch-tx" x="16" y="22">y = 3x²</text>
+
+            <!-- the worked integral: an attempt struck out, then the steps, then the answer boxed -->
+            <g transform="rotate(-1 20 66)"><text class="ch-tx" x="6" y="66">∫₀² 3x² dx</text></g>
+            <g transform="rotate(-0.5 20 73)">
+              <text class="ch-tx" x="6" y="73">= x³ / 3</text>
+              <path class="ch-line ch-late ch-cross" d="M5 70.8 Q18 68.6 31 71.2" />
+            </g>
+            <g transform="rotate(0.8 20 80)"><text class="ch-tx" x="6" y="80">= [ x³ ]₀²</text></g>
+            <g transform="rotate(-0.8 24 88)">
+              <text class="ch-tx" x="6" y="88">= 2³ − 0³ =</text>
+              <text class="ch-tx" x="40.5" y="88">8</text>
+              <path class="ch-line ch-late" d="M38.4 82.6 H46.6 V90 H38.4 Z" />
+            </g>
+            <g transform="rotate(-4 58 80)">
+              <text class="ch-tx ch-d" x="52" y="80">2³ = 8</text>
+              <path class="ch-line ch-late ch-d" d="M51.6 81.8 H64" />
+            </g>
+
+            <!-- Calculus III: a surface, and a double integral worked out -->
+            <path class="ch-line ch-surf" d={`M112 54 V16 M110 20 L112 15 L114 20`} />
+            {rings.map((g) => <ellipse class="ch-line ch-surf" cx="112" cy={g.cy.toFixed(1)} rx={g.r.toFixed(1)} ry={(g.r * 0.24).toFixed(1)} />)}
+            <text class="ch-tx" x="80" y="16">z = x² + y²</text>
+            <g transform="rotate(-0.8 100 69)">
+              <text class="ch-tx" x="79" y="69">∬ (x + y) dA</text>
+              <text class="ch-tx ch-d" x="119" y="69">0≤x≤1, 0≤y≤2</text>
+            </g>
+            <g transform="rotate(0.6 100 77)"><text class="ch-tx" x="79" y="77">= ∫₀² ( ½ + y ) dy</text></g>
+            <g transform="rotate(-0.6 100 85)">
+              <text class="ch-tx" x="79" y="85">= 1 + 2 =</text>
+              <text class="ch-tx" x="107.5" y="85">3</text>
+              <path class="ch-line ch-late" d="M105.4 79.6 H113.4 V87 H105.4 Z" />
+            </g>
+          </svg>
+        </Cub>
+        <!-- the chalk tray: a ledge with a lip, chalk lying on it and an eraser -->
+        <Cub x={TRAY.x} y={TRAY.y} w={TRAY.w} d={TRAY.d} h={TRAY.h} cls="xp-tray">
+          {
+            chalk.map((c) => (
+              <div class="ch-stick" style={`left:${c.x}px;top:${c.y}px;transform:translateZ(${c.r}px) rotateZ(${c.a}deg)`}>
+                <Cable len={c.len} r={c.r} cls={c.cls} />
+              </div>
+            ))
+          }
+          <Cub x={22} y={1.8} w={16} d={4.2} h={6.8} cls="xp-erase" />
+        </Cub>
+        <Cub x={TRAY.x} y={TRAY.y + TRAY.d - 2} w={TRAY.w} d={2} h={TRAY.h + 1.4} cls="xp-tray xp-lip" />
+      </div>
     </div>
   </div>
 </div>
