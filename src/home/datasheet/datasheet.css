@@ -183,3 +183,28 @@
   color: var(--color-graphite);
   text-underline-offset: 3px;
 }
+
+/* the note drawings, moved here from the spine: 56px beside the Languages value, about 32px inline
+ * after each side-effect sentence. They are not floated, unlike in a margin note. */
+.ds-art .note-art {
+  float: none;
+  margin: 0;
+  width: 100%;
+}
+.ds-art-row {
+  display: block;
+  flex: none;
+  width: 56px;
+}
+.ds-val {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.ds-art-inline {
+  display: inline-block;
+  width: 32px;
+  margin-inline: 0.5rem 0.25rem;
+  vertical-align: middle;
+}

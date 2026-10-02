@@ -6,6 +6,7 @@
 // Every drawn line is an aria-hidden SVG that ships in its final state; datasheet.ts draws them in.
 import { getCollection } from 'astro:content'
 import Tick from '../../shared/components/Tick.astro'
+import NoteDrawing from '../spine/NoteDrawing.astro'
 
 // rev. YYYY.MM, from the newest changelog entry (the same order the Changelog section uses)
 const entries = await getCollection('changelog')
@@ -77,7 +78,25 @@ const conditions = [
             <tr><th scope="col">Parameter</th><th scope="col">Value</th></tr>
           </thead>
           <tbody>
-            {characteristics.map(([k, v]) => <tr><th scope="row">{k}</th><td>{v}</td></tr>)}
+            {
+              characteristics.map(([k, v]) => (
+                <tr data-ds-row={k === 'Languages' ? 'languages' : undefined}>
+                  <th scope="row">{k}</th>
+                  <td>
+                    {k === 'Languages' ? (
+                      <span class="ds-val">
+                        <span>{v}</span>
+                        <span class="ds-art ds-art-row">
+                          <NoteDrawing kind="languages" />
+                        </span>
+                      </span>
+                    ) : (
+                      v
+                    )}
+                  </td>
+                </tr>
+              ))
+            }
           </tbody>
         </table>
       </div>
@@ -99,7 +118,10 @@ const conditions = [
     <div class="ds-section" data-ds-part>
       <svg class="ds-rule" aria-hidden="true" focusable="false"><line data-ds-line x1="0" x2="100%" y1="0.5" y2="0.5"></line></svg>
       <h3 class="ds-label">Known side effects</h3>
-      <p class="ds-effects">Plays chess, mostly fast games. Plays guitar and sings, badly, on purpose.</p>
+      <p class="ds-effects">
+        Plays chess, mostly fast games.<span class="ds-art ds-art-inline" data-ds-hover><NoteDrawing kind="chess" /></span>
+        Plays guitar and sings, badly, on purpose.<span class="ds-art ds-art-inline" data-ds-hover><NoteDrawing kind="guitar" /></span>
+      </p>
     </div>
 
     <div class="ds-section" data-ds-part>
@@ -109,3 +131,8 @@ const conditions = [
     </div>
   </div>
 </section>
+
+<script>
+  import { initDatasheet } from './datasheet'
+  initDatasheet()
+</script>

@@ -1898,6 +1898,6 @@ corner box ("Arthur Heberle / index", "datasheet, sheet 1 of 1", "rev. YYYY.MM")
 |---|---|---|---|
 | 1 | Trim the spine | done | paragraph 2 and notes 3-5 removed (their note files deleted; the drawings stay in `NoteDrawing.astro`/`noteDrawings.ts` for stage 3); reading note ends as briefed; rail `min-height` set to the measured 331px (two notes, two leaders, no jump) |
 | 2 | The datasheet | done | `src/home/datasheet/`; frame and rules are aria-hidden SVG strokes (percent geometry, no viewBox, absolute or 1px tall so no layout shift); frame has a ground fill so the page rule does not cross it (Experience precedent); rev from newest changelog entry (2026.10); title block is "Arthur Heberle / index", "datasheet, sheet 01 of 01", "rev. 2026.10" |
-| 3 | Life | todo | |
+| 3 | Life | done | `datasheet.ts` reuses `makeArt()` from the spine; frame and rules draw (stroke-dashoffset), then each section fades in top to bottom; languages slot plays when its row enters view and on row hover; the knight and the string sit 32px inline, each after its own sentence (read the brief as one per sentence), and play on arrival and hover. Feature rule highlight is CSS on hover and `:focus-within`; the items hold nothing focusable, so there is no keyboard path (no stray tab stops added). Reduced motion and no JS: final markup. Verified in headless Edge over CDP |
 | 4 | Mobile | todo | |
 | 5 | Check | todo | |
