@@ -208,3 +208,50 @@
   margin-inline: 0.5rem 0.25rem;
   vertical-align: middle;
 }
+
+/* below 768px: the frame is the page width, the title block moves under the header, the features and
+ * the two tables take a column each, and each table row stacks (parameter above value). The column
+ * headers stay in the accessibility tree, clipped out of sight. */
+@media (max-width: 767px) {
+  .ds-frame {
+    width: 100%;
+    padding: 1rem;
+    gap: 1.5rem;
+  }
+  .ds-head {
+    flex-direction: column;
+  }
+  .ds-features,
+  .ds-tables {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .ds-table,
+  .ds-table tbody,
+  .ds-table tr,
+  .ds-table th,
+  .ds-table td {
+    display: block;
+  }
+  .ds-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .ds-table tr {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--color-line);
+  }
+  .ds-table th,
+  .ds-table td {
+    padding: 0;
+    border-bottom: 0;
+  }
+  .ds-table tbody th {
+    width: auto;
+    font-family: var(--font-mono);
+    font-size: var(--text-dimension);
+  }
+}
