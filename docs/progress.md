@@ -183,6 +183,16 @@ materials, not tokens.
 Scoped colours (like the EduBra and Agente H materials, not tokens, used nowhere else): the RP3 screen's reds,
 greens, blue and greys (the real software's own colours) and the ELETRON analyzer's black enclosure and greens.
 
+### Home spine pass (2026-10-02, Arthur's brief)
+
+Five stages, in order. Commit message `spine: <stage>`. Copy unchanged. Decisions Arthur made: the page rule's
+tip rides the bottom of the screen; leaders drop into the line gap under their marker, then run right and cross
+the gutter; note labels are mono as briefed (**diverges from design-spec §5**, which reserves mono for dimensions).
+
+| Stage | Status | Notes |
+|---|---|---|
+| 1 Clean up | done | notes are marker + mono label, then the text (no dash). **The two short lines were a bug, not a design:** `#rule` and `.lead` have only `inset-block: 0`, and a replaced SVG does not stretch from that, so both were 100px tall (the rule should span `.page-main`, 4500px+); `height: 100%` on both. The rule's scrub now starts drawn to the viewport bottom (`strokeDashoffset` from `100 * (1 - vh / mainH)`), and `tipScrollFor()` is `centre - innerHeight`, so ticks and leaders still draw as the tip passes. The two rails became one grid (p1, p2 in column 1; each note group in column 3, `height: 0` so notes never push paragraph 2 down); hero `pb-8`, spine `pt-8`. Interim: with notes taking no height, group A overruns group B until stage 2 places them |
+
 ---
 
 ## Open questions for Arthur

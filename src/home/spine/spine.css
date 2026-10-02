@@ -16,20 +16,36 @@
 .rail {
   display: grid;
   grid-template-columns: minmax(0, var(--container-measure)) var(--spacing-gutter) var(--container-margin);
-  grid-template-areas: 'prose gutter margin';
+  grid-template-areas: 'p1 gutter a' 'p2 gutter b';
+  row-gap: 1.25rem; /* ordinary paragraph spacing: the notes column never pushes paragraph 2 down */
 }
 .rail-prose {
-  grid-area: prose;
+  margin: 0;
+}
+.rail-prose-1 {
+  grid-area: p1;
+}
+.rail-prose-2 {
+  grid-area: p2;
 }
 .rail-margin {
-  grid-area: margin;
   align-self: start;
+  height: 0; /* the notes overflow downward; they take no row height */
+}
+.rail-margin-a {
+  grid-area: a;
+}
+.rail-margin-b {
+  grid-area: b;
 }
 @media (max-width: 767px) {
   .rail {
     grid-template-columns: 1fr;
-    grid-template-areas: 'prose' 'margin';
+    grid-template-areas: 'p1' 'a' 'p2' 'b';
     row-gap: 1rem;
+  }
+  .rail-margin {
+    height: auto;
   }
 }
 
@@ -42,12 +58,19 @@
 .note {
   position: relative;
 }
-/* The rendered note body arrives as a <p> from the notes collection's markdown; folding
- * it inline keeps "label — text" reading as one line instead of the label sitting above
- * an orphaned paragraph. */
+/* The marker, then the label on its own line (mono, graphite), then the text below. */
+.note-head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+.note-label {
+  font-family: var(--font-mono);
+  font-size: var(--text-dimension);
+  color: var(--color-graphite);
+}
 .note-text p {
-  display: inline;
-  margin: 0;
+  margin: 0.25rem 0 0;
 }
 
 .leader {

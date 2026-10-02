@@ -59,10 +59,12 @@ const delay = (0.2 + 0.06 * sibling).toFixed(2)
     {
       entry && Content ? (
         <>
-          <a class="feedback marker" href={`#marker-${entry.id}`} aria-label={`back to reference ${marker}`}>
-            {marker}
-          </a>
-          <strong class="font-sans font-medium text-graphite">{entry.data.label}</strong> —
+          <div class="note-head">
+            <a class="feedback marker" href={`#marker-${entry.id}`} aria-label={`back to reference ${marker}`}>
+              {marker}
+            </a>
+            <span class="note-label">{entry.data.label}</span>
+          </div>
           <Content />
         </>
       ) : (

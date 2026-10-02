@@ -168,9 +168,12 @@ const pageMain = rulePath?.closest<HTMLElement>('.page-main') ?? null
  *  the proportional case the plugin measures correctly (see Rule.astro). */
 function tier1Rule(rule: SVGPathElement, main: HTMLElement) {
   gsap.set(rule, { strokeDasharray: RULE_LENGTH })
+  // The drawn tip rides the bottom of the screen: at scroll 0 the rule is already drawn
+  // down to the viewport's height, and it reaches the page end as the page does.
+  const startOffset = () => RULE_LENGTH * (1 - Math.min(1, window.innerHeight / main.offsetHeight))
   gsap.fromTo(
     rule,
-    { strokeDashoffset: RULE_LENGTH },
+    { strokeDashoffset: startOffset },
     {
       strokeDashoffset: 0,
       ease: 'none',
@@ -202,13 +205,13 @@ function tier1Rule(rule: SVGPathElement, main: HTMLElement) {
  *  refresh — what keeps them right across resize. */
 function tipScrollFor(el: Element, main: HTMLElement, drawPx: number) {
   return () => {
-    const mainBox = main.getBoundingClientRect()
     const box = el.getBoundingClientRect()
     // Lenis drives real window scroll, so window.scrollY is the true position here.
-    const mainTop = mainBox.top + window.scrollY
     const centre = box.top + box.height / 2 + window.scrollY
-    const f = gsap.utils.clamp(0, 1, (centre - mainTop) / main.offsetHeight)
-    const at = mainTop + f * (main.offsetHeight - window.innerHeight)
+    // The rule's tip rides the bottom of the screen (tier1Rule), so it reaches the element
+    // when scroll + viewport height = the element's position. Negative for an element
+    // already above the first screen's bottom: its scrub is then already complete.
+    const at = centre - window.innerHeight
     // Same lesson as step 08's clamp(): a start position past the scroller's real max is
     // simply never reached, and the element would sit undrawn forever.
     return Math.min(at, ScrollTrigger.maxScroll(window) - drawPx)

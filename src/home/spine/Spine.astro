@@ -12,10 +12,10 @@ const notes = await getCollection('notes')
 const byLabel = Object.fromEntries(notes.map((note) => [note.data.label, note]))
 ---
 
-<section class="flex flex-col gap-12 py-16" aria-label="About">
+<section class="flex flex-col pb-16 pt-8" aria-label="About">
   <Tick />
   <div class="rail" data-anim-scope>
-    <p class="rail-prose text-body" data-anim>
+    <p class="rail-prose rail-prose-1 text-body" data-anim>
       I build things that sit between software and the physical world. A device that
       turns digital text into Braille. A WhatsApp agent that sells from a shop's own
       catalogue. A 2D platformer in C++. The part I'm best at is the handover: getting
@@ -32,14 +32,12 @@ const byLabel = Object.fromEntries(notes.map((note) => [note.data.label, note]))
         aria-label="note 2, working on">2</a
       >
     </p>
-    <div class="rail-margin flex flex-col">
+    <div class="rail-margin rail-margin-a flex flex-col">
       <MarginNote entry={byLabel['reading']} marker={1} sibling={0} />
       <MarginNote entry={byLabel['working on']} marker={2} sibling={1} />
     </div>
-  </div>
 
-  <div class="rail" data-anim-scope>
-    <p class="rail-prose text-body" data-anim>
+    <p class="rail-prose rail-prose-2 text-body" data-anim>
       Outside all of that I keep a few things going that lead nowhere in particular.
       Languages I don't strictly need.<a
         class="feedback marker"
@@ -55,7 +53,7 @@ const byLabel = Object.fromEntries(notes.map((note) => [note.data.label, note]))
         aria-label="note 5, guitar">5</a
       > I'm not planning to get good at that one.
     </p>
-    <div class="rail-margin flex flex-col">
+    <div class="rail-margin rail-margin-b flex flex-col">
       <MarginNote entry={byLabel['languages']} marker={3} sibling={0} />
       <MarginNote entry={byLabel['chess']} marker={4} sibling={1} />
       <MarginNote entry={byLabel['guitar']} marker={5} sibling={2} />

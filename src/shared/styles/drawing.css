@@ -14,6 +14,7 @@
 .rule-svg {
   position: absolute;
   inset-block: 0;
+  height: 100%; /* a replaced element doesn't stretch from inset alone: it was 100px tall */
   left: min(var(--container-measure), calc(100% - var(--spacing-gutter) - var(--container-margin)));
   width: 1px;
   overflow: visible;
