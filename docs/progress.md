@@ -213,6 +213,8 @@ about 1.4x. `pnpm build` and `astro check` pass.
 
 Calculus II board (2026-10-02): the hatching under the curve is now vertical lines, square to the baseline (they were slanted); `Chalkboard.astro` only.
 
+ELETRON chart (2026-10-02): `MeterChart.astro` is now built from the spreadsheet's own monthly figures (Jan to Jun, baseline and after; illustrative), with dashed gridlines, kWh ticks, month ticks and labels, a point on every month, a title, line labels and a bracket for June's saving (-299). **Divergence from the first brief:** the "after" line no longer starts above the baseline, because the sheet and report show every month lower. The action draws the dots and the bracket too (opacity only); the chart is 212x115 so it clears the report.
+
 ### Home spine pass (2026-10-02, Arthur's brief)
 
 Five stages, in order. Commit message `spine: <stage>`. Copy unchanged. Decisions Arthur made: the page rule's

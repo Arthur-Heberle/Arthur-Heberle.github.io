@@ -104,9 +104,12 @@ function analyzer(root: HTMLElement): Action {
   const before = strokes([q<SVGPathElement>('.mc-before')])
   const after = strokes([q<SVGPathElement>('.mc-after')])
   const gap = q<SVGPathElement>('.mc-gap')
-  const labels = ['before', 'after', 'savings'].map((l) => q<SVGTextElement>(`[data-l="${l}"]`))
+  const labels = ['before', 'after', 'savings', 'delta'].map((l) => q<SVGTextElement>(`[data-l="${l}"]`))
   const bands = cables.flatMap((c) => c.pulses)
-  const touched = [...lids, btn, ...reads, ...bands, q('.mc-before'), q('.mc-after'), gap, ...labels]
+  const dotsB = all<SVGCircleElement>(root, '.mc-pt-b')
+  const dotsA = all<SVGCircleElement>(root, '.mc-pt-a')
+  const bracket = q<SVGPathElement>('.mc-br')
+  const touched = [...lids, btn, ...reads, ...bands, ...dotsB, ...dotsA, bracket, q('.mc-before'), q('.mc-after'), gap, ...labels]
   const PASS = 1.1
   return {
     reset: () => {
@@ -117,7 +120,7 @@ function analyzer(root: HTMLElement): Action {
       before.reset()
       after.reset()
       gsap.set(gap, { scaleX: 0, opacity: 0 })
-      gsap.set(labels, { opacity: 0 })
+      gsap.set([...labels, ...dotsB, ...dotsA, bracket], { opacity: 0 })
     },
     run: () => {
       const tl = gsap.timeline({ onComplete: () => gsap.set(touched, { clearProps: CLEAR + ',rotationX' }) })
@@ -146,11 +149,14 @@ function analyzer(root: HTMLElement): Action {
       // then the before/after chart: the baseline, "after", the gap between them, "savings"
       const c = 1.0 + reads.length * 0.7 + 0.2
       before.draw(tl, c, 0.6)
+      tl.to(dotsB, { opacity: 1, duration: 0.15, stagger: 0.09 }, c + 0.1)
       tl.to(labels[0], { opacity: 1, duration: 0.3 }, c + 0.5)
       after.draw(tl, c + 0.7, 0.9)
+      tl.to(dotsA, { opacity: 1, duration: 0.15, stagger: 0.13 }, c + 0.8)
       tl.to(labels[1], { opacity: 1, duration: 0.3 }, c + 1.4)
       tl.to(gap, { scaleX: 1, opacity: 1, duration: 0.6, ease: ease() }, c + 1.7)
       tl.to(labels[2], { opacity: 1, duration: 0.3 }, c + 2.1)
+      tl.to([bracket, labels[3]], { opacity: 1, duration: 0.3 }, c + 2.3)
       return tl
     },
   }

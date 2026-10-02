@@ -1,20 +1,44 @@
 ---
-// ELETRON's chart, beside the meter: consumption before (a baseline) and after (higher at first, then lower),
-// and the gap between them, "savings". Measurement and verification, in the site's line style.
-const before: [number, number][] = [[14, 38], [48, 38], [82, 38], [116, 38], [146, 38]]
-const after: [number, number][] = [[14, 28], [30, 26], [48, 38], [68, 52], [90, 58], [118, 60], [146, 58]]
-const d = (p: [number, number][]) => p.map(([x, y], i) => `${i ? 'L' : 'M'}${x} ${y}`).join(' ')
-// the gap: along the baseline from where the lines cross, and back along the "after" line
-const gap = `M48 38 H146 ` + [...after].slice(2).reverse().map(([x, y]) => `L${x} ${y}`).join(' ') + ' Z'
+// ELETRON's chart, beside the meter: monthly consumption before (the baseline) and after, January to June,
+// from the same illustrative figures as the spreadsheet and the report, and the gap between them, the
+// savings, with the last month's saving bracketed. Measurement and verification, in the site's line style.
+const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']
+const base = [1284, 1301, 1275, 1290, 1262, 1288]
+const after = [1190, 1112, 1085, 1043, 1008, 989]
+const X0 = 34 // the plot's left and right edges, top and bottom
+const X1 = 208
+const Y0 = 24
+const Y1 = 100
+const V0 = 900
+const V1 = 1400
+const x = (i: number) => X0 + 8 + (i * (X1 - X0 - 16)) / (months.length - 1)
+const y = (v: number) => Y1 - ((v - V0) / (V1 - V0)) * (Y1 - Y0)
+const pts = (a: number[]) => a.map((v, i) => [x(i), y(v)] as const)
+const d = (p: readonly (readonly [number, number])[]) => p.map(([px, py], i) => `${i ? 'L' : 'M'}${px.toFixed(1)} ${py.toFixed(1)}`).join(' ')
+const pb = pts(base)
+const pa = pts(after)
+// the gap: along the baseline, then back along the "after" line
+const gap = d(pb) + ' ' + [...pa].reverse().map(([px, py]) => `L${px.toFixed(1)} ${py.toFixed(1)}`).join(' ') + ' Z'
+const ticks = [1000, 1200, 1400]
+const last = months.length - 1
+const bx = x(last) + 7 // the bracket for June's saving
 ---
 
-<svg class="mt-chart" viewBox="0 0 160 84" width="190" height="100" focusable="false">
-  <path class="mc-axis" d="M10 6 V72 H156" />
+<svg class="mt-chart" viewBox="0 0 232 126" width="232" height="126" focusable="false">
+  <text class="mc-t mc-title" x="4" y="10">Consumption, kWh</text>
+  {ticks.map((v) => <path class="mc-grid" d={`M${X0} ${y(v).toFixed(1)} H${X1}`} />)}
+  {ticks.map((v) => <text class="mc-t mc-tick" x={X0 - 4} y={(y(v) + 1.2).toFixed(1)} text-anchor="end">{v}</text>)}
+  <path class="mc-axis" d={`M${X0} ${Y0 - 6} V${Y1} H${X1 + 4}`} />
+  {months.map((m, i) => <path class="mc-mark" d={`M${x(i).toFixed(1)} ${Y1} v2.4`} />)}
+  {months.map((m, i) => <text class="mc-t mc-tick" x={x(i).toFixed(1)} y={Y1 + 9} text-anchor="middle">{m}</text>)}
   <path class="mc-gap" d={gap} />
-  <path class="mc-before" d={d(before)} />
-  <path class="mc-after" d={d(after)} />
-  <text class="mc-t" x="12" y="14" data-l="axis">kWh</text>
-  <text class="mc-t" x="150" y="34" text-anchor="end" data-l="before">before</text>
-  <text class="mc-t" x="150" y="80" text-anchor="end" data-l="after">after</text>
-  <text class="mc-t mc-sav" x="96" y="49" text-anchor="middle" data-l="savings">savings</text>
+  <path class="mc-before" d={d(pb)} />
+  <path class="mc-after" d={d(pa)} />
+  {pb.map(([px, py]) => <circle class="mc-pt mc-pt-b" cx={px.toFixed(1)} cy={py.toFixed(1)} r="1.9" />)}
+  {pa.map(([px, py]) => <circle class="mc-pt mc-pt-a" cx={px.toFixed(1)} cy={py.toFixed(1)} r="1.9" />)}
+  <path class="mc-br" d={`M${bx} ${pb[last][1].toFixed(1)} H${bx + 2.6} V${pa[last][1].toFixed(1)} H${bx} M${bx + 2.6} ${((pb[last][1] + pa[last][1]) / 2).toFixed(1)} H${bx + 5}`} />
+  <text class="mc-t mc-sav" x={bx + 7} y={(((pb[last][1] + pa[last][1]) / 2) + 1.2).toFixed(1)} data-l="delta">−299</text>
+  <text class="mc-t" x={X1 + 2} y={(pb[last][1] - 4).toFixed(1)} text-anchor="end" data-l="before">baseline</text>
+  <text class="mc-t" x={X1 + 2} y={(pa[last][1] + 10).toFixed(1)} text-anchor="end" data-l="after">after</text>
+  <text class="mc-t mc-sav" x={((x(1) + x(3)) / 2).toFixed(1)} y={(((y(1290) + y(1085)) / 2) + 1).toFixed(1)} text-anchor="middle" data-l="savings">savings</text>
 </svg>
