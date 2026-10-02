@@ -18,7 +18,7 @@ interface Props {
 const { x, y, w, d, h, cls = '', part } = Astro.props
 ---
 
-<div class={`cub ${cls}`} data-part={part} style={`left:${x}px;top:${y}px;width:${w}px;height:${d}px`}>
+<div class={`cub ${cls}`} data-part={part} style={`left:${x}px;top:${y}px;width:${w}px;height:${d}px;--h:${h}px`}>
   <div class="front" style={`top:${d}px;height:${h}px;transform:translateZ(${h}px) rotateX(-90deg)`}>
     <slot name="front" />
   </div>

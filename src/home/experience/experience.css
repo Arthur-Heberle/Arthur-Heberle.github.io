@@ -349,7 +349,7 @@
   width: var(--fw);
   height: var(--fd);
   transform-style: preserve-3d;
-  transform: rotateX(55deg) rotateZ(32deg) scale3d(var(--m), var(--m), var(--m));
+  transform: rotateX(55deg) rotateZ(-32deg) scale3d(var(--m), var(--m), var(--m));
 }
 .xp-blocks {
   padding-bottom: 8vh;
@@ -386,13 +386,26 @@
   position: absolute;
   top: 0;
   transform-origin: 0 0;
+  backface-visibility: hidden;
+}
+/* the objects are turned to the right, so the left face shows: the helper only builds front and right faces */
+.xp-scene .cub::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: var(--h);
+  height: 100%;
+  transform-origin: 0 0;
+  transform: translateZ(var(--h)) rotateY(90deg);
+  backface-visibility: hidden;
 }
 .xp-scene svg {
   display: block;
   overflow: visible;
 }
 .xp-turn {
-  transform: rotateZ(-20deg); /* a face that carries a drawing is turned to face the viewer */
+  transform: rotateZ(20deg); /* a face that carries a drawing is turned to face the viewer */
 }
 
 /* ---------- materials: muted, the bench's greys and wood; no logos ---------- */
@@ -402,7 +415,8 @@
 .xp-wood > .front {
   background: #8f7550;
 }
-.xp-wood > .right {
+.xp-wood > .right,
+.xp-wood::before {
   background: #7a6342;
 }
 
@@ -414,7 +428,8 @@
   background: #34423c;
   box-shadow: inset 0 0 0 3px #8f7550;
 }
-.xp-board > .right {
+.xp-board > .right,
+.xp-board::before {
   background: #7a6342;
 }
 .xp-eraser > .top {
@@ -423,12 +438,14 @@
 .xp-eraser > .front {
   background: #d8c9a0;
 }
-.xp-eraser > .right {
+.xp-eraser > .right,
+.xp-eraser::before {
   background: #b8aa84;
 }
 .xp-chalk > .top,
 .xp-chalk > .front,
-.xp-chalk > .right {
+.xp-chalk > .right,
+.xp-chalk::before {
   background: #e6e9e3;
 }
 .ch-base,
@@ -460,7 +477,8 @@
 .xp-lap > .front {
   background: #9ea3a8;
 }
-.xp-lap > .right {
+.xp-lap > .right,
+.xp-lap::before {
   background: #82878c;
 }
 .lp-hinge {
@@ -479,7 +497,8 @@
   background: var(--color-sheet);
   box-shadow: inset 0 0 0 3px #2c2e33;
 }
-.xp-scr > .right {
+.xp-scr > .right,
+.xp-scr::before {
   background: #2c2e33;
 }
 .un-box rect {
@@ -532,7 +551,8 @@
 .xp-an > .front {
   background: #1b1d20;
 }
-.xp-an > .right {
+.xp-an > .right,
+.xp-an::before {
   background: #0f1012;
 }
 .an-pl {
@@ -624,7 +644,8 @@
 .xp-clip > .front {
   background: #7a5f3c;
 }
-.xp-clip > .right {
+.xp-clip > .right,
+.xp-clip::before {
   background: #6a5232;
 }
 .cb-sheet {
@@ -662,7 +683,8 @@
   background: #eef0ee;
 }
 .xp-paper > .front,
-.xp-paper > .right {
+.xp-paper > .right,
+.xp-paper::before {
   background: #c3c8c6;
 }
 .ws-fold {
@@ -732,7 +754,8 @@
 .xp-mon > .front {
   background: #52575c;
 }
-.xp-mon > .right {
+.xp-mon > .right,
+.xp-mon::before {
   background: #41454a;
 }
 .xp-screen > .top {
@@ -742,7 +765,8 @@
   background: #f4f5f4;
   box-shadow: inset 0 0 0 3px #2c2e33;
 }
-.xp-screen > .right {
+.xp-screen > .right,
+.xp-screen::before {
   background: #2c2e33;
 }
 .rp-plat {
@@ -794,7 +818,8 @@
 .xp-frame > .front {
   background: #52575c;
 }
-.xp-frame > .right {
+.xp-frame > .right,
+.xp-frame::before {
   background: #41454a;
 }
 .xp-bed > .top {
@@ -803,7 +828,8 @@
 .xp-bed > .front {
   background: #aeb3b8;
 }
-.xp-bed > .right {
+.xp-bed > .right,
+.xp-bed::before {
   background: #959aa0;
 }
 .xp-head > .top {
@@ -812,12 +838,14 @@
 .xp-head > .front {
   background: #6c7176;
 }
-.xp-head > .right {
+.xp-head > .right,
+.xp-head::before {
   background: #52575c;
 }
 .xp-nozzle > .top,
 .xp-nozzle > .front,
-.xp-nozzle > .right {
+.xp-nozzle > .right,
+.xp-nozzle::before {
   background: #3a3d41;
 }
 .xp-part > .top {
@@ -826,7 +854,8 @@
 .xp-part > .front {
   background: #8fa0a8;
 }
-.xp-part > .right {
+.xp-part > .right,
+.xp-part::before {
   background: #77888f;
 }
 .pr-fill {
