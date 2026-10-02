@@ -217,6 +217,8 @@ ELETRON chart (2026-10-02): `MeterChart.astro` is now built from the spreadsheet
 
 Calculus II board (2026-10-02, second pass): a wooden chalk tray with a lip along the foot of the board, three pieces of chalk (`Cable.astro` cylinders) and an eraser standing on its edge, felt pad toward the viewer (it lay flat first and the lip hid the felt). The face now shows worked problems instead of loose formulas: y = 3x² from 0 to 2 with the area hatched and its integral worked to 8 (an attempt `x³/3` struck through, 8 boxed, a `2³ = 8` check), and a double integral of x + y over 0 to 1 by 0 to 2 worked to 3 (inner integral ½ + y, then 1 + 2); the maths is checked. Faint ghosts of erased writing, eraser swipes, haze and dust along the foot are static CSS gradients and strokes. The action draws the lines, hatches the area, writes the lines one by one, then draws the cross-out, boxes and check (`.ch-late`); only `opacity` and `stroke-dashoffset`. Written lines are tilted by a wrapping `<g transform>` so `clearProps` cannot strip it. The board is `--m:2.4`, centred in the 560x400 box (measured 354px wide, inside at 1280 and 375). Description updated; no drawing text in the accessibility tree. Not tested: Firefox, Safari, touch.
 
+Calculus III limits (2026-10-02): the note `0≤x≤1, 0≤y≤2` ran off the board's right edge; it is now two lines, `0 ≤ x ≤ 1` over `0 ≤ y ≤ 2`, inside the margin (`Chalkboard.astro` only).
+
 ### Home spine pass (2026-10-02, Arthur's brief)
 
 Five stages, in order. Commit message `spine: <stage>`. Copy unchanged. Decisions Arthur made: the page rule's
