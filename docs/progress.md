@@ -155,6 +155,16 @@ hatched area, integration by parts, Taylor series of e^x, series sum) and Calcul
 z = x² + y², gradient, double integral, line integral). The action draws the lines, hatches the area, then
 writes the formulas one by one.
 
+Experience, replay and the RP3 printer (2026-10-02, Arthur's request): (1) every object's action now **replays
+each time it shows up**: it is put back at its start state when chosen or when it leaves the screen, and runs
+when it is chosen (250 ms after the swap) or comes back into view; the same on mobile each time the object
+scrolls into view (thresholds 0 and .6). Reduced motion still shows final states and runs nothing. (2) The RP3
+printer's filling was drawn in a rotated svg with `overflow: visible`, so it spilled out of the part. It is
+rebuilt bigger, as a bed-slinger: the infill lines are generated in `Printer.astro` in the part's own
+coordinates, clipped to it, and the part's svg is `overflow: hidden`; in the action the gantry rises layer by
+layer, the head slides along the bar (x) and the bed moves front to back (y), so the nozzle traces each line
+while it is drawn (about 8 s for six layers, alongside the monitor's own animation).
+
 Scoped colours (like the EduBra and Agente H materials, not tokens, used nowhere else): the RP3 screen's reds,
 greens, blue and greys (the real software's own colours) and the ELETRON analyzer's black enclosure and greens.
 

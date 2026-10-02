@@ -102,6 +102,7 @@ function analyzer(root: HTMLElement): Action {
   return {
     reset: () => {
       lids.forEach((lid) => gsap.set(lid, open(lid)))
+      gsap.set(btn, { clearProps: 'transform' })
       gsap.set(reads, { opacity: 0 })
       before.reset()
       after.reset()
@@ -140,37 +141,60 @@ function monitor(root: HTMLElement): Action {
   const layers: SVGGeometryElement[][] = []
   loops.forEach((l) => (layers[+(l.dataset.k ?? 0)] ??= []).push(l))
   const draws = layers.map((ls) => strokes(ls))
-  // the printer builds the same part, in step with the monitor's layers
-  const pops = all<HTMLElement>(root, '.pr-pop')
-  const infill = pops.map((p) => strokes(all<SVGPathElement>(p, '.pr-fill')))
+  // the printer builds the same part: the gantry rises, the head slides along the bar (x) and the bed moves
+  // front to back (y), so the nozzle traces every line of every layer while it is drawn
+  const printerLayers = all<HTMLElement>(root, '.pr-layer')
+  const pops = printerLayers.map((l) => l.querySelector<HTMLElement>('.pr-pop')!)
+  const lineSets = printerLayers.map((l) => all<SVGPathElement>(l, '.pr-fill'))
+  const fillDraw = lineSets.map((ls) => strokes(ls))
   const gantry = root.querySelector<HTMLElement>('.pr-gantry')!
-  const fills = all(root, '.pr-fill')
+  const head = root.querySelector<HTMLElement>('.pr-head')!
+  const bed = root.querySelector<HTMLElement>('.pr-bm')!
+  const fills = lineSets.flat()
+  const G0 = 10.5 // gantry height with the nozzle just above the first layer; 3 more for each layer
+  const HALF_W = 18 // half the part's width and depth: the nozzle is over the part's centre at x = 0, y = 0
+  const HALF_D = 12
   const TURN = 0.9
   const STEP = 0.14
   return {
     reset: () => {
       draws.forEach((d) => d.reset())
+      gsap.set(view, { clearProps: 'transform' })
       gsap.set(pops, { scale: 0 })
-      infill.forEach((s) => s.reset())
-      gsap.set(gantry, { z: 14 })
+      fillDraw.forEach((d) => d.reset())
+      gsap.set(gantry, { z: G0 })
+      gsap.set(head, { x: 0 })
+      gsap.set(bed, { y: 0 })
     },
     run: () => {
       const tl = gsap.timeline({
-        onComplete: () => gsap.set([...loops, view, ...pops, gantry, ...fills], { clearProps: CLEAR }),
+        onComplete: () => gsap.set([...loops, view, ...pops, gantry, head, bed, ...fills], { clearProps: CLEAR }),
       })
       // the view turns slightly, once
       tl.to(view, { skewX: -6, scaleX: 0.95, svgOrigin: '100 80', duration: TURN / 2, ease: 'power2.inOut' }, 0)
       tl.to(view, { skewX: 0, scaleX: 1, duration: TURN / 2, ease: 'power2.inOut' }, TURN / 2)
       // then the layers rise, one at a time from the bottom
       draws.forEach((d, k) => d.draw(tl, TURN + k * STEP, 0.3))
-      // the printer: one of its layers for every few of the monitor's
-      const span = draws.length * STEP
-      pops.forEach((pop, i) => {
-        const at = TURN + (i * span) / pops.length
-        tl.to(pop, { scale: 1, duration: 0.2, ease: ease() }, at)
-        infill[i].draw(tl, at + 0.1, 0.3, 0.02)
+      // the printer, from the start: layer by layer, the nozzle moves along each line as it is drawn
+      let t = 0.2
+      lineSets.forEach((lines, i) => {
+        tl.to(gantry, { z: G0 + 3 * i, duration: 0.12, ease: 'none' }, t)
+        tl.to(pops[i], { scale: 1, duration: 0.12, ease: ease() }, t + 0.05)
+        t += 0.14
+        lines.forEach((line) => {
+          const d = line.dataset
+          const [x1, y1, x2, y2] = [+d.x1!, +d.y1!, +d.x2!, +d.y2!]
+          tl.to(head, { x: x1 - HALF_W, duration: 0.03, ease: 'none' }, t)
+          tl.to(bed, { y: HALF_D - y1, duration: 0.03, ease: 'none' }, t)
+          t += 0.03
+          tl.to(line, { strokeDashoffset: 0, duration: 0.09, ease: 'none' }, t)
+          tl.to(head, { x: x2 - HALF_W, duration: 0.09, ease: 'none' }, t)
+          tl.to(bed, { y: HALF_D - y2, duration: 0.09, ease: 'none' }, t)
+          t += 0.09
+        })
       })
-      tl.to(gantry, { z: 34, duration: span, ease: 'none' }, TURN)
+      tl.to(head, { x: 0, duration: 0.2, ease: 'power1.inOut' }, t)
+      tl.to(bed, { y: 0, duration: 0.2, ease: 'power1.inOut' }, t)
       return tl
     },
   }
@@ -193,9 +217,10 @@ export function initExperience(grid: HTMLElement) {
   const artFigs = all<HTMLElement>(grid, '.xp-fig-art')
   const visibleFigs = () => (staged() ? stageFigs : artFigs)
 
-  // an experience's action plays the first time it is shown; one action instance per drawing
-  const played = new Set<string>()
+  // an experience's action plays every time its object shows up: it is put back at its start state when it
+  // is chosen (or leaves the screen), and runs when it is in view. One action instance per drawing.
   const actions = new Map<HTMLElement, Action>()
+  const running = new Map<HTMLElement, gsap.core.Timeline>()
   const actionFor = (fig: HTMLElement) => {
     let a = actions.get(fig)
     if (!a) {
@@ -204,34 +229,35 @@ export function initExperience(grid: HTMLElement) {
     }
     return a
   }
-  const play = (fig: HTMLElement) => {
-    const id = fig.dataset.obj ?? ''
-    if (reduced || played.has(id)) return
-    const a = actionFor(fig)
-    if (!a) return
-    played.add(id)
-    a.run()
+  const prepare = (fig: HTMLElement) => {
+    if (reduced) return
+    running.get(fig)?.kill()
+    running.delete(fig)
+    actionFor(fig)?.reset()
   }
-  // an action still waiting at its start state goes straight to its final state
-  const settle = () => {
+  const start = (fig: HTMLElement) => {
+    if (reduced) return
+    running.get(fig)?.kill()
+    const a = actionFor(fig)
+    if (a) running.set(fig, a.run())
+  }
+  // every visible figure goes straight to its final state (the window changed size)
+  const finish = () => {
     visibleFigs().forEach((fig) => {
-      const id = fig.dataset.obj ?? ''
-      if (played.has(id)) return
-      played.add(id)
-      actionFor(fig)?.run().progress(1, false)
+      running.get(fig)?.kill()
+      running.delete(fig)
+      if (!reduced) {
+        const a = actionFor(fig)
+        a?.reset()
+        a?.run().progress(1, false)
+      }
     })
   }
 
   // everything waits at its start until it is shown
-  const prepare = () => {
-    if (reduced) return
-    visibleFigs().forEach((fig) => {
-      if (!played.has(fig.dataset.obj ?? '')) actionFor(fig)?.reset()
-    })
-  }
-  prepare()
+  visibleFigs().forEach(prepare)
   wide.addEventListener('change', () => {
-    settle()
+    finish()
     if (staged()) setActive(active, true)
   })
 
@@ -244,8 +270,9 @@ export function initExperience(grid: HTMLElement) {
     stageFigs.forEach((fig, j) => (fig.dataset.state = j === i ? 'on' : j < i ? 'after' : 'before'))
     links.forEach((a, j) => (j === i ? a.setAttribute('aria-current', 'true') : a.removeAttribute('aria-current')))
     if (seen && staged()) {
-      // let the incoming object land before its action starts
-      window.setTimeout(() => active === i && play(stageFigs[i]), reduced ? 0 : 250)
+      // back at its start while it slides in, then it runs once it has landed
+      prepare(stageFigs[i])
+      window.setTimeout(() => active === i && start(stageFigs[i]), reduced ? 0 : 250)
     }
   }
   setActive(0, true)
@@ -260,29 +287,30 @@ export function initExperience(grid: HTMLElement) {
   )
   blocks.forEach((b) => band.observe(b))
 
-  // the first experience plays when the stage is first in view
+  // an object plays whenever it comes into view, and waits at its start when it leaves
+  const inView = (fig: () => HTMLElement | undefined) => {
+    let on = false
+    return (entry: IntersectionObserverEntry) => {
+      const f = fig()
+      if (!f) return
+      if (entry.intersectionRatio === 0) {
+        on = false
+        prepare(f)
+      } else if (entry.intersectionRatio >= 0.6 && !on) {
+        on = true
+        seen = true
+        start(f)
+      } else if (entry.intersectionRatio < 0.6) on = false
+    }
+  }
   const stageEl = grid.querySelector<HTMLElement>('.xp-stage')!
-  const stageSeen = new IntersectionObserver(
-    ([entry]) => {
-      if (!entry.isIntersecting) return
-      stageSeen.disconnect()
-      seen = true
-      if (staged()) play(stageFigs[active])
-    },
-    { threshold: 0.6 },
-  )
-  stageSeen.observe(stageEl)
+  const stageView = inView(() => (staged() ? stageFigs[active] : undefined))
+  new IntersectionObserver((entries) => entries.forEach(stageView), { threshold: [0, 0.6] }).observe(stageEl)
 
-  // ---- below 900px: each object plays once as it scrolls into view ----
-  const artSeen = new IntersectionObserver(
-    (entries) =>
-      entries.forEach((e) => {
-        if (!e.isIntersecting || staged()) return
-        artSeen.unobserve(e.target)
-        play(e.target as HTMLElement)
-      }),
-    { threshold: 0.6 },
-  )
+  // ---- below 900px: each object plays whenever it scrolls into view ----
+  const artHandlers = new Map<Element, (e: IntersectionObserverEntry) => void>()
+  artFigs.forEach((fig) => artHandlers.set(fig, inView(() => (staged() ? undefined : fig))))
+  const artSeen = new IntersectionObserver((entries) => entries.forEach((e) => artHandlers.get(e.target)?.(e)), { threshold: [0, 0.6] })
   artFigs.forEach((fig) => artSeen.observe(fig))
 
   // ---- the timeline links: a smooth scroll to the block (instant under reduced motion) ----

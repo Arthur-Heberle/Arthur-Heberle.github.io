@@ -1,45 +1,86 @@
 ---
-// A generic FDM printer (no real brand's shape or logo): a frame (two posts and a base), a gantry carrying
-// the print head, and a bed. A small part stands on the bed as six layers. It is drawn smaller than the
-// monitor it sits beside, in the RP3 scene. Action (experience.ts, driven by the monitor's layers): the part
-// builds up layer by layer while the gantry climbs.
+// A generic FDM printer (no real brand's shape or logo), like a common bed-slinger: a frame, a bed that moves
+// front to back, two posts with a gantry bar that rises with the layers, and a print head that slides along the
+// bar. It prints a small part in six layers, each filled with parallel lines at its own angle. The lines are
+// generated here in the part's own coordinates and clipped to the part, so the filling cannot fall outside it.
+// Action (experience.ts, driven by Monitor): per layer the gantry steps up and the layer appears; then for every
+// line the head slides in x and the bed in y, so the nozzle traces the line while it is drawn.
 import Cub from '../../../projects/edubra/Cub.astro'
 
-const ANGLES = [0, 60, 120, 30, 90, 150]
-const PW = 28
+const PW = 36 // the part, in the bed's coordinates: x 17, y 14
 const PD = 24
-// parallel lines across the layer (the svg clips what falls outside, whatever the angle)
-const LINES = Array.from({ length: 11 }, (_, i) => `M-12 ${-8 + i * 4} H40`)
+const PX = 17
+const PY = 14
+const S = 5 // line spacing
+const ANGLES = [0, 60, 120, 30, 90, 150]
+const M = 1 // margin kept inside the part's edge
+
+/** Parallel lines at `deg`, clipped to the part and joined in alternating directions, as [x1, y1, x2, y2]. */
+function infill(deg: number) {
+  const a = (deg * Math.PI) / 180
+  const dx = Math.cos(a)
+  const dy = Math.sin(a)
+  const cx = PW / 2
+  const cy = PD / 2
+  const R = Math.hypot(PW, PD) / 2
+  const out: [number, number, number, number][] = []
+  for (let o = -Math.floor(R / S) * S; o <= R; o += S) {
+    const px = cx - dy * o
+    const py = cy + dx * o
+    let t0 = -1e9
+    let t1 = 1e9
+    let ok = true
+    for (const [p, d, lo, hi] of [
+      [px, dx, M, PW - M],
+      [py, dy, M, PD - M],
+    ]) {
+      if (Math.abs(d) < 1e-9) {
+        if (p < lo || p > hi) ok = false
+      } else {
+        const ta = (lo - p) / d
+        const tb = (hi - p) / d
+        t0 = Math.max(t0, Math.min(ta, tb))
+        t1 = Math.min(t1, Math.max(ta, tb))
+      }
+    }
+    if (!ok || t1 - t0 < 1) continue
+    const line: [number, number, number, number] = [px + dx * t0, py + dy * t0, px + dx * t1, py + dy * t1]
+    out.push(out.length % 2 ? [line[2], line[3], line[0], line[1]] : line)
+  }
+  return out
+}
+const layers = ANGLES.map(infill)
+const f = (n: number) => n.toFixed(2)
 ---
 
 <div class="pr-wrap">
-  <Cub x={0} y={0} w={80} d={64} h={8} cls="xp-frame">
-    <Cub x={8} y={10} w={64} d={48} h={2} cls="xp-bed">
-      {
-        ANGLES.map((angle, i) => (
-          <div class="pr-layer" style={`transform:translateZ(${i * 3}px)`}>
-            <div class="pr-pop" style={`transform-origin:${18 + PW / 2}px ${12 + PD / 2}px`}>
-              <Cub x={18} y={12} w={PW} d={PD} h={3} cls="xp-part">
-                <svg viewBox={`0 0 ${PW} ${PD}`} width="100%" height="100%" focusable="false">
-                  <g transform={`rotate(${angle} ${PW / 2} ${PD / 2})`}>
-                    {LINES.map((d) => (
-                      <path class="pr-fill" d={d} />
+  <Cub x={0} y={0} w={100} d={90} h={8} cls="xp-frame">
+    <div class="pr-bm">
+      <Cub x={15} y={16} w={70} d={56} h={2} cls="xp-bed">
+        {
+          layers.map((lines, i) => (
+            <div class="pr-layer" data-i={i} style={`transform:translateZ(${i * 3}px)`}>
+              <div class="pr-pop" style={`transform-origin:${PX + PW / 2}px ${PY + PD / 2}px`}>
+                <Cub x={PX} y={PY} w={PW} d={PD} h={3} cls="xp-part">
+                  <svg viewBox={`0 0 ${PW} ${PD}`} width="100%" height="100%" focusable="false">
+                    {lines.map(([x1, y1, x2, y2]) => (
+                      <path class="pr-fill" d={`M${f(x1)} ${f(y1)} L${f(x2)} ${f(y2)}`} data-x1={f(x1)} data-y1={f(y1)} data-x2={f(x2)} data-y2={f(y2)} />
                     ))}
-                  </g>
-                </svg>
-              </Cub>
+                  </svg>
+                </Cub>
+              </div>
             </div>
-          </div>
-        ))
-      }
-    </Cub>
-    <Cub x={2} y={2} w={6} d={6} h={46} cls="xp-frame" />
-    <Cub x={72} y={2} w={6} d={6} h={46} cls="xp-frame" />
+          ))
+        }
+      </Cub>
+    </div>
+    <Cub x={4} y={39} w={6} d={6} h={56} cls="xp-frame" />
+    <Cub x={90} y={39} w={6} d={6} h={56} cls="xp-frame" />
     <div class="pr-gantry">
-      <Cub x={2} y={2} w={76} d={6} h={6} cls="xp-frame" />
+      <Cub x={10} y={39} w={80} d={6} h={6} cls="xp-frame" />
       <div class="pr-head">
-        <Cub x={33} y={8} w={14} d={9} h={10} cls="xp-head" />
-        <div class="pr-noz"><Cub x={38.5} y={11} w={3} d={3} h={4} cls="xp-nozzle" /></div>
+        <Cub x={42} y={37} w={16} d={10} h={12} cls="xp-head" />
+        <div class="pr-noz"><Cub x={48.5} y={40.5} w={3} d={3} h={5} cls="xp-nozzle" /></div>
       </div>
     </div>
   </Cub>

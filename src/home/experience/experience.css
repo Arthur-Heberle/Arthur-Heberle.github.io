@@ -791,14 +791,15 @@
   stroke: #14902a;
 }
 .pr-place {
-  left: 158px;
-  top: 66px;
+  left: 140px;
+  top: 14px;
 }
 .pr-wrap {
   left: 0;
   top: 0;
-  transform-origin: 0 0;
-  transform: scale3d(0.72, 0.72, 0.72);
+}
+.xp-part > .top svg {
+  overflow: hidden; /* the filling can never fall outside the part */
 }
 .xp-frame > .top {
   background: #6c7176;
@@ -848,6 +849,7 @@
 }
 .pr-layer,
 .pr-pop,
+.pr-bm,
 .pr-gantry,
 .pr-head,
 .pr-noz {
@@ -856,11 +858,8 @@
   transform-style: preserve-3d;
 }
 .pr-gantry {
-  transform: translateZ(34px); /* where the gantry ends: the nozzle just above the last layer */
-}
-.pr-head {
-  transform: translateZ(-8px);
+  transform: translateZ(25.5px); /* where the gantry ends: the nozzle just above the last layer */
 }
 .pr-noz {
-  transform: translateZ(-4px);
+  transform: translateZ(-5px); /* the nozzle hangs under the head */
 }
