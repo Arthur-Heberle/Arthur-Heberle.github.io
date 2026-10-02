@@ -58,7 +58,7 @@ const delay = (0.2 + 0.06 * sibling).toFixed(2)
             </a>
             <span class="note-label">{entry.data.label}</span>
           </div>
-          <div class="note-body">
+          <div class="note-body" id={`note-text-${entry.id}`}>
             <NoteDrawing kind={entry.id} />
             <Content />
           </div>

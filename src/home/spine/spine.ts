@@ -113,7 +113,7 @@ export function initSpine() {
       const { pair, cx, cy } = mark
       const sameLine = marks.filter((o) => o.pair.prose === pair.prose && Math.abs(o.cy - cy) < lh / 2)
       const rank = [...sameLine].sort((a, b) => a.cx - b.cx).indexOf(mark)
-      const lane = cy + lh / 2 + (rank - (sameLine.length - 1) / 2) * 3
+      const lane = cy + lh / 2 + 1 + (rank - (sameLine.length - 1) / 2) * 3
       const end = ends[i]
       // one vertical channel in the gutter per leader, 4px apart, the first note's nearest the
       // notes: a lower lane always turns nearer the text, so no two leaders cross there
