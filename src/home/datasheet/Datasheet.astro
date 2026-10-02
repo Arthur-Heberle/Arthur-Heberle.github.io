@@ -1,0 +1,111 @@
+---
+// Datasheet — the spine's second paragraph and notes, rebuilt as an electronic component's
+// datasheet (Arthur's brief, 2026-10-02). Copy is verbatim from that brief. A thin ruled frame, section
+// rules, mono labels in sentence case, and a small title block in the corner. Real headings,
+// a list for Features and two real tables, so a screen reader can move through it.
+// Every drawn line is an aria-hidden SVG that ships in its final state; datasheet.ts draws them in.
+import { getCollection } from 'astro:content'
+import Tick from '../../shared/components/Tick.astro'
+
+// rev. YYYY.MM, from the newest changelog entry (the same order the Changelog section uses)
+const entries = await getCollection('changelog')
+const newest = entries.slice().sort((a, b) => b.data.date.localeCompare(a.data.date) || b.id.localeCompare(a.id))[0]
+const rev = newest.data.date.slice(0, 7).replace('-', '.')
+
+const features = [
+  ['Learns fast, under load.', 'Electrical engineering from zero at ELETRON. OpenGL and a research codebase built over more than a decade at RP3.'],
+  ['Explains things.', 'Monitor twice, in Calculus II and in Programming Techniques, about four students a week.'],
+  ['Starts things nobody asked for.', 'Agente H: designed, built and tested alone, with 46 automated tests.'],
+  ['Works from the wire to the web.', 'EduBra: most of the hardware and all of the software. Agente H: the backend, the search and the dashboard.'],
+]
+const characteristics = [
+  ['Languages', 'Portuguese (native), English (advanced), Italian (intermediate), French (basic)'],
+  ['Students helped', 'about 4 a week for 12 weeks, in each of two monitor posts'],
+  ['Projects built', '3'],
+  ['Automated tests, Agente H', '46'],
+  ['Graduation', 'Computer engineering, UTFPR, December 2028'],
+]
+const conditions = [
+  ['Location', 'Curitiba, Brasil'],
+  ['Time zone', 'UTC−3'],
+  ['Citizenship', 'EU'],
+  ['Mode', 'Open to global remote'],
+]
+---
+
+<section class="datasheet" aria-labelledby="datasheet-heading" data-datasheet>
+  <Tick />
+  <div class="ds-frame">
+    <svg class="ds-frame-art" aria-hidden="true" focusable="false">
+      <rect data-ds-line x="0.5" y="0.5"></rect>
+    </svg>
+
+    <header class="ds-head" data-ds-part>
+      <h2 id="datasheet-heading" class="ds-title">Arthur Heberle — datasheet</h2>
+      <div class="ds-titleblock" role="group" aria-label="Sheet information">
+        <p class="tb-top">Arthur Heberle / <a href="/">index</a></p>
+        <p class="tb-sheet">datasheet, sheet 01 of 01</p>
+        <p class="tb-sheet">rev. {rev}</p>
+      </div>
+    </header>
+
+    <div class="ds-section" data-ds-part>
+      <svg class="ds-rule" aria-hidden="true" focusable="false"><line data-ds-line x1="0" x2="100%" y1="0.5" y2="0.5"></line></svg>
+      <h3 class="ds-label">Features</h3>
+      <ul class="ds-features" role="list">
+        {
+          features.map(([claim, proof]) => (
+            <li class="ds-feature">
+              <span class="ds-claim">{claim}</span>
+              <svg class="ds-claim-rule" aria-hidden="true" focusable="false">
+                <line class="ds-claim-base" x1="0" x2="100%" y1="0.5" y2="0.5"></line>
+                <line class="ds-claim-hi" x1="0" x2="100%" y1="0.5" y2="0.5"></line>
+              </svg>
+              <span class="ds-proof text-small text-graphite-2">{proof}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+
+    <div class="ds-tables">
+      <div class="ds-section" data-ds-part>
+        <svg class="ds-rule" aria-hidden="true" focusable="false"><line data-ds-line x1="0" x2="100%" y1="0.5" y2="0.5"></line></svg>
+        <h3 class="ds-label">Typical characteristics</h3>
+        <table class="ds-table">
+          <thead>
+            <tr><th scope="col">Parameter</th><th scope="col">Value</th></tr>
+          </thead>
+          <tbody>
+            {characteristics.map(([k, v]) => <tr><th scope="row">{k}</th><td>{v}</td></tr>)}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="ds-section" data-ds-part>
+        <svg class="ds-rule" aria-hidden="true" focusable="false"><line data-ds-line x1="0" x2="100%" y1="0.5" y2="0.5"></line></svg>
+        <h3 class="ds-label">Operating conditions</h3>
+        <table class="ds-table">
+          <thead>
+            <tr><th scope="col">Parameter</th><th scope="col">Value</th></tr>
+          </thead>
+          <tbody>
+            {conditions.map(([k, v]) => <tr><th scope="row">{k}</th><td>{v}</td></tr>)}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="ds-section" data-ds-part>
+      <svg class="ds-rule" aria-hidden="true" focusable="false"><line data-ds-line x1="0" x2="100%" y1="0.5" y2="0.5"></line></svg>
+      <h3 class="ds-label">Known side effects</h3>
+      <p class="ds-effects">Plays chess, mostly fast games. Plays guitar and sings, badly, on purpose.</p>
+    </div>
+
+    <div class="ds-section" data-ds-part>
+      <svg class="ds-rule" aria-hidden="true" focusable="false"><line data-ds-line x1="0" x2="100%" y1="0.5" y2="0.5"></line></svg>
+      <h3 class="ds-label">Ordering information</h3>
+      <p class="ds-order"><a href="mailto:a.gp.heberle@gmail.com">a.gp.heberle@gmail.com</a></p>
+    </div>
+  </div>
+</section>

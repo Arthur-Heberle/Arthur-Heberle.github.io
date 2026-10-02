@@ -12,6 +12,8 @@
 @import "./base.css";
 /* home: spine prose, margin notes, leader lines */
 @import "../../home/spine/spine.css";
+/* home: the datasheet (reuses the spine's note drawings) */
+@import "../../home/datasheet/datasheet.css";
 /* shared: the page rule and section ticks (both pages) */
 @import "./drawing.css";
 /* home: hero drawing and its flash guard */

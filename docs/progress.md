@@ -1897,7 +1897,7 @@ corner box ("Arthur Heberle / index", "datasheet, sheet 1 of 1", "rev. YYYY.MM")
 | Stage | Step | Status | Notes |
 |---|---|---|---|
 | 1 | Trim the spine | done | paragraph 2 and notes 3-5 removed (their note files deleted; the drawings stay in `NoteDrawing.astro`/`noteDrawings.ts` for stage 3); reading note ends as briefed; rail `min-height` set to the measured 331px (two notes, two leaders, no jump) |
-| 2 | The datasheet | todo | |
+| 2 | The datasheet | done | `src/home/datasheet/`; frame and rules are aria-hidden SVG strokes (percent geometry, no viewBox, absolute or 1px tall so no layout shift); frame has a ground fill so the page rule does not cross it (Experience precedent); rev from newest changelog entry (2026.10); title block is "Arthur Heberle / index", "datasheet, sheet 01 of 01", "rev. 2026.10" |
 | 3 | Life | todo | |
 | 4 | Mobile | todo | |
 | 5 | Check | todo | |
