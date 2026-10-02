@@ -58,8 +58,18 @@ const experience = defineCollection({
     start: month,
     end: month.nullable(), // null: ongoing
     role: z.string().min(1).optional(),
-    people: z.string().min(1).optional(),
-    summary: z.string().min(1),
+    text: z.array(z.string().min(1)).min(1), // one <p> each
+    hard: z.string().min(1).optional(), // "The hard part"
+    // A screenshot shown in the details block (a path under public/), with its caption and alt text.
+    image: z
+      .object({
+        src: z.string().startsWith('/'),
+        width: z.number().int().positive(),
+        height: z.number().int().positive(),
+        alt: z.string().min(1),
+        caption: z.string().min(1),
+      })
+      .optional(),
   }),
 })
 

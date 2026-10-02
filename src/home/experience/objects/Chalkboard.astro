@@ -1,7 +1,8 @@
 ---
-// Calculus II: a small chalkboard on a pedestal. The board's face is a 2D chalk drawing (an integral sign,
-// a curve over a baseline, and the area under the curve), turned to face the viewer. Action (timeline.ts):
-// the curve and the integral sign are drawn, then the area fills in.
+// Calculus II: a chalkboard on a pedestal. The board's face is a 2D chalk drawing (an integral sign, a
+// curve over a baseline, and the area under the curve, hatched), turned to face the viewer; on the tray
+// below it, a chalk stick and an eraser. Action (experience.ts): the curve and the integral sign are drawn,
+// then the hatching fills the area line by line.
 import Cub from '../../../projects/edubra/Cub.astro'
 
 // the curve: one cubic on the board's 76 x 52 face, sampled to close the area under it
@@ -16,21 +17,45 @@ const at = (t: number) => {
   return [0, 1].map((k) => u ** 3 * P[0][k] + 3 * u * u * t * P[1][k] + 3 * u * t * t * P[2][k] + t ** 3 * P[3][k])
 }
 const BASE = 44
-const pts = Array.from({ length: 17 }, (_, i) => at(0.34 + (i / 16) * 0.58))
-const area = `M${pts[0][0].toFixed(1)} ${BASE} ` + pts.map(([x, y]) => `L${x.toFixed(1)} ${y.toFixed(1)}`).join(' ') + ` L${pts[16][0].toFixed(1)} ${BASE} Z`
+const N = 40
+const pts = Array.from({ length: N + 1 }, (_, i) => at(0.34 + (i / N) * 0.58))
 const curve = `M${P[0]} C${P[1]} ${P[2]} ${P[3]}`
+// the hatching: a line every 2.2 units from the baseline up to the curve
+const x0 = pts[0][0]
+const x1 = pts[N][0]
+const yAt = (x: number) => {
+  for (let i = 1; i <= N; i++) {
+    if (pts[i][0] >= x) {
+      const [ax, ay] = pts[i - 1]
+      const [bx, by] = pts[i]
+      return ay + ((by - ay) * (x - ax)) / (bx - ax || 1)
+    }
+  }
+  return pts[N][1]
+}
+const hatch: string[] = []
+for (let x = x0 + 1.5; x < x1 - 0.5; x += 2.2) hatch.push(`M${x.toFixed(1)} ${BASE} L${(x + 3).toFixed(1)} ${Math.min(BASE - 1, yAt(x + 3)).toFixed(1)}`)
 ---
 
-<Cub x={10} y={6} w={64} d={34} h={4} cls="xp-wood xp-turn">
-  <Cub x={28} y={13} w={8} d={8} h={26} cls="xp-wood">
-    <Cub x={-26} y={7} w={52} d={4} h={2} cls="xp-wood" />
-    <Cub x={-34} y={1.5} w={76} d={5} h={52} cls="xp-board">
-      <svg slot="front" viewBox="0 0 76 52" width="100%" height="100%" focusable="false">
-        <path class="ch-area" d={area} />
-        <path class="ch-base" d={`M6 ${BASE} H70`} />
-        <path class="ch-curve" d={curve} />
-        <path class="ch-int" d="M9 9 C9 4 15 4 15 8 L15 22 C15 27 21 27 21 22" />
-      </svg>
-    </Cub>
-  </Cub>
-</Cub>
+<div class="xp-scene" style="--m:3;--fw:84px;--fd:44px;--dy:56px">
+  <div class="xp-plane">
+    <div class="xp-lift">
+      <Cub x={10} y={6} w={64} d={34} h={4} cls="xp-wood xp-turn">
+        <Cub x={28} y={13} w={8} d={8} h={26} cls="xp-wood">
+          <Cub x={-26} y={7} w={52} d={4} h={2} cls="xp-wood">
+            <Cub x={5} y={0.6} w={9} d={2.6} h={1.6} cls="xp-eraser" />
+            <Cub x={36} y={1} w={7} d={1.4} h={1} cls="xp-chalk" />
+          </Cub>
+          <Cub x={-34} y={1.5} w={76} d={5} h={52} cls="xp-board">
+            <svg slot="front" viewBox="0 0 76 52" width="100%" height="100%" focusable="false">
+              {hatch.map((d) => <path class="ch-hatch" d={d} />)}
+              <path class="ch-base" d={`M6 ${BASE} H70`} />
+              <path class="ch-curve" d={curve} />
+              <path class="ch-int" d="M9 9 C9 4 15 4 15 8 L15 22 C15 27 21 27 21 22" />
+            </svg>
+          </Cub>
+        </Cub>
+      </Cub>
+    </div>
+  </div>
+</div>

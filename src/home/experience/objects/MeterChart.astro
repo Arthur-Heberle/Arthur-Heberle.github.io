@@ -8,7 +8,7 @@ const d = (p: [number, number][]) => p.map(([x, y], i) => `${i ? 'L' : 'M'}${x} 
 const gap = `M48 38 H146 ` + [...after].slice(2).reverse().map(([x, y]) => `L${x} ${y}`).join(' ') + ' Z'
 ---
 
-<svg class="mt-chart" viewBox="0 0 160 84" width="160" height="84" focusable="false">
+<svg class="mt-chart" viewBox="0 0 160 84" width="190" height="100" focusable="false">
   <path class="mc-axis" d="M10 6 V72 H156" />
   <path class="mc-gap" d={gap} />
   <path class="mc-before" d={d(before)} />

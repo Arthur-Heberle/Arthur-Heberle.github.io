@@ -1,98 +1,401 @@
-/* The experience list and its timeline (Experience.astro). Below 768px, and for readers without
- * JavaScript at any width, it is a plain ruled list. From 768px up the entries sit on a timeline: a
- * dimension-line axis, one row per entry, a bar over its dates and an object standing at the bar's
- * start. Everything is placed by percentages along the axis (--a, --b, set per row in the markup),
- * so the layout needs no script. Drawings are aria-hidden; only transform and opacity ever change
- * (timeline.ts).
+/* The experience section (Experience.astro). From 900px up with JavaScript: two columns, a sticky stage on the
+ * left (a small timeline, then the active experience's object) and the four experiences as normal-flow text
+ * blocks on the right. The stage is position: sticky and nothing is pinned or hijacked: the page scrolls
+ * normally. Below 900px, and without JavaScript, there is no stage: each block stacks a bar for its period,
+ * its object and its details. Drawings are aria-hidden; only transform, opacity and stroke-dashoffset ever
+ * change (experience.ts).
  *
- * THE 3D CHAIN, as in the bench: nothing from .xp-scene (the perspective element) down may get
- * overflow other than visible, opacity below 1 or a filter if it has 3D children. */
+ * THE 3D CHAIN, as in the bench: nothing from .xp-scene (the perspective element) down may get overflow other
+ * than visible, opacity below 1 or a filter if it has 3D children. */
+
+/* ---------- the figure: a 560 x 400 box, scaled in steps (--k) so it fits its column ---------- */
 .xp {
-  display: flex;
-  flex-direction: column;
+  --k: 0.46;
 }
-.xp-row {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  padding-block: 1.5rem;
+@media (min-width: 340px) {
+  .xp {
+    --k: 0.52;
+  }
+}
+@media (min-width: 380px) {
+  .xp {
+    --k: 0.6;
+  }
+}
+@media (min-width: 430px) {
+  .xp {
+    --k: 0.68;
+  }
+}
+@media (min-width: 500px) {
+  .xp {
+    --k: 0.8;
+  }
+}
+@media (min-width: 600px) {
+  .xp {
+    --k: 0.9;
+  }
+}
+@media (min-width: 700px) {
+  .xp {
+    --k: 1;
+  }
+}
+@media (min-width: 900px) {
+  html.js .xp {
+    --k: 0.76;
+  }
+}
+@media (min-width: 1000px) {
+  html.js .xp {
+    --k: 0.88;
+  }
+}
+@media (min-width: 1100px) {
+  html.js .xp {
+    --k: 0.96;
+  }
+}
+@media (min-width: 1200px) {
+  html.js .xp {
+    --k: 1;
+  }
+}
+.xp-fig {
+  position: relative;
+  width: calc(560px * var(--k));
+  height: calc(400px * var(--k));
+}
+.xp-box {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 560px;
+  height: 400px;
+  scale: var(--k);
+  transform-origin: 0 0;
+}
+
+/* ---------- the blocks (every width) ---------- */
+.xp-block {
+  padding-block: 2rem;
   border-top: var(--hairline) solid var(--color-line);
 }
-.xp-row:first-child {
-  padding-top: 0;
+.xp-block:first-child {
   border-top: 0;
 }
-.xp-dates {
+.xp-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.xp-inner > p,
+.xp-inner > h3 {
   margin: 0;
 }
-.xp-detail {
+.xp-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.125rem 1.25rem;
+}
+.xp-hard strong {
+  color: var(--color-graphite);
+}
+.xp-shot {
+  margin: 0.5rem 0 0;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  max-width: 34rem;
 }
-/* the callout's own heading: only inside the callout */
-.xp-d-head {
-  display: none;
+.xp-shot img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: var(--hairline) solid var(--color-line);
+}
+.xp-shot figcaption {
   margin: 0;
 }
-/* the drawings exist only on the timeline */
-.xp-axis,
-.xp-bar,
-.xp-open,
-.xp-mini {
+.xp-block:focus {
+  outline: none;
+}
+
+/* the stage exists only on the wide layout */
+.xp-stage {
   display: none;
 }
 
-/* ---------- the object: a CSS 3D scene on the bench's diagonal camera (every width) ---------- */
+/* below 900px, and without the stage: this entry's period against a short 2025-to-now scale */
+.xp-mini {
+  position: relative;
+  height: 36px;
+}
+.xp-mini-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 4px;
+  height: 1px;
+  background: var(--color-graphite);
+}
+.xp-mini-tick {
+  position: absolute;
+  bottom: 4px;
+  width: 1px;
+  height: 7px;
+  background: var(--color-graphite);
+}
+.xp-mini-label {
+  position: absolute;
+  bottom: 14px;
+}
+.xp-mini-bar {
+  position: absolute;
+  left: var(--a);
+  width: calc(var(--b) - var(--a));
+  bottom: 1px;
+  height: 6px;
+  background: var(--color-graphite);
+}
+
+/* ---------- two columns: 900px and up, with JavaScript ---------- */
+@media (min-width: 900px) {
+  html.js .xp-grid {
+    position: relative; /* paints over the page rule, which does not run through this section */
+    display: grid;
+    grid-template-columns: 11fr 9fr;
+    column-gap: 3rem;
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
+    padding-inline: max(1.5rem, calc((100vw - 1200px) / 2));
+    background: var(--color-ground);
+  }
+  html.js .xp-stage {
+    position: sticky;
+    top: 0;
+    align-self: start;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 1.5rem;
+    height: 100svh;
+  }
+  html.js .xp-fig-art,
+  html.js .xp-mini {
+    display: none;
+  }
+  html.js .xp-block {
+    display: flex;
+    align-items: center;
+    min-height: 80vh;
+    padding-block: 4rem;
+    border-top: 0;
+  }
+
+  /* the figures share one cell; the active one is shown, the others wait above or below it */
+  .xp-figs {
+    display: grid;
+    place-items: center;
+  }
+  .xp-fig-stage {
+    grid-area: 1 / 1;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(24px);
+    transition:
+      opacity 0.35s var(--ease-out),
+      transform 0.35s var(--ease-out),
+      visibility 0s linear 0.35s;
+  }
+  .xp-fig-stage[data-state='on'] {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    transition-delay: 0s;
+  }
+  .xp-fig-stage[data-state='after'] {
+    transform: translateY(-24px);
+  }
+}
+@media (min-width: 900px) and (prefers-reduced-motion: reduce) {
+  .xp-fig-stage {
+    transition: none;
+  }
+}
+
+/* ---------- the stage's timeline ---------- */
+.xp-tl {
+  width: 100%;
+}
+.xp-axis {
+  position: relative;
+  height: 30px;
+}
+.xp-axis-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: var(--color-graphite);
+}
+.xp-arrow {
+  position: absolute;
+  left: 0;
+  bottom: -4px;
+  fill: none;
+  stroke: var(--color-graphite);
+  stroke-width: 1;
+}
+.xp-tick {
+  position: absolute;
+  bottom: 0;
+  width: 1px;
+  height: 4px;
+  background: var(--color-graphite-2);
+}
+.xp-tick-year {
+  height: 9px;
+  background: var(--color-graphite);
+}
+.xp-year {
+  position: absolute;
+  bottom: 12px;
+  left: 4px;
+}
+.xp-now {
+  position: absolute;
+  bottom: 0;
+}
+.xp-now-tick {
+  position: absolute;
+  bottom: 0;
+  left: -1px;
+  width: 1px;
+  height: 14px;
+  background: var(--color-graphite);
+}
+.xp-now-label {
+  position: absolute;
+  bottom: 14px;
+  right: -1px;
+}
+.xp-lanes {
+  position: relative;
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.xp-lane {
+  position: relative;
+  height: 24px;
+}
+.xp-link {
+  position: absolute;
+  left: var(--a);
+  width: calc(var(--b) - var(--a));
+  min-width: 24px;
+  top: 0;
+  height: 24px;
+  text-decoration: none;
+  color: var(--color-graphite-2);
+}
+.xp-bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 9px;
+  height: 6px;
+  background: var(--color-graphite-2);
+}
+.xp-name {
+  position: absolute;
+  top: 0;
+  line-height: 24px;
+  white-space: nowrap;
+}
+.xp-link[data-side='right'] .xp-name {
+  left: calc(100% + 8px);
+}
+.xp-link[data-side='left'] .xp-name {
+  right: calc(100% + 8px);
+}
+.xp-link[aria-current='true'] {
+  color: var(--color-graphite);
+}
+.xp-link[aria-current='true'] .xp-bar {
+  background: var(--color-signal);
+}
+.xp-link:focus-visible {
+  outline: 2px solid var(--color-signal);
+  outline-offset: 2px;
+}
+
+/* ---------- the objects: a CSS 3D scene on the bench's diagonal camera ---------- */
 .xp-scene {
   position: absolute;
   inset: 0;
-  perspective: 1600px;
-  perspective-origin: 50% 50%;
+  perspective: calc(1600px * var(--m));
+  perspective-origin: 50% 40%;
 }
-/* the plane the object stands on: tilted back and turned clockwise (so right faces show), as the
- * bench's mat; --fw by --fd is the object's footprint, centred in the object's box */
+/* the plane the object stands on: tilted back and turned clockwise (so right faces show), as the bench's mat;
+ * --fw by --fd is the object's footprint, centred in the box, and --m scales the whole object */
 .xp-plane {
   position: absolute;
-  left: calc((var(--bw) - var(--fw)) / 2);
-  top: calc((var(--bh) - var(--fd)) / 2);
+  left: calc(50% - var(--fw) / 2 + var(--dx, 0px));
+  top: calc(50% - var(--fd) / 2 + var(--dy, 0px));
   width: var(--fw);
   height: var(--fd);
   transform-style: preserve-3d;
-  transform: rotateX(55deg) rotateZ(32deg);
+  transform: rotateX(55deg) rotateZ(32deg) scale3d(var(--m), var(--m), var(--m));
+}
+.xp-blocks {
+  padding-bottom: 8vh;
+}
+.xp-lift,
+.cb-place,
+.ws-place,
+.pr-place,
+.pr-wrap {
+  position: absolute;
+  transform-style: preserve-3d;
 }
 .xp-lift {
-  position: absolute;
   inset: 0;
-  transform-style: preserve-3d;
 }
 
 /* the Cub helper's faces (the bench's block, scoped to this section) */
-.xp-obj .cub {
+.xp-scene .cub {
   position: absolute;
   transform-style: preserve-3d;
 }
-.xp-obj .cub > .top {
+.xp-scene .cub > .top {
   position: absolute;
   inset: 0;
   transform-style: preserve-3d;
 }
-.xp-obj .cub > .front {
+.xp-scene .cub > .front {
   position: absolute;
   left: 0;
   right: 0;
   transform-origin: 50% 0;
 }
-.xp-obj .cub > .right {
+.xp-scene .cub > .right {
   position: absolute;
   top: 0;
   transform-origin: 0 0;
 }
-
-/* ---------- materials: muted, the bench's greys and wood; no logos ---------- */
+.xp-scene svg {
+  display: block;
+  overflow: visible;
+}
 .xp-turn {
   transform: rotateZ(-20deg); /* a face that carries a drawing is turned to face the viewer */
 }
+
+/* ---------- materials: muted, the bench's greys and wood; no logos ---------- */
 .xp-wood > .top {
   background: #b79a72;
 }
@@ -103,7 +406,7 @@
   background: #7a6342;
 }
 
-/* Calculus II: the board's face is chalk on slate, in a wooden frame */
+/* Calculus II: the board's face is chalk on slate, in a wooden frame; a chalk stick and an eraser on the tray */
 .xp-board > .top {
   background: #8f7550;
 }
@@ -114,14 +417,24 @@
 .xp-board > .right {
   background: #7a6342;
 }
-.xp-board svg {
-  display: block;
-  padding: 0;
-  overflow: visible;
+.xp-eraser > .top {
+  background: #4b525a;
+}
+.xp-eraser > .front {
+  background: #d8c9a0;
+}
+.xp-eraser > .right {
+  background: #b8aa84;
+}
+.xp-chalk > .top,
+.xp-chalk > .front,
+.xp-chalk > .right {
+  background: #e6e9e3;
 }
 .ch-base,
 .ch-curve,
-.ch-int {
+.ch-int,
+.ch-hatch {
   fill: none;
   stroke: #e6e9e3;
   stroke-width: 1.4;
@@ -132,82 +445,248 @@
   stroke-opacity: 0.55;
   stroke-width: 1;
 }
-.ch-area {
-  fill: #e6e9e3;
-  fill-opacity: 0.28;
-  transform-box: fill-box;
-  transform-origin: 50% 100%;
+.ch-hatch {
+  stroke-opacity: 0.55;
+  stroke-width: 0.8;
 }
 
-/* ELETRON: a wall meter, its display and terminals on the face */
-.xp-meter > .top {
-  background: #cfd3d6;
+/* Programming Techniques: a laptop, aluminium over a light screen */
+.xp-lap > .top {
+  background:
+    linear-gradient(#aeb3b8, #aeb3b8) 50% 76% / 38% 22% no-repeat,
+    repeating-linear-gradient(90deg, #8d9297 0 1px, transparent 1px 5px) 50% 24% / 88% 38% no-repeat,
+    #cfd3d6;
 }
-.xp-meter > .front {
-  background: #b3b8bc;
+.xp-lap > .front {
+  background: #9ea3a8;
 }
-.xp-meter > .right {
+.xp-lap > .right {
   background: #82878c;
 }
-.mt-face {
+.lp-hinge {
   position: absolute;
-  inset: 0;
+  left: 0;
+  top: 0;
+  height: 3px;
+  transform-style: preserve-3d;
+  transform-origin: 50% 0;
+  transform: rotateX(12deg);
 }
-.mt-lcd {
-  position: absolute;
-  left: 6px;
-  right: 6px;
-  top: 7px;
-  height: 17px;
-  display: flex;
-  align-items: baseline;
-  justify-content: flex-end;
-  gap: 2px;
-  padding: 5px 3px 0;
-  background: #2a3a30;
-  color: #b9d6b2;
+.xp-scr > .top {
+  background: #2c2e33;
+}
+.xp-scr > .front {
+  background: var(--color-sheet);
+  box-shadow: inset 0 0 0 3px #2c2e33;
+}
+.xp-scr > .right {
+  background: #2c2e33;
+}
+.un-box rect {
+  fill: var(--color-sheet);
+  stroke: var(--color-graphite);
+  stroke-width: 0.8;
+}
+.un-box path {
+  fill: none;
+  stroke: var(--color-graphite);
+  stroke-width: 0.5;
+}
+.un-box text {
+  fill: var(--color-graphite);
   font-family: var(--font-mono);
-  box-shadow: 0 0 0 1.5px #6c7176;
+  font-size: 4.2px;
 }
-.mt-lcd b {
-  font-size: 9px;
-  font-weight: 400;
+.un-box .un-name {
+  font-size: 5.2px;
+  font-weight: 600;
 }
-.mt-lcd i {
-  font-size: 5px;
-  font-style: normal;
+.un-inh,
+.un-ptr {
+  fill: none;
+  stroke: var(--color-graphite);
+  stroke-width: 0.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
-.mt-dial {
-  position: absolute;
-  left: 15px;
-  top: 28px;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: #e3e6e8;
-  box-shadow: inset 0 0 0 1.5px #6c7176;
+.un-tri {
+  fill: var(--color-sheet);
+  stroke: var(--color-graphite);
+  stroke-width: 0.9;
+  stroke-linejoin: round;
 }
-.mt-terms {
-  position: absolute;
-  left: 8px;
-  right: 8px;
-  bottom: 3px;
-  display: flex;
-  justify-content: space-between;
+.un-ptr {
+  stroke: var(--color-signal);
 }
-.mt-terms u {
-  width: 8px;
-  height: 4px;
-  background: #6c7176;
+.un-code text {
+  fill: var(--color-graphite);
+  font-family: var(--font-mono);
+  font-size: 4.8px;
 }
-/* the chart beside it: a flat 2D drawing in the site's line style */
+
+/* ELETRON: the analyzer is a black enclosure with green pluggable terminal blocks; the print on it, and the
+ * greens of its terminals, display and button, are drawing materials of this object only. No logo. */
+.xp-an > .top {
+  background: #2e3135;
+}
+.xp-an > .front {
+  background: #1b1d20;
+}
+.xp-an > .right {
+  background: #0f1012;
+}
+.an-pl {
+  fill: #b4babe;
+  font-family: var(--font-mono);
+  font-size: 3.5px;
+}
+.an-tb {
+  fill: #2f8f46;
+}
+.an-tscrew {
+  fill: #17441f;
+  stroke: #8fd39e;
+  stroke-width: 0.5;
+}
+.an-arrow {
+  fill: #b4babe;
+}
+.an-screw circle {
+  fill: #50565b;
+}
+.an-screw path {
+  fill: none;
+  stroke: #1b1d20;
+  stroke-width: 0.7;
+}
+.an-lcd {
+  fill: #a8d884;
+  stroke: #50565b;
+  stroke-width: 1;
+}
+.an-r1 {
+  fill: #1d3b12;
+  font-family: var(--font-mono);
+  font-size: 3.4px;
+}
+.an-r2 {
+  fill: #1d3b12;
+  font-family: var(--font-mono);
+  font-size: 6.4px;
+}
+.an-r {
+  opacity: 0;
+}
+.an-r[data-i='3'] {
+  opacity: 1;
+}
+.an-btn rect {
+  fill: #3fae55;
+  stroke: #1d5a2a;
+  stroke-width: 0.8;
+}
+.an-usb {
+  fill: #6b7176;
+}
+.an-cable {
+  fill: none;
+  stroke: #4a4f55;
+  stroke-width: 3.2;
+  stroke-linecap: round;
+}
+.an-cl {
+  fill: var(--color-graphite-2);
+  font-family: var(--font-mono);
+  font-size: 4.4px;
+}
+.an-lead {
+  fill: none;
+  stroke: var(--color-graphite);
+  stroke-width: 0.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.an-lead-v {
+  stroke: var(--color-graphite-2);
+  stroke-dasharray: 3 1.6;
+}
+.an-tap {
+  fill: var(--color-graphite);
+}
+.an-ct rect {
+  fill: #c9cdd0;
+  stroke: var(--color-graphite);
+  stroke-width: 0.8;
+}
+.xp-clip > .top {
+  background: #9a7b52;
+}
+.xp-clip > .front {
+  background: #7a5f3c;
+}
+.xp-clip > .right {
+  background: #6a5232;
+}
+.cb-sheet {
+  fill: var(--color-sheet);
+}
+.cb-clip {
+  fill: #9ea3a8;
+  stroke: #6c7176;
+  stroke-width: 0.6;
+}
+.cb-head {
+  fill: #cfd3d6;
+}
+.cb-ln {
+  fill: none;
+  stroke: var(--color-graphite-2);
+  stroke-width: 0.4;
+}
+.cb-chart {
+  fill: none;
+  stroke: var(--color-measure);
+  stroke-width: 0.8;
+}
+.cb-place {
+  left: 14px;
+  top: 58px;
+  transform: rotateZ(-8deg);
+}
+.ws-place {
+  left: 82px;
+  top: 70px;
+  transform: rotateZ(6deg);
+}
+.xp-paper > .top {
+  background: #eef0ee;
+}
+.xp-paper > .front,
+.xp-paper > .right {
+  background: #c3c8c6;
+}
+.ws-fold {
+  fill: none;
+  stroke: #b3b8b6;
+  stroke-width: 0.5;
+}
+.ws-ln {
+  fill: none;
+  stroke: var(--color-graphite);
+  stroke-width: 0.5;
+}
+.ws-sym {
+  fill: var(--color-sheet);
+  stroke: var(--color-graphite);
+  stroke-width: 0.5;
+}
+/* the chart: a flat 2D drawing in the site's line style, beside the analyzer */
 .mt-chart {
   position: absolute;
-  left: calc(var(--bw) + 14px);
-  bottom: 0;
-  width: 160px;
-  height: 84px;
-  overflow: visible;
+  right: 4px;
+  bottom: 6px;
+  width: 190px;
+  height: 100px;
 }
 .mc-axis,
 .mc-before,
@@ -243,70 +722,72 @@
   fill: var(--color-measure);
 }
 
-/* Programming Techniques: a laptop, aluminium over a dark screen */
-.xp-lap > .top {
-  background:
-    linear-gradient(#aeb3b8, #aeb3b8) 50% 76% / 38% 22% no-repeat,
-    repeating-linear-gradient(90deg, #8d9297 0 1px, transparent 1px 5px) 50% 24% / 88% 38% no-repeat,
-    #cfd3d6;
+/* RP3: a monitor, and beside it a generic printer. The monitor's screen mirrors RP3's real 3D view: a gridded
+ * build platform, X, Y and Z axis lines, and the part's layer contours. The reds, greens, blue and greys on the
+ * screen are drawing materials of this object only (the real software's own colours), like the EduBra and
+ * Agente H materials: they are not tokens and are not used anywhere else. */
+.xp-mon > .top {
+  background: #6c7176;
 }
-.xp-lap > .front {
-  background: #9ea3a8;
+.xp-mon > .front {
+  background: #52575c;
 }
-.xp-lap > .right {
-  background: #82878c;
+.xp-mon > .right {
+  background: #41454a;
 }
-.lp-hinge {
-  position: absolute;
-  left: 0;
-  top: 0;
-  height: 3px;
-  transform-style: preserve-3d;
-  transform-origin: 50% 0;
-  transform: rotateX(12deg);
-}
-.xp-scr > .top {
+.xp-screen > .top {
   background: #2c2e33;
 }
-.xp-scr > .front {
-  background: var(--color-sheet);
+.xp-screen > .front {
+  background: #f4f5f4;
   box-shadow: inset 0 0 0 3px #2c2e33;
 }
-.xp-scr > .right {
+.xp-screen > .right {
   background: #2c2e33;
 }
-.xp-scr svg {
-  display: block;
+.rp-plat {
+  fill: #d9dbd9;
+  stroke: #9a9d9a;
+  stroke-width: 0.4;
 }
-.un-box rect {
-  fill: var(--color-sheet);
-  stroke: var(--color-graphite);
-  stroke-width: 1;
-}
-.un-box text {
-  fill: var(--color-graphite);
-  font-family: var(--font-mono);
-  font-size: 6.6px;
-}
-.un-inh,
-.un-ptr {
+.rp-grid {
   fill: none;
-  stroke: var(--color-graphite);
-  stroke-width: 1;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+  stroke: #9ea19e;
+  stroke-width: 0.3;
 }
-.un-tri {
-  fill: var(--color-sheet);
-  stroke: var(--color-graphite);
-  stroke-width: 1;
-  stroke-linejoin: round;
+.rp-ax {
+  fill: none;
+  stroke-width: 0.9;
 }
-.un-ptr {
-  stroke: var(--color-signal);
+.rp-x {
+  stroke: #e0261b;
 }
-
-/* RP3: a printer's frame, a bed, a gantry and head, and the part's layers */
+.rp-y {
+  stroke: #1a9a2e;
+}
+.rp-z {
+  stroke: #1e40e0;
+}
+.rp-loop {
+  fill: none;
+  stroke-width: 0.5;
+}
+.rp-r {
+  stroke: #e0261b;
+}
+.rp-g {
+  stroke: #14902a;
+}
+.pr-place {
+  left: 158px;
+  top: 66px;
+}
+.pr-wrap {
+  left: 0;
+  top: 0;
+  transform-origin: 0 0;
+  transform: scale3d(0.72, 0.72, 0.72);
+}
 .xp-frame > .top {
   background: #6c7176;
 }
@@ -348,9 +829,6 @@
 .xp-part > .right {
   background: #77888f;
 }
-.xp-part > .top svg {
-  display: block;
-}
 .pr-fill {
   fill: none;
   stroke: #5b6a71;
@@ -373,327 +851,4 @@
 }
 .pr-noz {
   transform: translateZ(-4px);
-}
-
-/* ---------- below 768px: no horizontal timeline ----------
- * Each experience stands on its own, in order: its object, a small bar showing its period against a short
- * 2025-to-now scale, then its title, dates, role and summary. The object is scaled (--s2) about its
- * bottom-left corner, and the box reserves the height it takes (--tot, its drawn height). */
-@media (max-width: 767px) {
-  .xp-row {
-    --s2: 1.1;
-    gap: 0.75rem;
-    padding-block: 2rem;
-  }
-  .xp-track {
-    display: contents;
-  }
-  .xp-obj {
-    order: 1;
-    position: relative;
-    display: block;
-    width: var(--bw);
-    height: var(--bh);
-    margin-top: calc(var(--tot) * var(--s2) - var(--bh));
-    scale: var(--s2);
-    transform-origin: 0 100%;
-  }
-  .xp-mini {
-    order: 2;
-    position: relative;
-    display: block;
-    height: 36px;
-    margin-top: 0.5rem;
-  }
-  .xp-label {
-    order: 3;
-  }
-  .xp-row .xp-title {
-    font-size: var(--text-h3);
-    line-height: var(--text-h3--line-height);
-  }
-  .xp-detail {
-    order: 4;
-  }
-  /* the scale: a hairline from 2025.01 to the end of the current month, ticks at the years and at "now" */
-  .xp-mini-line {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 4px;
-    height: 1px;
-    background: var(--color-graphite);
-  }
-  .xp-mini-tick {
-    position: absolute;
-    bottom: 4px;
-    width: 1px;
-    height: 7px;
-    background: var(--color-graphite);
-  }
-  .xp-mini-label {
-    position: absolute;
-    bottom: 14px;
-  }
-  .xp-mini-bar {
-    position: absolute;
-    left: var(--a);
-    width: calc(var(--b) - var(--a));
-    bottom: 1px;
-    height: 6px;
-    background: var(--color-graphite);
-  }
-  .xp-mini-open {
-    position: absolute;
-    left: var(--b);
-    bottom: -3px;
-    fill: none;
-    stroke: var(--color-graphite);
-    stroke-width: 1;
-    transform: translateX(-11px);
-  }
-}
-
-@media (min-width: 768px) {
-  .xp-tl {
-    --k: 0.84; /* the objects' scale, in the bench's four steps */
-    --s: 1.35; /* objects are drawn small and scaled up, so the drawings on them stay crisp */
-    --row: 190px;
-    --bar: 6px;
-    position: relative;
-  }
-
-  /* ---------- the axis ---------- */
-  .xp-axis {
-    position: relative;
-    display: block;
-    height: 44px;
-  }
-  .xp-axis-line {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: 1px;
-    background: var(--color-graphite);
-    transform-origin: 0 50%;
-  }
-  .xp-arrow {
-    position: absolute;
-    bottom: -4.5px;
-    fill: none;
-    stroke: var(--color-graphite);
-    stroke-width: 1;
-  }
-  .xp-arrow-l {
-    left: 0;
-  }
-  .xp-arrow-r {
-    right: 0;
-  }
-  .xp-tick {
-    position: absolute;
-    bottom: 0;
-    width: 1px;
-    height: 5px;
-    background: var(--color-graphite);
-    transform-origin: 50% 100%;
-  }
-  .xp-tick-year {
-    height: 14px;
-  }
-  .xp-year {
-    position: absolute;
-    left: 6px;
-    top: -6px;
-  }
-
-  /* ---------- the rows ---------- */
-  .xp {
-    gap: 0;
-  }
-  .xp-row {
-    position: relative;
-    display: block;
-    padding: 0;
-    border-top: 0;
-  }
-  /* the drawing's own box: bars, objects and labels are placed in it, from its bottom edge */
-  .xp-track {
-    position: relative;
-    height: var(--row);
-  }
-  /* no scripting: the details stay in view under their row */
-  html:not(.js) .xp-detail {
-    padding: 0.5rem 0 1.5rem;
-  }
-  /* the bar: the entry's dates on the axis, from its start month to the end of its last month */
-  .xp-bar {
-    position: absolute;
-    display: block;
-    left: var(--a);
-    width: calc(var(--b) - var(--a));
-    bottom: 0;
-    height: var(--bar);
-    background: var(--color-graphite);
-    transform-origin: 0 50%;
-  }
-  /* an entry with no end: the bar stops in an open tip at the current month, labelled "now" */
-  .xp-open {
-    position: absolute;
-    display: block;
-    right: 0;
-    bottom: calc(var(--bar) / 2 - 8px);
-    width: 12px;
-    height: 16px;
-  }
-  .xp-open svg {
-    position: absolute;
-    inset: 0;
-    fill: none;
-    stroke: var(--color-graphite);
-    stroke-width: 1;
-  }
-  .xp-open span {
-    position: absolute;
-    right: 0;
-    bottom: 22px;
-  }
-
-  /* With scripting the details are read from the list, not seen on the page (stage 3 opens them as a callout
-   * by the row): visually hidden, still in the accessibility tree. Without it they stay in view below. */
-  .js .xp-detail {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
-  }
-
-  /* the label: title and dates beside the bar, on the side with room */
-  .xp-label {
-    position: absolute;
-    bottom: 0;
-    max-width: 260px;
-    padding-bottom: 14px;
-  }
-  .xp-row[data-side='right'] .xp-label {
-    left: calc(var(--b) + 16px);
-  }
-  .xp-row[data-side='left'] .xp-label {
-    right: calc(100% - var(--a) + 120px);
-    text-align: right;
-  }
-
-  /* ---------- the object: a CSS 3D scene on the bench's diagonal camera ---------- */
-  .xp-obj {
-    position: absolute;
-    display: block;
-    left: var(--a);
-    bottom: var(--bar);
-    width: var(--bw);
-    height: var(--bh);
-    scale: calc(var(--k) * var(--s));
-    transform-origin: 0 100%;
-  }
-}
-@media (min-width: 810px) {
-  .xp-tl {
-    --k: 0.89;
-  }
-}
-@media (min-width: 860px) {
-  .xp-tl {
-    --k: 0.94;
-  }
-}
-@media (min-width: 903px) {
-  .xp-tl {
-    --k: 1;
-  }
-}
-
-/* ---------- the row's button and its callout (768px and up, with scripting) ----------
- * timeline.ts makes the title a button (aria-expanded, aria-describedby the object's description). Hover
- * or keyboard focus opens the callout, a click or Enter pins it; one is open at a time. The callout
- * hangs just under its row on the label's side, joined to the bar by a leader line in the annotation
- * style (a --signal dot, a graphite-2 line). Esc or a press elsewhere closes it. */
-@media (min-width: 768px) {
-  .xp-btn {
-    margin: 0;
-    padding: 0;
-    border: 0;
-    background: none;
-    color: inherit;
-    font: inherit;
-    text-align: inherit;
-    cursor: pointer;
-    text-decoration: underline transparent;
-    text-decoration-thickness: var(--hairline);
-    text-underline-offset: 4px;
-    transition: text-decoration-color var(--dur-feedback) var(--ease-out);
-  }
-  .xp-row:hover .xp-btn,
-  .xp-btn:focus-visible,
-  .xp-row[data-open] .xp-btn {
-    text-decoration-color: currentColor;
-  }
-  .js .xp-obj,
-  .js .xp-bar,
-  .js .xp-label {
-    cursor: pointer;
-  }
-  /* a little slop around the 6px bar, so it is easy to point at */
-  .js .xp-bar::before {
-    content: '';
-    position: absolute;
-    inset: -10px 0;
-  }
-  .js .xp-row[data-open] {
-    z-index: 4;
-  }
-  .js .xp-row[data-open] .xp-detail {
-    position: absolute;
-    top: calc(var(--row) + 14px);
-    width: min(340px, 100%);
-    height: auto;
-    overflow: visible;
-    clip-path: none;
-    white-space: normal;
-    padding: 14px 16px;
-    background: var(--color-sheet);
-    border: var(--hairline) solid var(--color-graphite-2);
-  }
-  .js .xp-row[data-open][data-side='right'] .xp-detail {
-    left: calc(var(--b) + 16px);
-    width: min(340px, calc(100% - var(--b) - 16px));
-  }
-  .js .xp-row[data-open][data-side='left'] .xp-detail {
-    right: calc(100% - var(--a) + 120px);
-    width: min(340px, calc(var(--a) - 120px));
-  }
-  .js .xp-row[data-open] .xp-d-head {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: 0.25rem 0.75rem;
-  }
-  .xp-leader {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    overflow: visible;
-    pointer-events: none;
-    z-index: 5;
-  }
-  .xp-leader-line {
-    fill: none;
-    stroke: var(--color-graphite-2);
-    stroke-width: 1;
-  }
-  .xp-leader-dot {
-    fill: var(--color-signal);
-  }
 }

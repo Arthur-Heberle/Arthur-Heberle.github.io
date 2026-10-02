@@ -183,13 +183,15 @@ Google Fonts, woff2, latin subset, `font-display: swap`. Preload the display fac
    with numbered annotation markers pulling to margin notes.
 3. **Projects (the bench) and Experience.** Replaces the archive list and its tag filters (Arthur's
    decision, 2026-10-01; §6's one-for-one rule is his call and he made it: one section out, two in).
-   The bench is three objects on one work surface, each a link; Experience is a timeline (Arthur's
-   brief, 2026-10-01): an ordered list (the `experience` collection) drawn on a dimension-line axis from
-   2025.01 to the current month, one row per entry with a bar over its dates and its own CSS 3D object
-   (chalkboard, energy meter with a before/after chart, laptop with a UML screen, 3D printer building a
-   part) standing at the bar's start, each with an action that plays on arrival and on hover, focus or
-   tap. Each row is a button opening a callout joined to it by a leader line. Below 768px the entries
-   stack: object, a small period bar against a 2025-to-now scale, then the text.
+   The bench is three objects on one work surface, each a link; Experience (Arthur's brief, 2026-10-02) is a
+   sticky object column with scrolling details. From 900px up, a stage that is `position: sticky` shows one
+   experience's CSS 3D object at a time (RP3's monitor and a generic printer, the laptop with a UML screen,
+   the T-500-style power analyzer with its clipboard, wiring sheet and chart, the chalkboard), with a small
+   timeline at its top (axis from 2025.01 to the current month, one thin bar per experience as a link to its
+   text). The four experiences are normal-flow text blocks on the right, newest first, at least 80vh each;
+   the block in the middle band of the viewport is active, its object slides in, and its action plays the
+   first time. The page always scrolls normally. Below 900px the entries stack: period bar, object, details.
+   The section breaks out of the reading rail at 900px and up, over the page rule.
 4. **Changelog.** Three most recent entries, then "show all".
 5. **Contact.** The last leader line of the drawing extends off the spine and terminates
    at his email. The only thing the drawing points at.

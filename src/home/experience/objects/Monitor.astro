@@ -1,0 +1,89 @@
+---
+// RP3: a monitor showing RP3's 3D view of a part sliced into layers, and beside it, smaller, a generic
+// printer building the same part. The screen mirrors the real view (the screenshot in the RP3 block): a
+// gridded build platform in perspective, X, Y and Z axis lines in red, green and blue, and the part's layer
+// contours as loops stacked one layer higher each, in red and green. It is an illustration, not RP3's real
+// interface (the figure's description says so). Action (experience.ts): the view turns once, then the layers
+// rise one at a time, each loop drawn by stroke-dashoffset, while the printer builds the same part.
+import Cub from '../../../projects/edubra/Cub.astro'
+import Printer from './Printer.astro'
+
+// the platform: four corners on the 200 x 136 screen, origin at the back right (as in the real view)
+const A = [31, 39]
+const B = [177, 46]
+const C = [160, 114]
+const D = [15, 106]
+const at = (u: number, v: number) => {
+  const top = [A[0] + (B[0] - A[0]) * u, A[1] + (B[1] - A[1]) * u]
+  const bot = [D[0] + (C[0] - D[0]) * u, D[1] + (C[1] - D[1]) * u]
+  return [top[0] + (bot[0] - top[0]) * v, top[1] + (bot[1] - top[1]) * v]
+}
+const NU = 20
+const NV = 14
+const f = (n: number) => n.toFixed(1)
+const cols = Array.from({ length: NU + 1 }, (_, i) => {
+  const [x0, y0] = at(i / NU, 0)
+  const [x1, y1] = at(i / NU, 1)
+  return `M${f(x0)} ${f(y0)} L${f(x1)} ${f(y1)}`
+}).join(' ')
+const rows = Array.from({ length: NV + 1 }, (_, i) => {
+  const [x0, y0] = at(0, i / NV)
+  const [x1, y1] = at(1, i / NV)
+  return `M${f(x0)} ${f(y0)} L${f(x1)} ${f(y1)}`
+}).join(' ')
+const platform = `M${A} L${B} L${C} L${D} Z`
+
+// the part: loops stacked a layer apart. `k` is the layer a loop belongs to; `c` its colour.
+const DZ = 2.2
+const LAYERS = 16
+type Loop = { k: number; c: 'g' | 'r'; el: 'ellipse' | 'path'; a: Record<string, number | string> }
+const ell = (cx: number, cy: number, rx: number, ry: number, n: number, c: 'g' | 'r'): Loop[] =>
+  Array.from({ length: n }, (_, k) => ({ k, c, el: 'ellipse', a: { cx, cy: +(cy - k * DZ).toFixed(1), rx, ry } }))
+const outline = (d: string, n: number, c: 'g' | 'r'): Loop[] =>
+  Array.from({ length: n }, (_, k) => ({ k, c, el: 'path', a: { d, transform: `translate(0 ${-(k * DZ).toFixed(1)})` } }))
+const loops: Loop[] = [
+  ...outline('M42 74 Q42 66 50 65 L82 60 Q89 59 89 66 L89 84 Q89 91 82 92 L50 96 Q42 97 42 90 Z', 12, 'g'),
+  ...ell(64, 80, 11, 3.4, 12, 'g'),
+  ...ell(112, 76, 16, 4.6, 16, 'r'),
+  ...ell(112, 76, 10, 3, 16, 'r'),
+  ...ell(51, 50, 12, 3.6, 6, 'r'),
+  ...outline('M122 100 Q118 92 128 90 L158 80 Q172 76 174 84 Q174 92 162 96 L136 106 Q124 110 122 100 Z', 3, 'r'),
+  ...ell(166, 84, 7, 2.2, 5, 'r'),
+  ...ell(131, 99, 7, 2.2, 5, 'r'),
+].sort((p, q) => p.k - q.k)
+---
+
+<div class="xp-scene" style="--m:1.85;--fw:230px;--fd:110px;--dx:14px;--dy:52px">
+  <div class="xp-plane">
+    <div class="xp-lift">
+      <Cub x={14} y={50} w={64} d={40} h={4} cls="xp-mon xp-turn">
+        <Cub x={24} y={14} w={16} d={12} h={24} cls="xp-mon">
+          <Cub x={-62} y={3} w={140} d={6} h={95} cls="xp-screen">
+            <svg slot="front" class="rp-svg" viewBox="0 0 200 136" width="100%" height="100%" focusable="false">
+              <g class="rp-view">
+                <path class="rp-plat" d={platform} />
+                <path class="rp-grid" d={cols} />
+                <path class="rp-grid" d={rows} />
+                <path class="rp-ax rp-x" d={`M${A} L193 47.4`} />
+                <path class="rp-ax rp-y" d={`M${B} L${C}`} />
+                <path class="rp-ax rp-z" d="M177 4 V54" />
+                <g class="rp-part">
+                  {
+                    loops.map((l) =>
+                      l.el === 'ellipse' ? (
+                        <ellipse class={`rp-loop rp-${l.c}`} data-k={l.k} {...l.a} />
+                      ) : (
+                        <path class={`rp-loop rp-${l.c}`} data-k={l.k} {...l.a} />
+                      ),
+                    )
+                  }
+                </g>
+              </g>
+            </svg>
+          </Cub>
+        </Cub>
+      </Cub>
+      <div class="pr-place" style="left:150px;top:62px"><Printer /></div>
+    </div>
+  </div>
+</div>

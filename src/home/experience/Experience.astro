@@ -1,178 +1,186 @@
 ---
-// Experience: an ordered list (title, dates, then place, role, people, summary), oldest first, and
-// from 768px up a timeline drawn over it: a dimension-line axis from 2025.01 to the current month, one
-// row per entry with a bar covering its dates and its own object standing at the bar's start. The
-// collection is the only source of text; the axis, bars and objects are aria-hidden drawings, so the
-// accessibility tree holds the list and nothing else. Optional fields (place, role, people) are
-// omitted when missing or still a [FILL] (src/shared/fill.ts).
+// Experience, newest first. From 900px up (with JavaScript) two columns: on the left a stage that is
+// position: sticky and shows one experience's object at a time, with a small timeline at its top; on the
+// right the four experiences as normal-flow text blocks, each at least 80vh tall. The page always scrolls
+// normally: nothing is pinned or hijacked. experience.ts (a separate chunk, fetched when the section nears
+// the viewport) makes the block in the middle of the viewport the active one, which brings its object onto
+// the stage and plays its action the first time. Below 900px, and without JavaScript, there is no stage:
+// each block stands on its own with a bar for its period, its object and its details.
 //
-// timeline.ts (a separate chunk, fetched when the section nears the viewport) plays the arrival once.
-// Without it every part is in its final state.
+// The collection is the only source of text. Objects, the stage's timeline and the mini bars are drawings
+// (aria-hidden or role="img" with one description); the accessibility tree holds the headings with their
+// text, the timeline links and one description per visible object. Optional fields are omitted when missing
+// or still a [FILL] (src/shared/fill.ts).
 import { getCollection } from 'astro:content'
 import Tick from '../../shared/components/Tick.astro'
 import { isFilled } from '../../shared/fill'
-import { layout, monthOf } from './months'
+import { layout, monthOf, months } from './months'
 import Chalkboard from './objects/Chalkboard.astro'
-import Meter from './objects/Meter.astro'
-import MeterChart from './objects/MeterChart.astro'
+import Analyzer from './objects/Analyzer.astro'
 import Laptop from './objects/Laptop.astro'
-import Printer from './objects/Printer.astro'
+import Monitor from './objects/Monitor.astro'
 
-const entries = (await getCollection('experience')).sort((a, b) => a.data.start.localeCompare(b.data.start))
+const entries = (await getCollection('experience')).sort((a, b) => b.data.start.localeCompare(a.data.start))
+const now = monthOf(new Date())
 const { spans, ticks, pct } = layout(
   entries.map((e) => e.data),
-  monthOf(new Date()),
+  now,
 )
+const yearAt = pct(12) // where 2026 starts on the axis
 
-// Each experience's object: its footprint on the plane (fw by fd, in px), the object itself, and an optional
-// flat 2D companion drawn beside it. `desc` is the short description the row's button points at
-// (aria-describedby); the drawings themselves are aria-hidden.
-const SIN = Math.sin((32 * Math.PI) / 180)
-const COS = Math.cos((32 * Math.PI) / 180)
-// `tot` is the object's drawn height in px (unscaled), which the stacked layout reserves.
-const OBJECTS: Record<string, { fw: number; fd: number; tot: number; Object: any; Flat?: any; desc: string }> = {
-  'calculus-ii': {
-    fw: 84,
-    fd: 44,
-    tot: 112,
-    Object: Chalkboard,
-    desc: 'A small chalkboard on a stand: chalk draws a curve and an integral sign, then the area under the curve fills in.',
-  },
-  'eletron-energia': {
-    fw: 64,
-    fd: 34,
-    tot: 92,
-    Object: Meter,
-    Flat: MeterChart,
-    desc: 'An energy meter whose display counts up kWh, beside a chart of consumption before and after, with the gap between the two lines marked as savings.',
+// Each experience's object, and the one description that names it for assistive technology (the drawing
+// itself is aria-hidden). The RP3, laptop and analyzer descriptions say what is illustrative.
+const OBJECTS: Record<string, { Object: any; desc: string }> = {
+  rp3: {
+    Object: Monitor,
+    desc: "An illustration, not RP3's real interface: a monitor showing a part sliced into layers on a gridded build platform with X, Y and Z axes, the layer contours rising one layer at a time, and beside it a small generic 3D printer building the same part layer by layer.",
   },
   'programming-techniques': {
-    fw: 120,
-    fd: 56,
-    tot: 142,
     Object: Laptop,
-    desc: "A laptop showing a class diagram: Entity, with Player and Enemy inheriting from it, and a Level holding Entities. The class names are illustrative of the course's SFML game, not its real code.",
+    desc: "A laptop showing a class diagram: Entity, with Player and Enemy inheriting from it, and a Level holding a pointer to an Entity, above a few lines of C++. The class names and code are illustrative of the course's SFML game, not its real code.",
   },
-  rp3: {
-    fw: 80,
-    fd: 64,
-    tot: 116,
-    Object: Printer,
-    desc: 'A 3D printer building a part, each layer at a different angle.',
+  'eletron-energia': {
+    Object: Analyzer,
+    desc: 'An illustration of a power analyzer in the style of the IMS PowerNET T-500, with three current transformers clamped around cables L1 to L3 and wired to its inputs, its display cycling through illustrative readings; beside it a clipboard with a spreadsheet, a folded wiring diagram, and a chart of consumption before and after with the savings between the two. The readings are illustrative, not measured values.',
+  },
+  'calculus-ii': {
+    Object: Chalkboard,
+    desc: 'A chalkboard on which a curve and an integral sign are drawn in chalk and the area under the curve is hatched, with a chalk tray and an eraser.',
   },
 }
-const yearAt = pct(12) // where 2026 starts on the axis
+
 // "2026-07" displays as "2026.07" (design-spec.md §7).
 const show = (month: string) => month.replace('-', '.')
+// "Programming Techniques — academic monitor" -> "Programming Techniques"
+const shortName = (title: string) => title.split(' — ')[0]
+const plural = (n: number) => `${n} month${n === 1 ? '' : 's'}`
 ---
 
-<section class="flex flex-col gap-8 py-16" aria-labelledby="experience-heading">
+<section class="xp" aria-labelledby="experience-heading">
   <Tick />
-  <h2 id="experience-heading" class="text-h2 font-sans font-medium" data-anim>Experience</h2>
-  <div class="xp-tl" data-xp>
-    <!-- the axis: a dimension line with arrowheads at both ends, year ticks (mono) and a small tick per month -->
-    <div class="xp-axis" aria-hidden="true">
-      <span class="xp-axis-line"></span>
-      <svg class="xp-arrow xp-arrow-l" viewBox="0 0 10 10" width="10" height="10" focusable="false"><path d="M10 1 L1 5 L10 9" /></svg>
-      <svg class="xp-arrow xp-arrow-r" viewBox="0 0 10 10" width="10" height="10" focusable="false"><path d="M0 1 L9 5 L0 9" /></svg>
-      {
-        ticks.map((t) => (
-          <span class={t.year ? 'xp-tick xp-tick-year' : 'xp-tick'} style={`left:${t.x}%`}>
-            {t.year && <span class="xp-year font-mono text-dimension text-graphite-2">{t.year}</span>}
+  <h2 id="experience-heading" class="text-h2 font-sans font-medium xp-h" data-anim>Experience</h2>
+  <div class="xp-grid" data-xp>
+    <!-- the stage: sticky, with JavaScript from 900px up. A small timeline, then the active experience's object. -->
+    <div class="xp-stage">
+      <div class="xp-tl">
+        <div class="xp-axis" aria-hidden="true">
+          <span class="xp-axis-line"></span>
+          <svg class="xp-arrow xp-arrow-l" viewBox="0 0 10 10" width="10" height="10" focusable="false"><path d="M10 1 L1 5 L10 9" /></svg>
+          {
+            ticks.map((t) => (
+              <span class={t.year ? 'xp-tick xp-tick-year' : 'xp-tick'} style={`left:${t.x}%`}>
+                {t.year && <span class="xp-year font-mono text-dimension text-graphite-2">{t.year}</span>}
+              </span>
+            ))
+          }
+          <span class="xp-now" style="left:100%">
+            <span class="xp-now-tick"></span>
+            <span class="xp-now-label font-mono text-dimension text-graphite-2">now</span>
           </span>
-        ))
-      }
+        </div>
+        <ul class="xp-lanes" role="list">
+          {
+            entries.map(({ id, data }, i) => {
+              const span = spans[i]
+              const left = span.a >= 45
+              return (
+                <li class="xp-lane" style={`--a:${span.a}%;--b:${span.b}%`}>
+                  <a class="xp-link" href={`#xp-${id}`} data-for={id} aria-label={data.title} data-side={left ? 'left' : 'right'}>
+                    <span class="xp-bar" aria-hidden="true"></span>
+                    <span class="xp-name text-small" aria-hidden="true">{shortName(data.title)}</span>
+                  </a>
+                </li>
+              )
+            })
+          }
+        </ul>
+      </div>
+      <div class="xp-figs">
+        {
+          entries.map(({ id }, i) => {
+            const o = OBJECTS[id]
+            return (
+              <div class="xp-fig xp-fig-stage" data-obj={id} data-state={i === 0 ? 'on' : 'before'} role="img" aria-label={o.desc}>
+                <div class="xp-box" aria-hidden="true">
+                  <o.Object />
+                </div>
+              </div>
+            )
+          })
+        }
+      </div>
     </div>
-    <ol class="xp" role="list">
+
+    <div class="xp-blocks">
       {
         entries.map(({ id, data }, i) => {
           const span = spans[i]
-          const side = span.b < 50 ? 'right' : 'left'
-          const obj = OBJECTS[id]
-          // the plane's screen box once turned 32deg: where the object's footprint ends up
-          const bw = Math.round(obj.fw * COS + obj.fd * SIN)
-          const bh = Math.round((obj.fw * SIN + obj.fd * COS) * 0.819)
+          const n = months(data.start, data.end, now)
+          const o = OBJECTS[id]
           return (
-            <li class="xp-row" data-side={side} style={`--a:${span.a}%;--b:${span.b}%`}>
-              <div class="xp-track">
-                <span class="xp-bar" aria-hidden="true"></span>
-                {span.open && (
-                  <span class="xp-open" aria-hidden="true">
-                    <svg viewBox="0 0 12 16" width="12" height="16" focusable="false"><path d="M1 1 L10 8 L1 15" /></svg>
-                    <span class="font-mono text-dimension text-graphite-2">now</span>
-                  </span>
-                )}
-                <div class="xp-obj" aria-hidden="true" data-obj={id} style={`--bw:${bw}px;--bh:${bh}px;--fw:${obj.fw}px;--fd:${obj.fd}px;--tot:${obj.tot}px`}>
-                  <div class="xp-scene">
-                    <div class="xp-plane">
-                      <div class="xp-lift">
-                        <obj.Object />
-                      </div>
-                    </div>
-                  </div>
-                  {obj.Flat && <obj.Flat />}
+            <article class="xp-block" id={`xp-${id}`} data-id={id} tabindex="-1">
+              <div class="xp-inner">
+                <!-- below 900px: this entry's period against a short 2025-to-now scale -->
+                <div class="xp-mini" aria-hidden="true" style={`--a:${span.a}%;--b:${span.b}%`}>
+                  <span class="xp-mini-line" />
+                  <span class="xp-mini-tick" style="left:0" />
+                  <span class="xp-mini-tick" style={`left:${yearAt}%`} />
+                  <span class="xp-mini-tick" style="left:calc(100% - 1px)" />
+                  <span class="xp-mini-label font-mono text-dimension text-graphite-2" style="left:0">2025</span>
+                  <span class="xp-mini-label font-mono text-dimension text-graphite-2" style={`left:${yearAt}%`}>2026</span>
+                  <span class="xp-mini-label font-mono text-dimension text-graphite-2" style="right:0">now</span>
+                  <span class="xp-mini-bar" />
                 </div>
-                <div class="xp-label">
-                  <h3 class="xp-title text-small font-sans font-medium" data-d={`xp-d-${id}`} data-o={`xp-o-${id}`}>{data.title}</h3>
-                  <p class="xp-dates font-mono text-dimension text-graphite-2">
+                <div class="xp-fig xp-fig-art" data-obj={id} role="img" aria-label={o.desc}>
+                  <div class="xp-box" aria-hidden="true">
+                    <o.Object />
+                  </div>
+                </div>
+                <h3 class="text-h3 font-sans font-medium">{data.title}</h3>
+                <p class="xp-meta font-mono text-dimension text-graphite-2">
+                  {isFilled(data.place) && <span>{data.place}</span>}
+                  <span>
                     <time datetime={data.start}>{show(data.start)}</time>
                     {' – '}
                     {data.end ? <time datetime={data.end}>{show(data.end)}</time> : 'now'}
+                  </span>
+                  <span>{plural(n)}{data.end ? '' : ' so far'}</span>
+                </p>
+                {isFilled(data.role) && <p class="xp-role text-small text-graphite-2">{data.role}</p>}
+                {data.text.filter(isFilled).map((p) => <p class="measure text-body">{p}</p>)}
+                {data.image && (
+                  <figure class="xp-shot">
+                    <img src={data.image.src} width={data.image.width} height={data.image.height} alt={data.image.alt} loading="lazy" decoding="async" />
+                    <figcaption class="text-small text-graphite-2">{data.image.caption}</figcaption>
+                  </figure>
+                )}
+                {isFilled(data.hard) && (
+                  <p class="xp-hard measure text-body">
+                    <strong class="font-medium">The hard part:</strong> {data.hard}
                   </p>
-                </div>
-              </div>
-              <!-- below 768px: this entry's period against a short 2025-to-now scale -->
-              <div class="xp-mini" aria-hidden="true">
-                <span class="xp-mini-line" />
-                <span class="xp-mini-tick" style="left:0" />
-                <span class="xp-mini-tick" style={`left:${yearAt}%`} />
-                <span class="xp-mini-tick" style="left:calc(100% - 1px)" />
-                <span class="xp-mini-label font-mono text-dimension text-graphite-2" style="left:0">2025</span>
-                <span class="xp-mini-label font-mono text-dimension text-graphite-2" style={`left:${yearAt}%`}>2026</span>
-                <span class="xp-mini-label font-mono text-dimension text-graphite-2" style="right:0">now</span>
-                <span class="xp-mini-bar" />
-                {span.open && (
-                  <svg class="xp-mini-open" viewBox="0 0 12 16" width="12" height="16" focusable="false"><path d="M1 1 L10 8 L1 15" /></svg>
                 )}
               </div>
-              <div class="xp-detail" id={`xp-d-${id}`}>
-                <!-- the callout's heading: a visual repeat of the label, so aria-hidden (the list item carries the real one) -->
-                <p class="xp-d-head" aria-hidden="true">
-                  <strong class="font-sans font-medium">{data.title}</strong>
-                  <span class="font-mono text-dimension text-graphite-2">
-                    {show(data.start)}
-                    {' – '}
-                    {data.end ? show(data.end) : 'now'}
-                  </span>
-                </p>
-                {isFilled(data.place) && <p class="text-small text-graphite-2">{data.place}</p>}
-                {isFilled(data.role) && <p class="text-small text-graphite-2">{data.role}</p>}
-                {isFilled(data.people) && <p class="text-small text-graphite-2">{data.people}</p>}
-                <p class="measure text-body">{data.summary}</p>
-              </div>
-              <!-- what the object is, for the row's button (aria-describedby); not shown -->
-              <p id={`xp-o-${id}`} hidden>{obj.desc}</p>
-            </li>
+            </article>
           )
         })
       }
-    </ol>
+    </div>
   </div>
 </section>
 
 <script>
-  // The motion is set up only when the timeline approaches the viewport: timeline.ts is a separate
+  // The motion is set up only when the section approaches the viewport: experience.ts is a separate
   // chunk, fetched here (the same pattern as the bench).
-  const timeline = document.querySelector<HTMLElement>('[data-xp]')
-  if (timeline) {
+  const grid = document.querySelector<HTMLElement>('[data-xp]')
+  if (grid) {
     const near = new IntersectionObserver(
       ([entry]) => {
         if (!entry.isIntersecting) return
         near.disconnect()
-        import('./timeline').then((m) => m.initTimeline(timeline))
+        import('./experience').then((m) => m.initExperience(grid))
       },
       { rootMargin: '400px 0px' },
     )
-    near.observe(timeline)
+    near.observe(grid)
   }
 </script>

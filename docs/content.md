@@ -163,20 +163,16 @@ always renders it is shown as written, and `scripts/check-fill.mjs` fails the bu
 3. **Brasilore — 2D platformer.** no date, role "team of 2, with Vinicius Romualdo da Silva", tags code, link
    `https://github.com/Arthur-Heberle/Brasilore` (no project page yet). Line: "A 2D platformer in C++ and SFML."
 
-### Experience (oldest first)
-1. **Calculus II — academic monitor.** UTFPR, 2025-03 to 2025-07, "scholarship monitor, about 4 students a
-   week for 12 weeks". "Review sessions and one-to-one help for engineering students in Calculus II."
-2. **ELETRON energia — energy efficiency.** Curitiba, 2026-01 to 2026-06, "operational team".
-   "Measurement-and-verification calculations and the Excel models behind them, assembled electrical panels,
-   energy-efficiency project reports, and field work with meters, inverters and control panels."
-3. **Programming Techniques — academic monitor.** UTFPR, 2026-03 to 2026-08, "volunteer monitor, about 4
-   students a week for 12 weeks". "C++, object-oriented programming and a lot of pointers, for students
-   building the course's SFML game."
-4. **RP3 — undergraduate research.** NUFER, UTFPR, 2026-07 to now (`end: null`), "undergraduate researcher, a
-   group of about 8 students and 3 professors"; people "Neri Volpato, who founded NUFER, Rodrigo Minetto and
-   Ricardo Dutra da Silva". "RP3 is NUFER's software for planning how a part gets 3D printed: orientation,
-   slicing, supports, filling. I work on the 3D view of the model and on an algorithm that finds the best path
-   of angles for each layer."
+### Experience (newest first; Arthur's brief, 2026-10-02)
+Fields: `title`, `place`, `start`, `end` (`null`: ongoing), `role`, `text` (one paragraph each), `hard` ("The
+hard part"), and for RP3 an `image` (the RP3 screenshot, `public/experience/rp3-3d-view.png`, with caption and
+alt; published with the professors' approval, which Arthur confirmed). Copy is verbatim from the brief, in
+`src/content/experience/*.md`. The duration line is computed, both months counted ("N months", "N months so
+far" for RP3).
+1. **RP3 — undergraduate research.** NUFER, UTFPR, from 2026-07.
+2. **Programming Techniques — academic monitor.** UTFPR, 2026-03 to 2026-08.
+3. **ELETRON energia — energy efficiency.** Curitiba, 2026-01 to 2026-06.
+4. **Calculus II — academic monitor.** UTFPR, 2025-03 to 2025-07.
 
 ---
 

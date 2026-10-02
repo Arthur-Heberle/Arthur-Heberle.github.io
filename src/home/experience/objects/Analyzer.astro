@@ -1,0 +1,114 @@
+---
+// ELETRON: a power analyzer modelled on the IMS PowerNET T-500, with no logo: a black rectangular enclosure
+// with screws at the corners, green pluggable terminal blocks along the top and bottom edges, a two-line green
+// backlit LCD and a square green DISPLAY button. The current inputs I1 to I3 (down arrows) are on the top
+// block, the voltage inputs +V1- to +V3- above the bottom block. Three split-core current transformers
+// clamp three cables, L1 to L3, with leads down to I1 to I3, and voltage leads round to the cables. The
+// enclosure is a cuboid; its front face is a 2D drawing (overflow visible, so the cables and leads are part
+// of it). The readings are illustrative. Beside it lie a clipboard with a spreadsheet and a folded wiring
+// diagram, and the before/after chart is drawn 2D. Action (experience.ts): the transformers close around the
+// cables, the DISPLAY button presses and the LCD cycles through four readings, then the chart draws and the
+// savings area fills.
+import Cub from '../../../projects/edubra/Cub.astro'
+import MeterChart from './MeterChart.astro'
+import Clipboard from './Clipboard.astro'
+import WiringSheet from './WiringSheet.astro'
+
+const W = 150
+const H = 84
+// terminal slots: [centre x, label]
+const topLeft: [number, string][] = [[22, 'I1'], [42, 'I2'], [62, 'I3']]
+const topRight: [number, string][] = [[86, 'IN1'], [98, 'IN2'], [110, 'IN3'], [122, 'IN4'], [134, 'IN5']]
+const botLeft: [number, string][] = [[22, '+V1-'], [42, '+V2-'], [62, '+V3-']]
+const botRight: [number, string][] = [[87.5, 'GND'], [102.5, 'RL1'], [117.5, 'RL2'], [132.5, 'VAUX']]
+const cables = [
+  { id: 'L1', y: -12, x: 22, vx: 160, vy: 90 },
+  { id: 'L2', y: -28, x: 42, vx: 166, vy: 95 },
+  { id: 'L3', y: -44, x: 62, vx: 172, vy: 100 },
+]
+const readings = [
+  ['VOLTAGE', 'V1 220.4 V'],
+  ['CURRENT', 'I1 18.2 A'],
+  ['POWER', 'P 11.9 kW'],
+  ['ENERGY', 'E 1284 kWh'],
+]
+const screws = [
+  [3.5, 3.5],
+  [W - 3.5, 3.5],
+  [3.5, H - 3.5],
+  [W - 3.5, H - 3.5],
+]
+---
+
+<div class="xp-scene" style="--m:1.8;--fw:170px;--fd:120px;--dx:-20px;--dy:62px">
+  <div class="xp-plane">
+    <div class="xp-lift">
+      <Cub x={10} y={8} w={W} d={14} h={H} cls="xp-an xp-turn">
+        <svg slot="front" class="an-svg" viewBox={`0 0 ${W} ${H}`} width="100%" height="100%" focusable="false">
+          {
+            cables.map((c, i) => (
+              <g class="an-line" data-cable={c.id}>
+                <path class="an-cable" d={`M-20 ${c.y} H176`} />
+                <text class="an-cl" x="-24" y={c.y + 1.4} text-anchor="end">{c.id}</text>
+                <path class="an-lead an-lead-i" d={`M${c.x} ${c.y + 8} V8`} />
+                <path class="an-lead an-lead-v" d={`M${botLeft[i][0]} 78 V${c.vy} H${c.vx} V${c.y}`} />
+                <circle class="an-tap" cx={c.vx} cy={c.y} r="1.6" />
+                <g class="an-ct">
+                  <rect class="an-ct-base" x={c.x - 7} y={c.y} width="14" height="8" rx="1.5" />
+                  <g class="an-ct-lid" data-hx={c.x - 7} data-hy={c.y}>
+                    <rect x={c.x - 7} y={c.y - 8} width="14" height="8" rx="1.5" />
+                  </g>
+                </g>
+              </g>
+            ))
+          }
+          {
+            screws.map(([x, y]) => (
+              <g class="an-screw">
+                <circle cx={x} cy={y} r="1.9" />
+                <path d={`M${x - 1.2} ${y - 1.2} L${x + 1.2} ${y + 1.2}`} />
+              </g>
+            ))
+          }
+          <rect class="an-tb" x="12" y="8" width="60" height="12" rx="1" />
+          <rect class="an-tb" x="80" y="8" width="60" height="12" rx="1" />
+          {
+            [...topLeft, ...topRight].map(([x, l]) => (
+              <g>
+                <circle class="an-tscrew" cx={x} cy="13" r="2.4" />
+                <text class="an-pl" x={x} y="31" text-anchor="middle">{l}</text>
+              </g>
+            ))
+          }
+          {topLeft.map(([x]) => <path class="an-arrow" d={`M${x - 2} 22 H${x + 2} L${x} 25.6 Z`} />)}
+          <rect class="an-lcd" x="30" y="37" width="66" height="21" rx="1.5" />
+          {
+            readings.map(([a, b], i) => (
+              <g class="an-r" data-i={i}>
+                <text class="an-r1" x="34" y="45.5">{a}</text>
+                <text class="an-r2" x="34" y="54">{b}</text>
+              </g>
+            ))
+          }
+          <g class="an-btn"><rect x="106" y="40" width="14" height="14" rx="1" /></g>
+          <text class="an-pl" x="113" y="60" text-anchor="middle">DISPLAY</text>
+          <rect class="an-usb" x="12" y="40" width="12" height="8" rx="1" />
+          <text class="an-pl" x="18" y="53" text-anchor="middle">USB</text>
+          <rect class="an-tb" x="12" y="66" width="60" height="12" rx="1" />
+          <rect class="an-tb" x="80" y="66" width="60" height="12" rx="1" />
+          {
+            [...botLeft, ...botRight].map(([x, l]) => (
+              <g>
+                <circle class="an-tscrew" cx={x} cy="72" r="2.4" />
+                <text class="an-pl" x={x} y="64" text-anchor="middle">{l}</text>
+              </g>
+            ))
+          }
+        </svg>
+      </Cub>
+      <Clipboard />
+      <WiringSheet />
+    </div>
+  </div>
+  <MeterChart />
+</div>

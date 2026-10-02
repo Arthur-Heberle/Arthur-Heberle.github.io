@@ -1,40 +1,54 @@
 ---
-// Programming Techniques: a laptop, screen open. The screen is a 2D UML class diagram: Entity, with Player and
-// Enemy inheriting from it, and a Level holding Entities. The names are illustrative of the course's SFML game,
-// not its real code (the row's description says so). Action (timeline.ts): the boxes appear, the inheritance
-// arrows draw, then the pointer arrow draws from Level to Entity.
+// Programming Techniques: a laptop, screen open. The screen is a 2D UML class diagram, each class a box
+// with name, attributes and methods compartments: Entity, with Player and Enemy inheriting from it, and a
+// Level that holds a pointer to an Entity; under it, a few lines of C++. The names and code are illustrative
+// of the course's SFML game, not its real code (the figure's description says so). Action (experience.ts):
+// the boxes appear, the inheritance arrows draw, the pointer arrow draws from Level to Entity, then the
+// code lines appear.
 import Cub from '../../../projects/edubra/Cub.astro'
 
-const W = 120
+const W = 160
+const H = 96
 const boxes = [
-  { n: 'Level', x: 8, y: 10, w: 32, h: 15 },
-  { n: 'Entity', x: 64, y: 10, w: 36, h: 15 },
-  { n: 'Player', x: 32, y: 48, w: 36, h: 15 },
-  { n: 'Enemy', x: 76, y: 48, w: 36, h: 15 },
+  { n: 'Level', a: '- entities', m: '+ spawn()', x: 6, y: 6, w: 54, h: 24 },
+  { n: 'Entity', a: '# pos: Vec2', m: '+ update()', x: 96, y: 6, w: 54, h: 24 },
+  { n: 'Player', a: '- score: int', m: '+ input()', x: 58, y: 44, w: 46, h: 24 },
+  { n: 'Enemy', a: '- speed: float', m: '+ chase()', x: 108, y: 44, w: 46, h: 24 },
 ]
+const code = ['Entity* e = level.get(0);', 'e->update(dt);', 'delete e;']
 ---
 
-<Cub x={0} y={0} w={W} d={56} h={4} cls="xp-lap xp-turn">
-  <div class="lp-hinge" style={`width:${W}px`}>
-    <Cub x={0} y={0} w={W} d={3} h={70} cls="xp-scr">
-      <svg slot="front" viewBox={`0 0 ${W} 70`} width="100%" height="100%" focusable="false">
-        <g class="un-boxes">
-          {
-            boxes.map((b) => (
-              <g class="un-box">
-                <rect x={b.x} y={b.y} width={b.w} height={b.h} />
-                <text x={b.x + b.w / 2} y={b.y + b.h / 2 + 2.6} text-anchor="middle">
-                  {b.n}
-                </text>
+<div class="xp-scene" style="--m:2;--fw:160px;--fd:76px;--dy:46px">
+  <div class="xp-plane">
+    <div class="xp-lift">
+      <Cub x={0} y={0} w={W} d={76} h={4} cls="xp-lap xp-turn">
+        <div class="lp-hinge" style={`width:${W}px`}>
+          <Cub x={0} y={0} w={W} d={3} h={H} cls="xp-scr">
+            <svg slot="front" viewBox={`0 0 ${W} ${H}`} width="100%" height="100%" focusable="false">
+              <g class="un-boxes">
+                {
+                  boxes.map((b) => (
+                    <g class="un-box">
+                      <rect x={b.x} y={b.y} width={b.w} height={b.h} />
+                      <path d={`M${b.x} ${b.y + 8} H${b.x + b.w} M${b.x} ${b.y + 16} H${b.x + b.w}`} />
+                      <text class="un-name" x={b.x + b.w / 2} y={b.y + 5.8} text-anchor="middle">{b.n}</text>
+                      <text x={b.x + 2.5} y={b.y + 13.6}>{b.a}</text>
+                      <text x={b.x + 2.5} y={b.y + 21.6}>{b.m}</text>
+                    </g>
+                  ))
+                }
               </g>
-            ))
-          }
-        </g>
-        <path class="un-inh" d="M50 48 V38 H82 V25" />
-        <path class="un-inh" d="M94 48 V38 H82" />
-        <path class="un-tri" d="M82 25 L78 31 L86 31 Z" />
-        <path class="un-ptr" d="M40 17.5 H64 M60 14.5 L64 17.5 L60 20.5" />
-      </svg>
-    </Cub>
+              <path class="un-inh" d="M81 44 V37 H123 V30" />
+              <path class="un-inh" d="M131 44 V37 H123" />
+              <path class="un-tri" d="M123 30 L119.4 35.5 L126.6 35.5 Z" />
+              <path class="un-ptr" d="M60 18 H94 M89.5 15 L94 18 L89.5 21" />
+              <g class="un-code">
+                {code.map((c, i) => <text x="8" y={78 + i * 7}>{c}</text>)}
+              </g>
+            </svg>
+          </Cub>
+        </div>
+      </Cub>
+    </div>
   </div>
-</Cub>
+</div>

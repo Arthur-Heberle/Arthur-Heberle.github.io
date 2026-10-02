@@ -27,9 +27,11 @@
  * expresses: the three-column rail, the drawing layer's absolute positioning, and the
  * handful of interactive elements that repeat across sections. */
 
+/* clip, not hidden: hidden makes <body> a scroll container, and a position: sticky element inside it
+ * (the experience stage) would then stick to a box that never scrolls. */
 html,
 body {
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 /* Skip link. Off-screen until focused, per design-spec.md §10. Uses :focus (not

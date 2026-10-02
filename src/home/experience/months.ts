@@ -30,3 +30,6 @@ export function layout(entries: { start: string; end: string | null }[], now: st
   const ticks = Array.from({ length: n + 1 }, (_, i) => ({ x: pct(i), year: i % 12 === 0 && i < n ? 2025 + i / 12 : null }))
   return { n, spans, ticks, pct }
 }
+
+/** How many months an entry spans, both ends counted ("2026-03" to "2026-06" is 4). Open: counted to `now`. */
+export const months = (start: string, end: string | null, now: string) => idx(end ?? now) - idx(start) + 1
