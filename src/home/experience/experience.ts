@@ -37,23 +37,24 @@ function strokes(paths: SVGGeometryElement[]) {
 const all = <T extends Element>(root: Element, s: string) => [...root.querySelectorAll<T>(s)]
 
 function chalkboard(root: HTMLElement): Action {
-  const curve = strokes(all<SVGPathElement>(root, '.ch-curve'))
-  const int = strokes(all<SVGPathElement>(root, '.ch-int'))
+  const lineEls = all<SVGGeometryElement>(root, '.ch-line')
+  const lines = strokes(lineEls)
   const hatchEls = all<SVGPathElement>(root, '.ch-hatch')
   const hatch = strokes(hatchEls)
-  const marks = [...all(root, '.ch-curve'), ...all(root, '.ch-int'), ...hatchEls]
+  const texts = all<SVGTextElement>(root, '.ch-tx')
+  const marks = [...lineEls, ...hatchEls, ...texts]
   return {
     reset: () => {
-      curve.reset()
-      int.reset()
+      lines.reset()
       hatch.reset()
+      gsap.set(texts, { opacity: 0 })
     },
     run: () => {
       const tl = gsap.timeline({ onComplete: () => gsap.set(marks, { clearProps: CLEAR }) })
-      curve.draw(tl, 0, 0.9)
-      int.draw(tl, 0.9, 0.7)
-      // the area is hatched, left to right
-      hatch.draw(tl, 1.7, 0.25, 0.03)
+      // the curve, the axes and the surface are drawn, the area is hatched left to right, then the formulas are written
+      lines.draw(tl, 0, 0.8, 0.05)
+      hatch.draw(tl, 1.0, 0.25, 0.03)
+      tl.to(texts, { opacity: 1, duration: 0.3, stagger: 0.18 }, 1.6)
       return tl
     },
   }

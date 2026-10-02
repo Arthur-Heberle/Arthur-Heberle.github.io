@@ -140,11 +140,20 @@ monitor mirrors the real interface. Divergences and decisions:
 | 4 Mobile | done | below 900px: period bar, object, details, stacked; each action plays once at 60% visible; reduced motion final states. 375px: no horizontal scroll, figure 291px wide |
 | 5 Check | done | headless Edge over CDP (not Brave). Page scrolls normally (`scrollY` follows, no pin); the active object matches the block in the middle band for all four; timeline link click scrolls to its block and sets `aria-current`; reduced motion: final states, transitions off. AX tree at 1280, 375 and JS off: the four h3 headings with all their text, the four timeline links (JS, 900px+), one `image` description per visible object, the screenshot as a figure; no drawing text. JS: experience chunk 2.1 KB gzip, total under 90. **Not done:** Lighthouse (the earlier stages measured 79 to 86 on this machine against the 95 goal because of the existing motion bundle; not re-measured), Firefox, Safari, a real touch device. The scaled 3D figures render slightly soft (text on the LCD and the analyzer) |
 
-Experience objects turned to the right (2026-10-02, Arthur's request): the plane is now `rotateZ(-32deg)` and the
-drawn faces `rotateZ(20deg)`, so every object faces right. The shared `Cub.astro` only builds front and right
-faces, so it gained a `--h` custom property on its element (no markup change for other pages) and
-`experience.css` draws the left face as `.cub::before` in each material's right-face colour; right faces are
-`backface-visibility: hidden`.
+Experience objects turned to the right (2026-10-02, Arthur's request): the plane is mirrored on screen
+(`scaleX(-1)` first in its transform, camera and turn unchanged), so every object faces right and its filled
+side, the cuboids' right face, is the one that shows. The drawings on the faces are flipped back
+(`.cub svg { transform: scaleX(-1) }`) so text reads normally. A first version added a left face to `Cub.astro`
+as a pseudo-element; the face was invisible with `backface-visibility: hidden`, and visible it clipped the
+analyzer's cable drawing for a reason I did not find, so it was dropped and `Cub.astro` is as it was.
+
+Experience, side faces and the Calculus board (2026-10-02, Arthur's request): (1) the side faces are filled
+(see the mirrored scene above). (2) The
+Calculus II object lost its base, pedestal, tray, chalk and eraser (the tray and eraser the brief asked for are
+**dropped on Arthur's request**): it is a single, larger free-standing board with Calculus II on the left (curve,
+hatched area, integration by parts, Taylor series of e^x, series sum) and Calculus III on the right (paraboloid
+z = x² + y², gradient, double integral, line integral). The action draws the lines, hatches the area, then
+writes the formulas one by one.
 
 Scoped colours (like the EduBra and Agente H materials, not tokens, used nowhere else): the RP3 screen's reds,
 greens, blue and greys (the real software's own colours) and the ELETRON analyzer's black enclosure and greens.

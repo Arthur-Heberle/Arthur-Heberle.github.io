@@ -1,26 +1,26 @@
 ---
-// Calculus II: a chalkboard on a pedestal. The board's face is a 2D chalk drawing (an integral sign, a
-// curve over a baseline, and the area under the curve, hatched), turned to face the viewer; on the tray
-// below it, a chalk stick and an eraser. Action (experience.ts): the curve and the integral sign are drawn,
-// then the hatching fills the area line by line.
+// Calculus II: a free-standing chalkboard, just the board in its wooden frame. Its face is a 2D chalk drawing
+// in two halves: Calculus II on the left (a curve with the area under it hatched, integration by parts, the
+// Taylor series of e^x, a series sum) and Calculus III on the right (the paraboloid z = x² + y², the gradient,
+// a double integral and a line integral). Action (experience.ts): the lines are drawn, the area is hatched,
+// then the written formulas appear one by one.
 import Cub from '../../../projects/edubra/Cub.astro'
 
-// the curve: one cubic on the board's 76 x 52 face, sampled to close the area under it
+// the curve: one cubic on the 150 x 96 face, sampled to close the area under it
 const P = [
-  [14, 42],
-  [26, 6],
-  [46, 4],
-  [68, 30],
+  [10, 50],
+  [22, 20],
+  [42, 18],
+  [62, 40],
 ]
 const at = (t: number) => {
   const u = 1 - t
   return [0, 1].map((k) => u ** 3 * P[0][k] + 3 * u * u * t * P[1][k] + 3 * u * t * t * P[2][k] + t ** 3 * P[3][k])
 }
-const BASE = 44
+const BASE = 52
 const N = 40
-const pts = Array.from({ length: N + 1 }, (_, i) => at(0.34 + (i / N) * 0.58))
+const pts = Array.from({ length: N + 1 }, (_, i) => at(0.3 + (i / N) * 0.62))
 const curve = `M${P[0]} C${P[1]} ${P[2]} ${P[3]}`
-// the hatching: a line every 2.2 units from the baseline up to the curve
 const x0 = pts[0][0]
 const x1 = pts[N][0]
 const yAt = (x: number) => {
@@ -33,28 +33,40 @@ const yAt = (x: number) => {
   }
   return pts[N][1]
 }
+// the hatching: a short slanted line every 2.2 units from the baseline up to the curve
 const hatch: string[] = []
-for (let x = x0 + 1.5; x < x1 - 0.5; x += 2.2) hatch.push(`M${x.toFixed(1)} ${BASE} L${(x + 3).toFixed(1)} ${Math.min(BASE - 1, yAt(x + 3)).toFixed(1)}`)
+for (let x = x0 + 1.5; x < x1 - 0.5; x += 2.2) hatch.push(`M${x.toFixed(1)} ${BASE} L${(x + 2.5).toFixed(1)} ${Math.min(BASE - 1, yAt(x + 2.5)).toFixed(1)}`)
+
+// the paraboloid z = x² + y²: rings at five heights (radius grows with the square root of the height)
+const rings = [0.25, 0.5, 0.75, 1].map((z) => ({ cy: 56 - 30 * z, r: 28 * Math.sqrt(z) }))
 ---
 
-<div class="xp-scene" style="--m:3;--fw:84px;--fd:44px;--dy:56px">
+<div class="xp-scene" style="--m:2.5;--fw:150px;--fd:10px;--dy:10px">
   <div class="xp-plane">
     <div class="xp-lift">
-      <Cub x={10} y={6} w={64} d={34} h={4} cls="xp-wood xp-turn">
-        <Cub x={28} y={13} w={8} d={8} h={26} cls="xp-wood">
-          <Cub x={-26} y={7} w={52} d={4} h={2} cls="xp-wood">
-            <Cub x={5} y={0.6} w={9} d={2.6} h={1.6} cls="xp-eraser" />
-            <Cub x={36} y={1} w={7} d={1.4} h={1} cls="xp-chalk" />
-          </Cub>
-          <Cub x={-34} y={1.5} w={76} d={5} h={52} cls="xp-board">
-            <svg slot="front" viewBox="0 0 76 52" width="100%" height="100%" focusable="false">
-              {hatch.map((d) => <path class="ch-hatch" d={d} />)}
-              <path class="ch-base" d={`M6 ${BASE} H70`} />
-              <path class="ch-curve" d={curve} />
-              <path class="ch-int" d="M9 9 C9 4 15 4 15 8 L15 22 C15 27 21 27 21 22" />
-            </svg>
-          </Cub>
-        </Cub>
+      <Cub x={0} y={2} w={150} d={6} h={96} cls="xp-board xp-turn">
+        <svg slot="front" viewBox="0 0 150 96" width="100%" height="100%" focusable="false">
+          <text class="ch-tx ch-h" x="6" y="9">Calculus II</text>
+          <text class="ch-tx ch-h" x="82" y="9">Calculus III</text>
+          <path class="ch-line ch-div" d="M75 4 V92" />
+
+          <!-- Calculus II: area under a curve, hatched -->
+          {hatch.map((d) => <path class="ch-hatch" d={d} />)}
+          <path class="ch-line ch-base" d={`M6 ${BASE} H68 M8 56 V16`} />
+          <path class="ch-line ch-curve" d={curve} />
+          <text class="ch-tx" x="38" y="16">∫ f(x) dx</text>
+          <text class="ch-tx" x="6" y="68">∫ u dv = uv − ∫ v du</text>
+          <text class="ch-tx" x="6" y="79">eˣ = Σ xⁿ / n!</text>
+          <text class="ch-tx" x="6" y="90">Σ 1/n² = π²/6</text>
+
+          <!-- Calculus III: a surface, its gradient, and two integrals -->
+          <path class="ch-line ch-surf" d="M112 58 V18 M110 22 L112 17 L114 22" />
+          {rings.map((g) => <ellipse class="ch-line ch-surf" cx="112" cy={g.cy.toFixed(1)} rx={g.r.toFixed(1)} ry={(g.r * 0.24).toFixed(1)} />)}
+          <text class="ch-tx" x="80" y="16">z = x² + y²</text>
+          <text class="ch-tx" x="79" y="68">∇f = (∂f/∂x, ∂f/∂y)</text>
+          <text class="ch-tx" x="79" y="79">∬ f(x, y) dA</text>
+          <text class="ch-tx" x="79" y="90">∮ F · dr</text>
+        </svg>
       </Cub>
     </div>
   </div>
