@@ -179,8 +179,10 @@ Google Fonts, woff2, latin subset, `font-display: swap`. Preload the display fac
 
 1. **Hero.** Display line, one supporting line, a quiet contact link top-right, and the
    hero drawing sequence. Contact must be reachable here.
-2. **Spine with margins.** Two or three short paragraphs carrying the through-line,
-   with numbered annotation markers pulling to margin notes.
+2. **Spine with margins.** One paragraph carrying the through-line, with two numbered
+   annotation markers pulling to margin notes. Followed by a **datasheet** (Arthur's brief,
+   2026-10-02; the second paragraph and its three notes went out, the datasheet came in): a
+   full-width block styled as an electronic component datasheet.
 3. **Projects (the bench) and Experience.** Replaces the archive list and its tag filters (Arthur's
    decision, 2026-10-01; §6's one-for-one rule is his call and he made it: one section out, two in).
    The bench is three objects on one work surface, each a link; Experience (Arthur's brief, 2026-10-02) is a

@@ -1888,3 +1888,16 @@ Home part 1 (2026-10-01) — **The archive list is replaced by a project bench a
 section** (Arthur's brief). The archive collection, its tag filter, "show all" and Flip transition are
 removed; the home page is Hero, Spine, Projects (the bench), Experience, Changelog, Contact. design-spec.md
 §6 and content.md are updated. `Flip` is no longer imported, so it ships no JS.
+
+### Home datasheet (2026-10-02, Arthur's brief)
+
+Five stages, in order. Commit message `datasheet: <stage>`. Arthur's choices: the title block is a ruled
+corner box ("Arthur Heberle / index", "datasheet, sheet 1 of 1", "rev. YYYY.MM"); width is the spine rail's.
+
+| Stage | Step | Status | Notes |
+|---|---|---|---|
+| 1 | Trim the spine | done | paragraph 2 and notes 3-5 removed (their note files deleted; the drawings stay in `NoteDrawing.astro`/`noteDrawings.ts` for stage 3); reading note ends as briefed; rail `min-height` set to the measured 331px (two notes, two leaders, no jump) |
+| 2 | The datasheet | todo | |
+| 3 | Life | todo | |
+| 4 | Mobile | todo | |
+| 5 | Check | todo | |

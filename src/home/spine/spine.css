@@ -24,26 +24,21 @@
   }
 }
 
-/* The home spine: two paragraphs one under the other, at ordinary paragraph spacing. Each
- * paragraph's notes sit in the margin column in the paragraph's own row, but take no height
- * there (the margin column never pushes paragraph 2 down): spine.ts stands each note beside
+/* The home spine: one paragraph. Its notes sit in the margin column in the paragraph's own row, but take no height
+ * there: spine.ts stands each note beside
  * the line of its balloon and sizes the rail to fit. Without JavaScript the <noscript> rule in
  * Spine.astro gives the groups their natural height back. Below 768px the notes follow their
  * paragraph in the flow. */
 .rail-spine {
-  grid-template-areas: 'p1 gutter a' 'p2 gutter b';
-  row-gap: 1.25rem;
+  grid-template-areas: 'p1 gutter a';
   align-content: start; /* spare height (the min-height below) must not stretch the rows */
-  min-height: 33.5rem; /* about where spine.ts's placement ends; avoids a jump when it runs */
+  min-height: 20.75rem; /* about where spine.ts's placement ends; avoids a jump when it runs */
 }
 .rail-spine .rail-prose {
   margin: 0;
 }
 .rail-prose-1 {
   grid-area: p1;
-}
-.rail-prose-2 {
-  grid-area: p2;
 }
 .rail-spine .rail-margin {
   position: relative;
@@ -52,12 +47,9 @@
 .rail-margin-a {
   grid-area: a;
 }
-.rail-margin-b {
-  grid-area: b;
-}
 @media (max-width: 767px) {
   .rail-spine {
-    grid-template-areas: 'p1' 'a' 'p2' 'b';
+    grid-template-areas: 'p1' 'a';
     min-height: 0;
   }
   .rail-spine .rail-margin {

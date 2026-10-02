@@ -94,20 +94,15 @@ margin note is named beside each one.
 > Now I'm on RP3 at UTFPR's NUFER lab, in C++ and Qt, and I build my own projects when
 > nobody asked me to.²
 
-> Outside all of that I keep a few things going that lead nowhere in particular. Languages
-> I don't strictly need.³ Chess.⁴ A guitar I've played for years and still sing badly
-> over.⁵ I'm not planning to get good at that one.
+> *(Paragraph 2 is gone, 2026-10-02: its languages, chess and guitar moved into the home
+> datasheet, "Typical characteristics" and "Known side effects".)*
 
-Marker order — the order the notes appear in the margin, following the spine, not the
-order they were first drafted in:
+Marker order — the order the notes appear in the margin:
 
 | Marker | Note |
 |---|---|
 | ¹ | reading |
 | ² | working on |
-| ³ | languages |
-| ⁴ | chess |
-| ⁵ | guitar |
 
 Constraints: 68ch measure, short sentences, no hedging words, no adjectives about
 himself. The archive proves the claims; the spine only has to state them.
@@ -121,7 +116,8 @@ maximum; a sixth dilutes the read.
 
 **1. reading**
 > Most of what I read has nothing to do with engineering. Psychology, behaviour, how
-> people actually decide things. That turned out to be the useful part.
+> people actually decide things. That turned out to be the useful part: it's why Agente H
+> waits for customers to stop typing.
 
 **2. languages**
 > Portuguese, English, Italian, and French badly, for now. I keep starting new ones
