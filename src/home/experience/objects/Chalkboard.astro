@@ -33,9 +33,9 @@ const yAt = (x: number) => {
   }
   return pts[N][1]
 }
-// the hatching: a short slanted line every 2.2 units from the baseline up to the curve
+// the hatching: a vertical line every 2.2 units, square to the baseline, from it up to the curve
 const hatch: string[] = []
-for (let x = x0 + 1.5; x < x1 - 0.5; x += 2.2) hatch.push(`M${x.toFixed(1)} ${BASE} L${(x + 2.5).toFixed(1)} ${Math.min(BASE - 1, yAt(x + 2.5)).toFixed(1)}`)
+for (let x = x0 + 1.5; x < x1 - 0.5; x += 2.2) hatch.push(`M${x.toFixed(1)} ${BASE} V${Math.min(BASE - 1, yAt(x)).toFixed(1)}`)
 
 // the paraboloid z = x² + y²: rings at five heights (radius grows with the square root of the height)
 const rings = [0.25, 0.5, 0.75, 1].map((z) => ({ cy: 56 - 30 * z, r: 28 * Math.sqrt(z) }))

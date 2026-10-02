@@ -211,6 +211,8 @@ about 1.4x. `pnpm build` and `astro check` pass.
   tree (375: one `image` with the new description). Lighthouse mobile 97 and 98 (a11y 100, CLS 0), JS 80.8 KB gzip.
   Not tested: Firefox, Safari, a real touch device (`preserve-3d` and `backface-visibility` on the cable facets).
 
+Calculus II board (2026-10-02): the hatching under the curve is now vertical lines, square to the baseline (they were slanted); `Chalkboard.astro` only.
+
 ### Home spine pass (2026-10-02, Arthur's brief)
 
 Five stages, in order. Commit message `spine: <stage>`. Copy unchanged. Decisions Arthur made: the page rule's
