@@ -1,0 +1,105 @@
+---
+// The small line drawing at the left of each margin note (56px, the site's line style,
+// graphite-2). Every one ships in its FINAL state, which is also what no JavaScript and reduced
+// motion show: noteDrawings.ts puts a drawing at its start state and plays it once when its note
+// arrives, and again on hover or focus of the note or its marker. Nothing loops. aria-hidden: the
+// note's text is the content, and no drawing text reaches the accessibility tree.
+interface Props {
+  kind: string
+}
+const { kind } = Astro.props
+
+const pt = (cx: number, cy: number, r: number, deg: number) => {
+  const a = ((deg - 90) * Math.PI) / 180 // 0deg is straight up
+  return `${(cx + r * Math.cos(a)).toFixed(1)} ${(cy + r * Math.sin(a)).toFixed(1)}`
+}
+
+// working on: nine scale ticks from min (-135deg) to max (+135deg)
+const knobTicks = Array.from({ length: 9 }, (_, k) => {
+  const deg = -135 + k * 33.75
+  return `M${pt(28, 30, 17, deg)} L${pt(28, 30, 21, deg)}`
+})
+
+// chess: the dark squares of a 4x4 board, hatched (10px squares from 8,8)
+const hatch: string[] = []
+for (let row = 0; row < 4; row++) {
+  for (let col = 0; col < 4; col++) {
+    if ((row + col) % 2 === 0) continue
+    const x = 8 + col * 10
+    const y = 8 + row * 10
+    hatch.push(`M${x + 1} ${y + 9} L${x + 9} ${y + 1} M${x + 1} ${y + 5} L${x + 5} ${y + 1} M${x + 5} ${y + 9} L${x + 9} ${y + 5}`)
+  }
+}
+
+// guitar: the string at five moments, each a single arc between the pegs, peak height decreasing
+const string = [9, -6, 3.5, -1.5, 0].map((a) => `M8 28 Q28 ${28 - 2 * a} 48 28`)
+---
+
+<svg class={`note-art note-art-${kind}`} viewBox="0 0 56 56" aria-hidden="true" focusable="false">
+  {
+    kind === 'reading' && (
+      <>
+        <path data-l="0" d="M8 28 H17 V14 H26" />
+        <path data-l="0" d="M17 28 V42 H26" />
+        <path data-l="1" d="M26 14 H35 V8 H46" />
+        <path data-l="1" d="M35 14 V20 H46" />
+        <path data-l="1" d="M26 42 H35 V36 H46" />
+        <path data-l="1" d="M35 42 V48 H46" />
+        <circle data-n="0" cx="8" cy="28" r="2.5" />
+        <circle data-n="1" cx="26" cy="14" r="2.5" />
+        <circle data-n="1" cx="26" cy="42" r="2.5" />
+        <circle data-n="2" cx="46" cy="8" r="2.5" />
+        <circle data-n="2" cx="46" cy="20" r="2.5" />
+        <circle data-n="2" cx="46" cy="36" r="2.5" />
+        <circle data-n="2" cx="46" cy="48" r="2.5" />
+      </>
+    )
+  }
+  {
+    kind === 'working-on' && (
+      <>
+        <circle cx="28" cy="30" r="13" />
+        {knobTicks.map((d) => <path d={d} />)}
+        <g class="d-ind">
+          <path d="M28 30 V20" />
+        </g>
+      </>
+    )
+  }
+  {
+    kind === 'languages' && (
+      <>
+        <rect x="2" y="19" width="52" height="20" />
+        <path d="M2 24 H5 M2 34 H5 M51 24 H54 M51 34 H54" />
+        <text data-w="0" x="28" y="32.5" text-anchor="middle" opacity="0">hello</text>
+        <text data-w="1" x="28" y="32.5" text-anchor="middle" opacity="0">olá</text>
+        <text data-w="2" x="28" y="32.5" text-anchor="middle" opacity="0">ciao</text>
+        <text data-w="3" x="28" y="32.5" text-anchor="middle">bonjour?</text>
+      </>
+    )
+  }
+  {
+    kind === 'chess' && (
+      <>
+        <rect x="8" y="8" width="40" height="40" />
+        <path d="M18 8 V48 M28 8 V48 M38 8 V48 M8 18 H48 M8 28 H48 M8 38 H48" />
+        {hatch.map((d) => <path class="d-hatch" d={d} />)}
+        <g transform="translate(23 23)">
+          <g class="d-knight">
+            <path class="d-glyph" d="M-3 4 H3 V2 L2 -1 L4 -2 L3 -4 L0 -4 L-2 -2 L-1 0 L-3 2 Z" />
+          </g>
+        </g>
+      </>
+    )
+  }
+  {
+    kind === 'guitar' && (
+      <>
+        <circle cx="6" cy="28" r="2.5" />
+        <circle cx="50" cy="28" r="2.5" />
+        <path d="M3 22 H9 M47 22 H53 M3 34 H9 M47 34 H53" />
+        {string.map((d, i) => <path data-f={i} d={d} opacity={i === string.length - 1 ? undefined : 0} />)}
+      </>
+    )
+  }
+</svg>

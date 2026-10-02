@@ -8,6 +8,7 @@
 // difference between two rects inside the same transformed element (which cancels the transform).
 // Only stroke-dashoffset animates (the leader drawing in, once, when its paragraph arrives).
 import { gsap } from 'gsap'
+import { makeArt } from './noteDrawings'
 
 const NS = 'http://www.w3.org/2000/svg'
 const NOTE_GAP = 32 // between two stacked notes
@@ -41,11 +42,21 @@ export function initSpine() {
     return note && back && prose && group ? [{ id, marker, note, back, prose, group }] : []
   })
 
-  // hover or keyboard focus on a balloon or its note lights both balloons and the line
+  // each note's small drawing: at its start state until the note arrives, then played once
+  const arts = pairs.map((pair) => {
+    const el = pair.note.querySelector<SVGSVGElement>('svg.note-art')
+    return el ? makeArt(el, pair.id) : null
+  })
+
+  // hover or keyboard focus on a balloon or its note lights both balloons and the line, and
+  // plays the note's drawing again
   const link = (pair: Pair, on: boolean) => {
     for (const el of [pair.marker, pair.back, pair.note]) el.toggleAttribute('data-linked', on)
     svg.querySelector(`g[data-id="${pair.id}"]`)?.toggleAttribute('data-linked', on)
+    const art = arts[pairs.indexOf(pair)]
+    if (on && art && !reduced.matches && !art.running() && playedNotes.has(pair.note)) art.play()
   }
+  const playedNotes = new Set<HTMLElement>()
   for (const pair of pairs) {
     for (const el of [pair.marker, pair.back, pair.note]) {
       el.addEventListener('pointerenter', () => link(pair, true))
@@ -154,6 +165,22 @@ export function initSpine() {
     { rootMargin: '0px 0px -15% 0px' },
   )
 
+  // the drawings: start state now (no flash of the final one), played when the note arrives
+  if (!reduced.matches) arts.forEach((art) => art?.reset())
+  const noteIo = new IntersectionObserver(
+    (entries) => {
+      for (const e of entries) {
+        if (!e.isIntersecting) continue
+        const note = e.target as HTMLElement
+        noteIo.unobserve(note)
+        playedNotes.add(note)
+        if (!reduced.matches) arts[pairs.findIndex((p) => p.note === note)]?.play(0.25)
+      }
+    },
+    { rootMargin: '0px 0px -15% 0px' },
+  )
+  for (const pair of pairs) noteIo.observe(pair.note)
+
   let frame = 0
   const relayout = () => {
     cancelAnimationFrame(frame)
@@ -164,6 +191,9 @@ export function initSpine() {
   const ro = new ResizeObserver(relayout)
   for (const prose of new Set(pairs.map((p) => p.prose))) ro.observe(prose)
   desktop.addEventListener('change', relayout)
-  reduced.addEventListener('change', relayout)
+  reduced.addEventListener('change', () => {
+    if (reduced.matches) arts.forEach((art) => art?.settle())
+    relayout()
+  })
   document.fonts?.ready.then(relayout)
 }

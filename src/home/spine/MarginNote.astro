@@ -7,6 +7,7 @@
 // <svg class="spine-leaders">), which also places the notes beside their markers' lines.
 import { render } from 'astro:content'
 import type { CollectionEntry } from 'astro:content'
+import NoteDrawing from './NoteDrawing.astro'
 
 interface Props {
   entry?: CollectionEntry<'notes'>
@@ -57,7 +58,10 @@ const delay = (0.2 + 0.06 * sibling).toFixed(2)
             </a>
             <span class="note-label">{entry.data.label}</span>
           </div>
-          <Content />
+          <div class="note-body">
+            <NoteDrawing kind={entry.id} />
+            <Content />
+          </div>
         </>
       ) : (
         <slot />
