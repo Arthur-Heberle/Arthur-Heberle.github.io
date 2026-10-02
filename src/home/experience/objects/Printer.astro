@@ -54,12 +54,13 @@ const f = (n: number) => n.toFixed(2)
 ---
 
 <div class="pr-wrap">
-  <Cub x={0} y={0} w={100} d={90} h={8} cls="xp-frame">
+  <Cub x={0} y={0} w={100} d={90} h={8} cls="xp-black">
     <div class="pr-bm">
       <Cub x={15} y={16} w={70} d={56} h={2} cls="xp-bed">
+        <Cub x={2} y={2} w={66} d={52} h={0.2} cls="xp-black" />
         {
           layers.map((lines, i) => (
-            <div class="pr-layer" data-i={i} style={`transform:translateZ(${i * 3}px)`}>
+            <div class="pr-layer" data-i={i} style={`transform:translateZ(${i * 3 + 0.2}px)`}>
               <div class="pr-pop" style={`transform-origin:${PX + PW / 2}px ${PY + PD / 2}px`}>
                 <Cub x={PX} y={PY} w={PW} d={PD} h={3} cls="xp-part">
                   <svg viewBox={`0 0 ${PW} ${PD}`} width="100%" height="100%" focusable="false">
@@ -74,12 +75,24 @@ const f = (n: number) => n.toFixed(2)
         }
       </Cub>
     </div>
-    <Cub x={4} y={39} w={6} d={6} h={56} cls="xp-frame" />
-    <Cub x={90} y={39} w={6} d={6} h={56} cls="xp-frame" />
+    <Cub x={4} y={39} w={6} d={6} h={56} cls="xp-black" />
+    <Cub x={90} y={39} w={6} d={6} h={56} cls="xp-black" />
+    <Cub x={86} y={8} w={4} d={4} h={34} cls="xp-black" />
+    <div class="pr-up" style="transform:translateZ(26px)">
+      <Cub x={80} y={5} w={16} d={9} h={16} cls="xp-spool" />
+    </div>
+    <Cub x={34} y={78} w={32} d={10} h={12} cls="xp-black">
+      <svg slot="front" viewBox="0 0 32 12" width="100%" height="100%" focusable="false">
+        <rect class="pr-scr" x="3" y="2" width="15" height="8" rx="1" />
+        <circle class="pr-knob" cx="25" cy="6" r="3" />
+      </svg>
+    </Cub>
     <div class="pr-gantry">
-      <Cub x={10} y={39} w={80} d={6} h={6} cls="xp-frame" />
+      <Cub x={10} y={39} w={80} d={6} h={6} cls="xp-black">
+        <Cub x={3} y={1.2} w={74} d={1.2} h={0.8} cls="xp-cable" />
+      </Cub>
       <div class="pr-head">
-        <Cub x={42} y={37} w={16} d={10} h={12} cls="xp-head" />
+        <Cub x={42} y={37} w={16} d={10} h={12} cls="xp-blackhead" />
         <div class="pr-noz"><Cub x={48.5} y={40.5} w={3} d={3} h={5} cls="xp-nozzle" /></div>
       </div>
     </div>

@@ -171,6 +171,15 @@ of dark keys, a space bar, a trackpad, a front notch), a hinge bar, and a thin l
 dot, and a window with a title bar (three small dots) around the UML diagram and code. No brand or logo. The
 action is unchanged (same classes).
 
+Experience, RP3 scene (2026-10-02, Arthur's request): the printer moved to the left of the scene and is now black
+(frame, posts, gantry bar, head, a black print plate on a dark bed, a black cable strip along the bar), with a
+filament spool on a post at the back and a control box with a small green screen at the front. The computer
+is a desktop setup: a monitor with a thinner rounded bezel, a camera and a status LED, on a two-tier stand, a
+keyboard and a mouse on the desk, and a tower with drive bays, vents, a power button and USB ports. The screen
+is an application window (title bar with three dots, a toolbar of icons, a status strip, a layer slider whose
+handle rises with the layers) around the same 3D view; the print animation is unchanged. Scoped drawing
+materials, not tokens.
+
 Scoped colours (like the EduBra and Agente H materials, not tokens, used nowhere else): the RP3 screen's reds,
 greens, blue and greys (the real software's own colours) and the ELETRON analyzer's black enclosure and greens.
 

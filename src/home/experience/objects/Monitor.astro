@@ -1,6 +1,6 @@
 ---
-// RP3: a monitor showing RP3's 3D view of a part sliced into layers, and beside it, smaller, a generic
-// printer building the same part. The screen mirrors the real view (the screenshot in the RP3 block): a
+// RP3: a desktop computer (monitor, keyboard, mouse and a tower) showing RP3's 3D view of a part sliced into
+// layers, and beside it a generic black printer building the same part. The screen mirrors the real view (the screenshot in the RP3 block): a
 // gridded build platform in perspective, X, Y and Z axis lines in red, green and blue, and the part's layer
 // contours as loops stacked one layer higher each, in red and green. It is an illustration, not RP3's real
 // interface (the figure's description says so). Action (experience.ts): the view turns once, then the layers
@@ -51,39 +51,87 @@ const loops: Loop[] = [
   ...ell(166, 84, 7, 2.2, 5, 'r'),
   ...ell(131, 99, 7, 2.2, 5, 'r'),
 ].sort((p, q) => p.k - q.k)
+
+// the keyboard's keys, on a 60 x 18 top face
+const kb: { x: number; y: number; w: number }[] = []
+;[
+  [5.2, 14],
+  [6.4, 14],
+  [6.4, 13],
+].forEach((r, i) => {
+  const n = r[1]
+  const w = (56 - n * 0.6) / n
+  for (let k = 0; k < n; k++) kb.push({ x: 2 + k * (w + 0.6), y: 2 + i * 4.4, w })
+})
+kb.push({ x: 12, y: 15.4, w: 30 })
 ---
 
-<div class="xp-scene" style="--m:1.55;--fw:270px;--fd:120px;--dx:0px;--dy:40px">
+<div class="xp-scene" style="--m:1.45;--fw:330px;--fd:130px;--dx:-10px;--dy:36px">
   <div class="xp-plane">
     <div class="xp-lift">
-      <Cub x={14} y={50} w={64} d={40} h={4} cls="xp-mon xp-turn">
-        <Cub x={24} y={14} w={16} d={12} h={24} cls="xp-mon">
-          <Cub x={-62} y={3} w={140} d={6} h={95} cls="xp-screen">
-            <svg slot="front" class="rp-svg" viewBox="0 0 200 136" width="100%" height="100%" focusable="false">
-              <g class="rp-view">
-                <path class="rp-plat" d={platform} />
-                <path class="rp-grid" d={cols} />
-                <path class="rp-grid" d={rows} />
-                <path class="rp-ax rp-x" d={`M${A} L193 47.4`} />
-                <path class="rp-ax rp-y" d={`M${B} L${C}`} />
-                <path class="rp-ax rp-z" d="M177 4 V54" />
-                <g class="rp-part">
-                  {
-                    loops.map((l) =>
-                      l.el === 'ellipse' ? (
-                        <ellipse class={`rp-loop rp-${l.c}`} data-k={l.k} {...l.a} />
-                      ) : (
-                        <path class={`rp-loop rp-${l.c}`} data-k={l.k} {...l.a} />
-                      ),
-                    )
-                  }
+      <Cub x={14} y={44} w={64} d={40} h={3} cls="xp-mon xp-turn">
+        <Cub x={4} y={4} w={56} d={32} h={1.5} cls="xp-mon2">
+          <Cub x={20} y={10} w={16} d={10} h={26} cls="xp-mon">
+            <Cub x={-62} y={2} w={140} d={6} h={95} cls="xp-screen">
+              <svg slot="front" class="rp-svg" viewBox="0 0 200 136" width="100%" height="100%" focusable="false">
+                <circle class="rp-cam" cx="100" cy="-2.3" r="1" />
+                <rect class="rp-led" x="96" y="138.4" width="8" height="1" rx="0.5" />
+                <!-- the application window around the 3D view: title bar, toolbar, status strip, layer slider -->
+                <rect class="rp-win" x="0" y="0" width="200" height="136" />
+                <rect class="rp-tbar" x="0" y="0" width="200" height="9" />
+                <circle class="rp-dot rp-d1" cx="5" cy="4.5" r="1.5" />
+                <circle class="rp-dot rp-d2" cx="10" cy="4.5" r="1.5" />
+                <circle class="rp-dot rp-d3" cx="15" cy="4.5" r="1.5" />
+                <rect class="rp-tool" x="0" y="9" width="14" height="118" />
+                {[0, 1, 2, 3, 4, 5].map((i) => <rect class="rp-icon" x="3" y={13 + i * 9} width="8" height="6" rx="1" />)}
+                <rect class="rp-tbar" x="0" y="127" width="200" height="9" />
+                <rect class="rp-bar" x="4" y="130" width="30" height="3" rx="1" />
+                <rect class="rp-bar" x="40" y="130" width="18" height="3" rx="1" />
+                <rect class="rp-bar" x="150" y="130" width="46" height="3" rx="1" />
+                <rect class="rp-track" x="196" y="14" width="2" height="108" rx="1" />
+                <rect class="rp-hdl" x="193.5" y="16" width="7" height="4" rx="1" />
+                <g class="rp-view">
+                  <path class="rp-plat" d={platform} />
+                  <path class="rp-grid" d={cols} />
+                  <path class="rp-grid" d={rows} />
+                  <path class="rp-ax rp-x" d={`M${A} L193 47.4`} />
+                  <path class="rp-ax rp-y" d={`M${B} L${C}`} />
+                  <path class="rp-ax rp-z" d="M177 12 V54" />
+                  <g class="rp-part">
+                    {
+                      loops.map((l) =>
+                        l.el === 'ellipse' ? (
+                          <ellipse class={`rp-loop rp-${l.c}`} data-k={l.k} {...l.a} />
+                        ) : (
+                          <path class={`rp-loop rp-${l.c}`} data-k={l.k} {...l.a} />
+                        ),
+                      )
+                    }
+                  </g>
                 </g>
-              </g>
-            </svg>
+              </svg>
+            </Cub>
           </Cub>
         </Cub>
       </Cub>
-      <div class="pr-place" style="left:140px;top:14px"><Printer /></div>
+      <!-- the keyboard and mouse on the desk, and the tower beside the monitor -->
+      <Cub x={14} y={92} w={60} d={20} h={1.6} cls="xp-kb xp-turn">
+        <svg viewBox="0 0 60 20" width="100%" height="100%" focusable="false">
+          {kb.map((k) => <rect class="kb-key" x={k.x.toFixed(2)} y={k.y} width={k.w.toFixed(2)} height="3.6" rx="0.6" />)}
+        </svg>
+      </Cub>
+      <Cub x={84} y={96} w={8} d={13} h={3} cls="xp-mouse" />
+      <Cub x={-46} y={44} w={24} d={46} h={64} cls="xp-pc">
+        <svg slot="front" viewBox="0 0 24 64" width="100%" height="100%" focusable="false">
+          <rect class="pc-bay" x="3" y="4" width="18" height="6" rx="0.6" />
+          <rect class="pc-bay" x="3" y="12" width="18" height="6" rx="0.6" />
+          {[0, 1, 2, 3, 4, 5].map((i) => <path class="pc-vent" d={`M4 ${28 + i * 3} H20`} />)}
+          <circle class="pc-pwr" cx="12" cy="54" r="2.6" />
+          <rect class="pc-usb" x="5" y="46" width="4" height="2" />
+          <rect class="pc-usb" x="11" y="46" width="4" height="2" />
+        </svg>
+      </Cub>
+      <div class="pr-place" style="left:178px;top:14px"><Printer /></div>
     </div>
   </div>
 </div>

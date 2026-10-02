@@ -150,6 +150,7 @@ function monitor(root: HTMLElement): Action {
   const gantry = root.querySelector<HTMLElement>('.pr-gantry')!
   const head = root.querySelector<HTMLElement>('.pr-head')!
   const bed = root.querySelector<HTMLElement>('.pr-bm')!
+  const handle = root.querySelector<SVGRectElement>('.rp-hdl')!
   const fills = lineSets.flat()
   const G0 = 10.5 // gantry height with the nozzle just above the first layer; 3 more for each layer
   const HALF_W = 18 // half the part's width and depth: the nozzle is over the part's centre at x = 0, y = 0
@@ -165,16 +166,19 @@ function monitor(root: HTMLElement): Action {
       gsap.set(gantry, { z: G0 })
       gsap.set(head, { x: 0 })
       gsap.set(bed, { y: 0 })
+      gsap.set(handle, { y: 100 })
     },
     run: () => {
       const tl = gsap.timeline({
-        onComplete: () => gsap.set([...loops, view, ...pops, gantry, head, bed, ...fills], { clearProps: CLEAR }),
+        onComplete: () => gsap.set([...loops, view, handle, ...pops, gantry, head, bed, ...fills], { clearProps: CLEAR }),
       })
       // the view turns slightly, once
       tl.to(view, { skewX: -6, scaleX: 0.95, svgOrigin: '100 80', duration: TURN / 2, ease: 'power2.inOut' }, 0)
       tl.to(view, { skewX: 0, scaleX: 1, duration: TURN / 2, ease: 'power2.inOut' }, TURN / 2)
       // then the layers rise, one at a time from the bottom
       draws.forEach((d, k) => d.draw(tl, TURN + k * STEP, 0.3))
+      // the layer slider's handle rises with them
+      tl.to(handle, { y: 0, duration: draws.length * STEP, ease: 'none' }, TURN)
       // the printer, from the start: layer by layer, the nozzle moves along each line as it is drawn
       let t = 0.2
       lineSets.forEach((lines, i) => {

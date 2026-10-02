@@ -804,7 +804,8 @@
 }
 .xp-screen > .front {
   background: #f4f5f4;
-  box-shadow: inset 0 0 0 3px #2c2e33;
+  box-shadow: inset 0 0 0 4px #17181b;
+  border-radius: 3px;
 }
 .xp-screen > .right {
   background: #2c2e33;
@@ -853,32 +854,56 @@
 .xp-part > .top svg {
   overflow: hidden; /* the filling can never fall outside the part */
 }
-.xp-frame > .top {
-  background: #6c7176;
+.xp-black > .top {
+  background: #2e3033;
 }
-.xp-frame > .front {
-  background: #52575c;
+.xp-black > .front {
+  background: #1b1c1e;
 }
-.xp-frame > .right {
-  background: #41454a;
+.xp-black > .right {
+  background: #0f1011;
 }
 .xp-bed > .top {
-  background: #cfd3d6;
+  background: #6a6e73;
 }
 .xp-bed > .front {
-  background: #aeb3b8;
+  background: #4d5054;
 }
 .xp-bed > .right {
-  background: #959aa0;
+  background: #3c3f42;
 }
-.xp-head > .top {
-  background: #8d9297;
+.xp-blackhead > .top {
+  background: #3a3d41;
 }
-.xp-head > .front {
-  background: #6c7176;
+.xp-blackhead > .front {
+  background: #232427;
 }
-.xp-head > .right {
-  background: #52575c;
+.xp-blackhead > .right {
+  background: #141516;
+}
+.xp-cable > .top,
+.xp-cable > .front,
+.xp-cable > .right {
+  background: #050505;
+}
+.xp-spool > .top {
+  background: #6aa7ab;
+}
+.xp-spool > .front {
+  background: #4d8b8f;
+}
+.xp-spool > .right {
+  background: #3b6f73;
+}
+.pr-scr {
+  fill: #2f8f46;
+  stroke: #50565b;
+  stroke-width: 0.6;
+}
+.pr-knob {
+  fill: #3a3d41;
+  stroke: #6a6e73;
+  stroke-width: 0.6;
 }
 .xp-nozzle > .top,
 .xp-nozzle > .front,
@@ -900,6 +925,7 @@
   stroke-width: 0.9;
 }
 .pr-layer,
+.pr-up,
 .pr-pop,
 .pr-bm,
 .pr-gantry,
@@ -914,4 +940,105 @@
 }
 .pr-noz {
   transform: translateZ(-5px); /* the nozzle hangs under the head */
+}
+
+/* RP3's computer: the stand, the application window on the screen, keyboard, mouse and tower */
+.xp-mon2 > .top {
+  background: #7c8187;
+}
+.xp-mon2 > .front {
+  background: #62676c;
+}
+.xp-mon2 > .right {
+  background: #4f5358;
+}
+.rp-cam {
+  fill: #3b3e44;
+}
+.rp-led {
+  fill: #6fb27a;
+}
+.rp-win {
+  fill: #f4f5f4;
+}
+.rp-tbar {
+  fill: #dfe2e1;
+}
+.rp-tool {
+  fill: #e8eaea;
+}
+.rp-icon {
+  fill: #b5babd;
+}
+.rp-bar {
+  fill: #c3c8c6;
+}
+.rp-dot {
+  fill: #b9bdbf;
+}
+.rp-d1 {
+  fill: #d9776c;
+}
+.rp-d2 {
+  fill: #e0b857;
+}
+.rp-d3 {
+  fill: #6fb27a;
+}
+.rp-track {
+  fill: #c3c8c6;
+}
+.rp-hdl {
+  fill: #5a5e63;
+}
+.xp-kb > .top {
+  background: #2f3236;
+  border-radius: 1px;
+}
+.xp-kb > .front {
+  background: #1d1f22;
+}
+.xp-kb > .right {
+  background: #131416;
+}
+.kb-key {
+  fill: #54585d;
+}
+.xp-mouse > .top {
+  background: #cfd3d6;
+  border-radius: 3px;
+}
+.xp-mouse > .front {
+  background: #9ea3a8;
+}
+.xp-mouse > .right {
+  background: #82878c;
+}
+.xp-pc > .top {
+  background: #34373b;
+}
+.xp-pc > .front {
+  background: linear-gradient(#2a2c30, #1c1d20);
+}
+.xp-pc > .right {
+  background: #131416;
+}
+.pc-bay {
+  fill: #3d4044;
+  stroke: #54585d;
+  stroke-width: 0.4;
+}
+.pc-vent {
+  fill: none;
+  stroke: #54585d;
+  stroke-width: 0.6;
+  stroke-linecap: round;
+}
+.pc-pwr {
+  fill: #2a2c30;
+  stroke: #8fd39e;
+  stroke-width: 0.7;
+}
+.pc-usb {
+  fill: #54585d;
 }
