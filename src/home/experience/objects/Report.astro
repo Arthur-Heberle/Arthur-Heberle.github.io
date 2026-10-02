@@ -1,0 +1,77 @@
+---
+// ELETRON: a printed measurement-and-verification report lying on the desk, a little askew: a title, a rule,
+// a few paragraphs (grey bars, not words), a before/after bar chart, a small table (baseline, after,
+// savings: the same illustrative figures as the spreadsheet) and a signature line. A few pages thick, stapled
+// at the corner.
+import Cub from '../../../projects/edubra/Cub.astro'
+
+const W = 84
+const D = 112
+// the paragraphs: line lengths as a share of the text width
+const para = [
+  [1, 0.96, 1, 0.9, 0.58],
+  [1, 0.94, 0.98, 0.42],
+]
+const bars = [
+  [1284, 1190],
+  [1301, 1112],
+  [1275, 1085],
+  [1290, 1043],
+  [1262, 1008],
+  [1288, 989],
+] as const
+const BX0 = 12 // the chart's frame
+const BY1 = 80
+const BH = 22
+const bw = 2.6
+---
+
+<div class="mv-place">
+  <Cub x={0} y={0} w={W} d={D} h={2.6} cls="xp-paper xp-pages">
+    <svg viewBox={`0 0 ${W} ${D}`} width="100%" height="100%" focusable="false">
+      <!-- the title block -->
+      <rect class="mv-bar" x="7" y="8" width="70" height="7"></rect>
+      <text class="mv-t mv-title" x="10" y="13.3">M&amp;V REPORT</text>
+      <text class="mv-t mv-sub" x="7" y="20">Baseline and after, savings verified</text>
+      <path class="mv-rule" d="M7 22.5 H77"></path>
+      <!-- the paragraphs -->
+      {
+        para.map((lines, p) =>
+          lines.map((s, i) => <rect class="mv-line" x="7" y={26 + p * 17 + i * 3.1} width={70 * s} height="1.4"></rect>),
+        )
+      }
+      <!-- the chart: baseline and after, six months -->
+      <path class="mv-axis" d={`M${BX0} ${BY1 - BH - 3} V${BY1} H77`}></path>
+      <path class="mv-grid" d={`M${BX0} ${BY1 - BH * 0.5} H77 M${BX0} ${BY1 - BH} H77`}></path>
+      {
+        bars.map(([a, b], i) => {
+          const x = BX0 + 3 + i * 10.4
+          const h = (v: number) => ((v - 800) / 560) * BH
+          return (
+            <g>
+              <rect class="mv-before" x={x} y={BY1 - h(a)} width={bw} height={h(a)}></rect>
+              <rect class="mv-after" x={x + bw + 0.8} y={BY1 - h(b)} width={bw} height={h(b)}></rect>
+            </g>
+          )
+        })
+      }
+      <rect class="mv-before" x="52" y="50.5" width="3" height="3"></rect>
+      <text class="mv-t mv-sub" x="56.5" y="53">baseline</text>
+      <rect class="mv-after" x="52" y="55.5" width="3" height="3"></rect>
+      <text class="mv-t mv-sub" x="56.5" y="58">after</text>
+      <!-- the table -->
+      {[0, 1, 2, 3].map((r) => <path class="mv-rule" d={`M7 ${86 + r * 4.4} H77`}></path>)}
+      <text class="mv-t mv-sub" x="8.5" y="89.1">Baseline</text>
+      <text class="mv-t mv-sub" x="8.5" y="93.5">After</text>
+      <text class="mv-t mv-sub mv-bold" x="8.5" y="97.9">Savings</text>
+      <text class="mv-t mv-sub" x="75.5" y="89.1" text-anchor="end">7700 kWh</text>
+      <text class="mv-t mv-sub" x="75.5" y="93.5" text-anchor="end">6427 kWh</text>
+      <text class="mv-t mv-sub mv-bold" x="75.5" y="97.9" text-anchor="end">1273 kWh</text>
+      <!-- the signature -->
+      <path class="mv-rule" d="M47 107 H77"></path>
+      <path class="mv-sign" d="M50 105.4 C52 101 53 108 55 104 S58 102 60 105 S64 103 67 105"></path>
+      <!-- the staple -->
+      <path class="mv-staple" d="M3.5 4.5 L9 2.4"></path>
+    </svg>
+  </Cub>
+</div>

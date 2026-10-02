@@ -357,8 +357,6 @@
   padding-bottom: 8vh;
 }
 .xp-lift,
-.cb-place,
-.ws-place,
 .pr-place,
 .pr-wrap {
   position: absolute;
@@ -588,8 +586,10 @@
   font-size: 4.8px;
 }
 
-/* ELETRON: the analyzer is a black enclosure with green pluggable terminal blocks; the print on it, and the
- * greens of its terminals, display and button, are drawing materials of this object only. No logo. */
+/* ELETRON: the analyzer is a black enclosure with green pluggable terminal blocks standing out of its front
+ * face; the print on it, and the greens of its terminals, display and button, are drawing materials of this
+ * object only. No logo. The cables are real cylinders (Cable.astro), the current is a pair of bright bands
+ * that travel along each one in the action (scaled to nothing at rest). */
 .xp-an > .top {
   background: #2e3135;
 }
@@ -599,18 +599,80 @@
 .xp-an > .right {
   background: #0f1012;
 }
+.an-pose,
+.an-blocks,
+.an-cable,
+.an-ct,
+.an-lid,
+.an-lidrot,
+.an-lead {
+  position: absolute;
+  transform-style: preserve-3d;
+}
+.an-blocks {
+  inset: 0;
+}
+.an-lid {
+  left: 0;
+  top: 0;
+}
+.an-lidrot {
+  left: 0;
+  top: 0;
+  width: 16px;
+  height: 12px;
+  transform-origin: 50% 0; /* the hinge is the lid's back edge */
+}
+.xp-tb > .top {
+  background: #3fae55;
+}
+.xp-tb > .front {
+  background: #2f8f46;
+}
+.xp-tb > .right {
+  background: #226b33;
+}
+.tb-hole {
+  fill: #0e2a14;
+}
+.tb-pl {
+  fill: #d8f0de;
+  font-family: var(--font-mono);
+  font-size: 3.2px;
+}
+.tb-sep {
+  fill: none;
+  stroke: #226b33;
+  stroke-width: 0.6;
+}
+.tb-screw circle {
+  fill: #1d5a2a;
+  stroke: #8fd39e;
+  stroke-width: 0.5;
+}
+.tb-screw path {
+  fill: none;
+  stroke: #8fd39e;
+  stroke-width: 0.8;
+}
+.xp-ct > .top {
+  background: #d3d7da;
+}
+.xp-ct > .front {
+  background: #a3a8ac;
+}
+.xp-ct > .right {
+  background: #82878c;
+}
+.xp-lead > .top,
+.xp-lead > .front,
+.xp-lead > .right {
+  background: #2a2c2f;
+}
 .an-pl {
   fill: #b4babe;
   font-family: var(--font-mono);
-  font-size: 3.5px;
-}
-.an-tb {
-  fill: #2f8f46;
-}
-.an-tscrew {
-  fill: #17441f;
-  stroke: #8fd39e;
-  stroke-width: 0.5;
+  font-size: 4.2px;
 }
 .an-arrow {
   fill: #b4babe;
@@ -621,22 +683,22 @@
 .an-screw path {
   fill: none;
   stroke: #1b1d20;
-  stroke-width: 0.7;
+  stroke-width: 0.8;
 }
 .an-lcd {
   fill: #a8d884;
   stroke: #50565b;
-  stroke-width: 1;
+  stroke-width: 1.2;
 }
 .an-r1 {
   fill: #1d3b12;
   font-family: var(--font-mono);
-  font-size: 3.4px;
+  font-size: 4.6px;
 }
 .an-r2 {
   fill: #1d3b12;
   font-family: var(--font-mono);
-  font-size: 6.4px;
+  font-size: 9px;
 }
 .an-r {
   opacity: 0;
@@ -647,41 +709,58 @@
 .an-btn rect {
   fill: #3fae55;
   stroke: #1d5a2a;
-  stroke-width: 0.8;
+  stroke-width: 1;
 }
 .an-usb {
   fill: #6b7176;
 }
-.an-cable {
-  fill: none;
-  stroke: #4a4f55;
-  stroke-width: 3.2;
-  stroke-linecap: round;
+
+/* the cable: N facets about its axis, each shaded by --s (Cable.astro) */
+.cy {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform-style: preserve-3d;
 }
-.an-cl {
-  fill: var(--color-graphite-2);
+.cy > i {
+  position: absolute;
+  left: 0;
+  backface-visibility: hidden;
+  background:
+    linear-gradient(rgb(0 0 0 / calc((1 - var(--s)) * 0.6)), rgb(0 0 0 / calc((1 - var(--s)) * 0.6))),
+    linear-gradient(rgb(255 255 255 / calc(max(0, var(--s) - 0.8) * 1.4)), rgb(255 255 255 / calc(max(0, var(--s) - 0.8) * 1.4))),
+    var(--cy);
+}
+.cy-l1 {
+  --cy: #86512c;
+}
+.cy-l2 {
+  --cy: #2c2e32;
+}
+.cy-l3 {
+  --cy: #8d9296;
+}
+/* the current: two short bright bands, in the site's signal tint. Resting (and reduced motion): none */
+.cy-pulse {
+  --cy: color-mix(in srgb, var(--color-signal) 62%, #ffd9c9);
+  transform: scale(0);
+}
+.cy-pulse > i {
+  background: var(--cy);
+}
+.cy-tag {
+  position: absolute;
+  left: 262px;
+  top: 0;
+  color: var(--color-graphite-2);
   font-family: var(--font-mono);
-  font-size: 4.4px;
+  font-size: 7px;
+  line-height: 8px;
+  transform-origin: 0 100%;
+  transform: rotateX(-90deg) scaleX(-1);
 }
-.an-lead {
-  fill: none;
-  stroke: var(--color-graphite);
-  stroke-width: 0.9;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-.an-lead-v {
-  stroke: var(--color-graphite-2);
-  stroke-dasharray: 3 1.6;
-}
-.an-tap {
-  fill: var(--color-graphite);
-}
-.an-ct rect {
-  fill: #c9cdd0;
-  stroke: var(--color-graphite);
-  stroke-width: 0.8;
-}
+
+/* the spreadsheet on its clipboard, and the printed report: flat paper on the desk */
 .xp-clip > .top {
   background: #9a7b52;
 }
@@ -693,56 +772,140 @@
 }
 .cb-sheet {
   fill: var(--color-sheet);
+  stroke: #c3c8c6;
+  stroke-width: 0.3;
 }
 .cb-clip {
   fill: #9ea3a8;
   stroke: #6c7176;
-  stroke-width: 0.6;
+  stroke-width: 0.5;
+}
+.cb-clip-in {
+  fill: #6c7176;
+}
+.cb-fx {
+  fill: #fff;
+  stroke: #c3c8c6;
+  stroke-width: 0.3;
+}
+.cb-band {
+  fill: #dfe2e1;
+  stroke: #c3c8c6;
+  stroke-width: 0.3;
 }
 .cb-head {
-  fill: #cfd3d6;
+  fill: color-mix(in srgb, var(--color-measure) 22%, white);
+}
+.cb-sel {
+  fill: none;
+  stroke: var(--color-measure);
+  stroke-width: 0.9;
 }
 .cb-ln {
   fill: none;
-  stroke: var(--color-graphite-2);
-  stroke-width: 0.4;
+  stroke: #c3c8c6;
+  stroke-width: 0.3;
 }
-.cb-chart {
-  fill: none;
-  stroke: var(--color-measure);
-  stroke-width: 0.8;
+.cb-t {
+  fill: var(--color-graphite);
+  font-family: var(--font-mono);
+  font-size: 2.6px;
+}
+.cb-tc,
+.cb-tg {
+  fill: var(--color-graphite-2);
+}
+.cb-tfx {
+  font-style: italic;
+}
+.cb-th,
+.cb-tb {
+  font-weight: 600;
+}
+.cb-tab {
+  fill: #fff;
+  stroke: #c3c8c6;
+  stroke-width: 0.3;
+}
+.cb-place,
+.mv-place {
+  position: absolute;
+  transform-style: preserve-3d;
 }
 .cb-place {
-  left: 98px;
-  top: 70px;
+  left: 148px;
+  top: 52px;
   transform: rotateZ(-8deg);
 }
-.ws-place {
-  left: 22px;
-  top: 62px;
-  transform: rotateZ(6deg);
+.mv-place {
+  left: 40px;
+  top: 54px;
+  transform: rotateZ(5deg);
 }
 .xp-paper > .top {
-  background: #eef0ee;
+  background: #f1f3f1;
 }
-.xp-paper > .front,
+.xp-paper > .front {
+  background: repeating-linear-gradient(#f4f5f3 0 0.5px, #bcc2c0 0.5px 0.9px);
+}
 .xp-paper > .right {
-  background: #c3c8c6;
+  background: repeating-linear-gradient(90deg, #f4f5f3 0 0.5px, #bcc2c0 0.5px 0.9px);
 }
-.ws-fold {
+.mv-t {
+  fill: var(--color-graphite);
+  font-family: var(--font-mono);
+}
+.mv-title {
+  fill: #fff;
+  font-size: 4.6px;
+  font-weight: 600;
+}
+.mv-sub {
+  fill: var(--color-graphite-2);
+  font-size: 2.6px;
+}
+.mv-bold {
+  fill: var(--color-graphite);
+  font-weight: 600;
+}
+.mv-bar {
+  fill: var(--color-graphite);
+}
+.mv-rule {
   fill: none;
-  stroke: #b3b8b6;
+  stroke: #bcc2c0;
+  stroke-width: 0.35;
+}
+.mv-line {
+  fill: #c3c8c6;
+}
+.mv-axis {
+  fill: none;
+  stroke: var(--color-graphite-2);
   stroke-width: 0.5;
 }
-.ws-ln {
+.mv-grid {
+  fill: none;
+  stroke: #dde0df;
+  stroke-width: 0.3;
+}
+.mv-before {
+  fill: #8a8f94;
+}
+.mv-after {
+  fill: var(--color-measure);
+}
+.mv-sign {
   fill: none;
   stroke: var(--color-graphite);
   stroke-width: 0.5;
+  stroke-linecap: round;
 }
-.ws-sym {
-  fill: var(--color-sheet);
-  stroke: var(--color-graphite);
-  stroke-width: 0.5;
+.mv-staple {
+  fill: none;
+  stroke: #6c7176;
+  stroke-width: 0.9;
+  stroke-linecap: round;
 }
 /* the chart: a flat 2D drawing in the site's line style, beside the analyzer */
 .mt-chart {

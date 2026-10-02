@@ -90,18 +90,28 @@ function laptop(root: HTMLElement): Action {
 
 function analyzer(root: HTMLElement): Action {
   const q = <T extends Element>(s: string) => root.querySelector<T>(s)!
-  const lids = all<SVGGElement>(root, '.an-ct-lid')
-  const open = (lid: SVGGElement) => ({ rotation: -58, svgOrigin: `${lid.dataset.hx} ${lid.dataset.hy}` })
+  // the current transformers' lids hinge about their back edge: open (front edge up) until the action closes them
+  const lids = all<HTMLElement>(root, '.an-lidrot')
+  const OPEN = 58
   const btn = q<SVGGElement>('.an-btn')
   const reads = all<SVGGElement>(root, '.an-r')
+  // current: each cable carries two bright bands, scaled to nothing at rest; in the action they travel its length
+  // twice, left to right, a third of a pass apart from one cable to the next (three phases)
+  const cables = all<HTMLElement>(root, '.an-cable').map((c) => ({
+    pulses: all<HTMLElement>(c, '.cy-pulse'),
+    len: parseFloat(c.querySelector<HTMLElement>('.cy')!.style.getPropertyValue('--len')),
+  }))
   const before = strokes([q<SVGPathElement>('.mc-before')])
   const after = strokes([q<SVGPathElement>('.mc-after')])
   const gap = q<SVGPathElement>('.mc-gap')
   const labels = ['before', 'after', 'savings'].map((l) => q<SVGTextElement>(`[data-l="${l}"]`))
-  const touched = [...lids, btn, ...reads, q('.mc-before'), q('.mc-after'), gap, ...labels]
+  const bands = cables.flatMap((c) => c.pulses)
+  const touched = [...lids, btn, ...reads, ...bands, q('.mc-before'), q('.mc-after'), gap, ...labels]
+  const PASS = 1.1
   return {
     reset: () => {
-      lids.forEach((lid) => gsap.set(lid, open(lid)))
+      lids.forEach((lid) => gsap.set(lid, { rotationX: OPEN }))
+      gsap.set(bands, { scale: 0 })
       gsap.set(btn, { clearProps: 'transform' })
       gsap.set(reads, { opacity: 0 })
       before.reset()
@@ -110,13 +120,25 @@ function analyzer(root: HTMLElement): Action {
       gsap.set(labels, { opacity: 0 })
     },
     run: () => {
-      const tl = gsap.timeline({ onComplete: () => gsap.set(touched, { clearProps: CLEAR }) })
+      const tl = gsap.timeline({ onComplete: () => gsap.set(touched, { clearProps: CLEAR + ',rotationX' }) })
       // the current transformers close around their cables, one after the other
-      lids.forEach((lid, i) => tl.to(lid, { rotation: 0, duration: 0.4, ease: ease() }, 0.1 + i * 0.25))
+      lids.forEach((lid, i) => tl.to(lid, { rotationX: 0, duration: 0.4, ease: ease() }, 0.1 + i * 0.25))
+      // then current flows: a band enters at the cable's left end, runs to the right end and leaves, twice
+      cables.forEach((c, i) =>
+        c.pulses.forEach((p, j) => {
+          const from = c.len - 8
+          for (let pass = 0; pass < 2; pass++) {
+            const at = 0.9 + i * (PASS / 3) + j * 0.4 + pass * (PASS + 0.15)
+            tl.set(p, { x: from, scale: 1 }, at)
+            tl.to(p, { x: 0, duration: PASS, ease: 'none' }, at)
+            tl.set(p, { scale: 0 }, at + PASS)
+          }
+        }),
+      )
       // the DISPLAY button presses once for each reading
       reads.forEach((r, i) => {
         const at = 1.0 + i * 0.7
-        tl.to(btn, { scale: 0.84, svgOrigin: '113 47', duration: 0.08 }, at - 0.1)
+        tl.to(btn, { scale: 0.84, svgOrigin: '162 54', duration: 0.08 }, at - 0.1)
         tl.to(btn, { scale: 1, duration: 0.14 }, at - 0.02)
         if (i) tl.set(reads[i - 1], { opacity: 0 }, at)
         tl.set(r, { opacity: 1 }, at)

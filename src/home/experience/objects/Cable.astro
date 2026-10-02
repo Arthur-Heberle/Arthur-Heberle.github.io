@@ -1,0 +1,30 @@
+---
+// A cable: a cylinder lying along the plane's x axis, built from N flat facets turned about that axis
+// (rotateX(k * 360 / N) translateZ(r)), each shaded by a fixed light from above and in front, so it reads as
+// round in the diagonal camera. The element's origin is on the cable's axis; its length runs along +x.
+// Used for ELETRON's L1 to L3 (Analyzer.astro) and for the current pulses that travel along them: a short,
+// slightly fatter cable whose colour is the signal tint.
+interface Props {
+  len: number
+  r: number
+  cls?: string
+  facets?: number
+}
+const { len, r, cls = '', facets = 8 } = Astro.props
+const h = 2 * r * Math.tan(Math.PI / facets)
+// the light's direction in the (toward-the-viewer, up) plane; a facet's outward normal is (-sin a, cos a)
+const lit = (a: number) => Math.max(0, -0.45 * Math.sin(a) + 0.89 * Math.cos(a))
+const side = Array.from({ length: facets }, (_, k) => {
+  const a = (k * 2 * Math.PI) / facets
+  return { deg: (k * 360) / facets, s: 0.3 + 0.7 * lit(a) }
+})
+---
+
+<div class={`cy ${cls}`} style={`--len:${len}px;--r:${r}px`}>
+  {
+    side.map((f) => (
+      <i style={`--s:${f.s.toFixed(2)};width:${len}px;height:${h.toFixed(2)}px;top:${(-h / 2).toFixed(2)}px;transform:rotateX(${f.deg}deg) translateZ(${r}px)`} />
+    ))
+  }
+  <slot />
+</div>

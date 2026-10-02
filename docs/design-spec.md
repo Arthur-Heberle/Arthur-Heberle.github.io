@@ -186,7 +186,7 @@ Google Fonts, woff2, latin subset, `font-display: swap`. Preload the display fac
    The bench is three objects on one work surface, each a link; Experience (Arthur's brief, 2026-10-02) is a
    sticky object column with scrolling details. From 900px up, a stage that is `position: sticky` shows one
    experience's CSS 3D object at a time (RP3's monitor and a generic printer, the laptop with a UML screen,
-   the T-500-style power analyzer with its clipboard, wiring sheet and chart, the chalkboard), with a small
+   the T-500-style power analyzer with its clipboard, printed report and chart, the chalkboard), with a small
    timeline at its top (axis from 2025.01 to the current month, one thin bar per experience as a link to its
    text). The four experiences are normal-flow text blocks on the right, newest first, at least 80vh each;
    the block in the middle band of the viewport is active, its object slides in, and its action plays the

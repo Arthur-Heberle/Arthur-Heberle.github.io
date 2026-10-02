@@ -1,20 +1,77 @@
 ---
-// ELETRON: a clipboard lying flat, holding a sheet with a spreadsheet grid (the measurement-and-verification
-// model). No numbers: it is a drawing of a table.
+// ELETRON: a clipboard lying flat, holding a spreadsheet: the measurement-and-verification model. A formula
+// bar, column letters, row numbers, a header row, six months of baseline and after readings with the savings
+// between them, a totals row, one selected cell and the sheet tabs. The figures are illustrative, not
+// measured values (the figure's description says so); each savings cell is baseline minus after.
 import Cub from '../../../projects/edubra/Cub.astro'
-const rows = 7
-const cols = 4
+
+const W = 76
+const D = 98
+const X = [6, 15, 28.5, 43, 57.5, 70] // the grid: row-number column, then A to D, in screen x
+const rows = [
+  ['Jan', 1284, 1190],
+  ['Feb', 1301, 1112],
+  ['Mar', 1275, 1085],
+  ['Apr', 1290, 1043],
+  ['May', 1262, 1008],
+  ['Jun', 1288, 989],
+] as const
+const total = rows.reduce((t, r) => [t[0] + r[1], t[1] + r[2]], [0, 0])
+const T0 = 26 // the column letters' top
+const RH = 5.6 // a row's height
+const R0 = T0 + 5.4 // the header row's top
+const last = R0 + RH * (rows.length + 1) // the totals row's bottom
+const empty = 3 // blank rows below the totals
+const bottom = last + RH * empty
+const cell = (c: number) => X[c + 1] - 1.2 // a right-aligned number's x
 ---
 
 <div class="cb-place">
-  <Cub x={0} y={0} w={48} d={64} h={1.6} cls="xp-clip">
-    <svg viewBox="0 0 48 64" width="100%" height="100%" focusable="false">
-      <rect class="cb-sheet" x="4" y="9" width="40" height="52"></rect>
-      <rect class="cb-clip" x="15" y="2" width="18" height="9" rx="1.5"></rect>
-      <rect class="cb-head" x="6" y="14" width="36" height="5"></rect>
-      {Array.from({ length: rows }, (_, r) => <path class="cb-ln" d={`M6 ${14 + 5 * r + 5} H42`} />)}
-      {Array.from({ length: cols - 1 }, (_, c) => <path class="cb-ln" d={`M${6 + 9 * (c + 1)} 14 V49`} />)}
-      <path class="cb-chart" d="M8 58 L16 54 L24 56 L32 52 L40 53"></path>
+  <Cub x={0} y={0} w={W} d={D} h={2.2} cls="xp-clip">
+    <svg viewBox={`0 0 ${W} ${D}`} width="100%" height="100%" focusable="false">
+      <rect class="cb-sheet" x="6" y="12" width="64" height="82"></rect>
+      <rect class="cb-clip" x="25" y="3" width="26" height="12" rx="2"></rect>
+      <rect class="cb-clip-in" x="30" y="6.5" width="16" height="3.5" rx="1"></rect>
+      <!-- the formula bar -->
+      <rect class="cb-fx" x="8" y="16" width="9" height="4.2"></rect>
+      <text class="cb-t cb-tfx" x="9.2" y="19.2">fx</text>
+      <rect class="cb-fx" x="18" y="16" width="50" height="4.2"></rect>
+      <text class="cb-t" x="19.4" y="19.2">=SUM(D3:D8)</text>
+      <!-- column letters and the row-number column -->
+      <rect class="cb-band" x={X[0]} y={T0} width={X[5] - X[0]} height="5.4"></rect>
+      {['A', 'B', 'C', 'D'].map((l, c) => <text class="cb-t cb-tc" x={(X[c + 1] + X[c + 2]) / 2} y={T0 + 3.9} text-anchor="middle">{l}</text>)}
+      <rect class="cb-band" x={X[0]} y={T0} width={X[1] - X[0]} height={bottom - T0}></rect>
+      <!-- the header row -->
+      <rect class="cb-head" x={X[1]} y={R0} width={X[5] - X[1]} height={RH}></rect>
+      {['Month', 'Base', 'After', 'Saved'].map((l, c) => <text class="cb-t cb-th" x={c ? cell(c + 1) : X[1] + 1.2} y={R0 + 3.9} text-anchor={c ? 'end' : 'start'}>{l}</text>)}
+      <!-- the selected cell -->
+      <rect class="cb-sel" x={X[4]} y={R0 + RH * (rows.length + 1) - RH} width={X[5] - X[4]} height={RH}></rect>
+      <!-- the data -->
+      {
+        rows.map(([m, a, b], i) => {
+          const y = R0 + RH * (i + 1) + 3.9
+          return (
+            <g>
+              <text class="cb-t" x={X[1] + 1.2} y={y}>{m}</text>
+              <text class="cb-t" x={cell(2)} y={y} text-anchor="end">{a}</text>
+              <text class="cb-t" x={cell(3)} y={y} text-anchor="end">{b}</text>
+              <text class="cb-t" x={cell(4)} y={y} text-anchor="end">{a - b}</text>
+            </g>
+          )
+        })
+      }
+      <text class="cb-t cb-tb" x={X[1] + 1.2} y={R0 + RH * (rows.length + 1) - 1.7}>Total</text>
+      <text class="cb-t cb-tb" x={cell(2)} y={R0 + RH * (rows.length + 1) - 1.7} text-anchor="end">{total[0]}</text>
+      <text class="cb-t cb-tb" x={cell(3)} y={R0 + RH * (rows.length + 1) - 1.7} text-anchor="end">{total[1]}</text>
+      <text class="cb-t cb-tb" x={cell(4)} y={R0 + RH * (rows.length + 1) - 1.7} text-anchor="end">{total[0] - total[1]}</text>
+      <!-- the grid -->
+      {Array.from({ length: rows.length + 2 + empty + 1 }, (_, r) => <path class="cb-ln" d={`M${X[0]} ${R0 + RH * r} H${X[5]}`} />)}
+      {X.slice(1, 5).map((x) => <path class="cb-ln" d={`M${x} ${T0} V${bottom}`} />)}
+      <!-- the sheet tabs -->
+      <rect class="cb-band" x={X[0]} y={bottom + 2} width={X[5] - X[0]} height="4.6"></rect>
+      <rect class="cb-tab" x="8" y={bottom + 2} width="14" height="4.6"></rect>
+      <text class="cb-t" x="9.4" y={bottom + 5.3}>Data</text>
+      <text class="cb-t cb-tg" x="25" y={bottom + 5.3}>M&amp;V</text>
     </svg>
   </Cub>
 </div>

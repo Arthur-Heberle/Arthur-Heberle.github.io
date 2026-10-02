@@ -183,6 +183,34 @@ materials, not tokens.
 Scoped colours (like the EduBra and Agente H materials, not tokens, used nowhere else): the RP3 screen's reds,
 greens, blue and greys (the real software's own colours) and the ELETRON analyzer's black enclosure and greens.
 
+### ELETRON object redesign (2026-10-02, Arthur's brief)
+
+One commit (`experience: ELETRON analyzer, 3D cables, report`). Decisions Arthur made: the sheet is the clipboard
+spreadsheet and the report is a new printed M&V page; current is pulses that travel once per action; the meter
+about 1.4x. `pnpm build` and `astro check` pass.
+
+- **Meter:** body 210 x 104 x 22 (was 150 x 84 x 14), measured 289px wide in the 560x400 box against about 263
+  before (the figure had to be scaled down to fit with everything else, so the screen gain is about 1.1x, less
+  than the 1.4x of the drawing itself). The four green terminal blocks are separate `Cub`s standing 12px out of
+  the front face (two along the top edge, two along the bottom), wire holes and pin labels on their fronts, screws
+  on top; nothing green is drawn inside the face any more.
+- **L1 to L3:** `objects/Cable.astro`, an 8-facet cylinder shaded by a fixed light (brown, black, grey), at three
+  heights and depths above the meter; a split-core clamp (`Cub` base and hinged lid) around each, and a thin lead
+  down to I1 to I3. Current is two bright bands per cable (the signal tint), `scale(0)` at rest, so the resting
+  and reduced-motion state has none; in the action they travel the cable twice, a third of a pass apart from one
+  cable to the next, and pass behind the clamps. Only `transform` is animated (`scale`, `x`, `rotationX`).
+- **Spreadsheet and report:** the clipboard holds a formula bar, column letters, row numbers, a header row, six
+  months (Jan to Jun), a totals row, a selected cell and sheet tabs; `Report.astro` (replaces `WiringSheet.astro`)
+  is a stack of pages with a title bar, grey paragraphs, a before/after bar chart, a table and a signature. **The
+  figures on both are illustrative, not measured** (savings = baseline - after, totals add up); the figure's
+  description says so.
+- **Found and fixed:** the report's first class names (`.rp-`) collided with the RP3 monitor's, so they are `.mv-`.
+- **Checked** in headless Chromium over CDP (not Brave): rest state at 1280, 1000, 700 and 375 (inside the
+  box, no horizontal scroll); the action frame by frame (clamps close, bands run along L1 to L3, readings cycle,
+  chart fills) and ending on the same state as the reduced-motion render; no drawing text in the accessibility
+  tree (375: one `image` with the new description). Lighthouse mobile 97 and 98 (a11y 100, CLS 0), JS 80.8 KB gzip.
+  Not tested: Firefox, Safari, a real touch device (`preserve-3d` and `backface-visibility` on the cable facets).
+
 ### Home spine pass (2026-10-02, Arthur's brief)
 
 Five stages, in order. Commit message `spine: <stage>`. Copy unchanged. Decisions Arthur made: the page rule's
