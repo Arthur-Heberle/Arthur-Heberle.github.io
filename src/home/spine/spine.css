@@ -30,6 +30,8 @@
  * Spine.astro gives the groups their natural height back. Below 768px the notes follow their
  * paragraph in the flow. */
 .rail-spine {
+  /* the notes column is wider than a project page's (280px): its notes run shorter */
+  grid-template-columns: minmax(0, 1fr) var(--spacing-gutter) clamp(220px, 25vw, 280px);
   grid-template-areas: 'p1 gutter a';
   align-content: start; /* spare height (the min-height below) must not stretch the rows */
   min-height: 20.75rem; /* about where spine.ts's placement ends; avoids a jump when it runs */
@@ -49,6 +51,7 @@
 }
 @media (max-width: 767px) {
   .rail-spine {
+    grid-template-columns: 1fr;
     grid-template-areas: 'p1' 'a';
     min-height: 0;
   }
@@ -211,4 +214,17 @@
  * with no transition (color can't be animated); precedent is .control[aria-pressed='true']. */
 .note[data-linked] .note-text {
   color: var(--color-graphite);
+}
+
+/* The spine's notes: the drawing in a column of its own and the text in the next, so text never
+ * wraps under the drawing. Below 768px the notes follow the paragraph in a full-width column. */
+.rail-spine .note-body {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  column-gap: 10px;
+  align-items: start;
+}
+.rail-spine .note-art {
+  float: none;
+  margin: 0;
 }

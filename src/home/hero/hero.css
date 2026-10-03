@@ -26,23 +26,13 @@
   overflow: visible;
   pointer-events: none;
 }
-.lead {
-  position: absolute;
-  inset-block: 0;
-  height: 100%;
-  left: min(var(--container-measure), calc(100% - var(--spacing-gutter) - var(--container-margin)));
-  width: 1px;
-  overflow: visible;
-  pointer-events: none;
-}
 /* Below 768px .rule-svg moves to left:0 (type.css above), the same x as the content
  * origin — a datum line there would have zero length. .tick and .leader are already
  * absent at this width for the same reason (design-spec.md §8: "the drawing layer keeps
  * the scrubbed rule only"). */
 @media (max-width: 767px) {
   .origin,
-  .datum,
-  .lead {
+  .datum {
     display: none;
   }
 }

@@ -11,7 +11,6 @@
 // down onto the surface once, and plays each object's action on hover, focus, or, on touch and on
 // phones, once as it scrolls into view. Without it every object shows its final state.
 import { getCollection } from 'astro:content'
-import Tick from '../../shared/components/Tick.astro'
 import Cub from '../../projects/edubra/Cub.astro'
 import { isFilled } from '../../shared/fill'
 import { sortProjects } from '../../projects/sortProjects'
@@ -46,7 +45,6 @@ const SLOT = { x: 452, y: 40, w: 120, d: 130 }
 ---
 
 <section class="flex flex-col gap-8 py-16" aria-labelledby="projects-heading">
-  <Tick />
   <h2 id="projects-heading" class="text-h2 font-sans font-medium" data-anim>Projects</h2>
   <div class="wb" data-bench>
     <div class="wb-desk">

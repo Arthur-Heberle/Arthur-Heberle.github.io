@@ -198,6 +198,8 @@ Google Fonts, woff2, latin subset, `font-display: swap`. Preload the display fac
 5. **Contact.** The last leader line of the drawing extends off the spine and terminates
    at his email. The only thing the drawing points at.
 
+Note (Arthur, 2026-10-02): the vertical page rule, the section ticks and the hero's lead line are removed from the home page (they crossed the hero heading); project pages keep them.
+
 Do not add sections. Adding one requires removing one.
 
 ### Project pages

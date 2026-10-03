@@ -12,7 +12,6 @@
 // text, the timeline links and one description per visible object. Optional fields are omitted when missing
 // or still a [FILL] (src/shared/fill.ts).
 import { getCollection } from 'astro:content'
-import Tick from '../../shared/components/Tick.astro'
 import { isFilled } from '../../shared/fill'
 import { layout, monthOf, months } from './months'
 import Chalkboard from './objects/Chalkboard.astro'
@@ -57,7 +56,6 @@ const plural = (n: number) => `${n} month${n === 1 ? '' : 's'}`
 ---
 
 <section class="xp" aria-labelledby="experience-heading">
-  <Tick />
   <h2 id="experience-heading" class="text-h2 font-sans font-medium xp-h" data-anim>Experience</h2>
   <div class="xp-grid" data-xp>
     <!-- the stage: sticky, with JavaScript from 900px up. A small timeline, then the active experience's object. -->

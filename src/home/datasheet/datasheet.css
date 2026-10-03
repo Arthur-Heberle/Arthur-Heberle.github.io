@@ -14,9 +14,8 @@
   gap: 1.75rem;
   margin-top: 2rem;
   padding: 1.5rem;
-  /* the spine rail's full width; the ground fill sits over the page rule, as Experience does */
+  /* the spine rail's full width */
   width: min(100%, calc(var(--container-measure) + var(--spacing-gutter) + var(--container-margin)));
-  background: var(--color-ground);
 }
 .ds-frame-art {
   position: absolute;
@@ -72,11 +71,6 @@
 }
 .ds-titleblock .tb-sheet + .tb-sheet {
   padding-top: 0;
-}
-.ds-titleblock a {
-  color: inherit;
-  text-decoration: underline;
-  text-underline-offset: 3px;
 }
 
 .ds-section {
@@ -196,7 +190,7 @@
   flex: none;
   width: 56px;
 }
-.ds-val {
+.ds-label-cell {
   display: flex;
   align-items: center;
   justify-content: space-between;

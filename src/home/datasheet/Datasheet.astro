@@ -5,7 +5,6 @@
 // a list for Features and two real tables, so a screen reader can move through it.
 // Every drawn line is an aria-hidden SVG that ships in its final state; datasheet.ts draws them in.
 import { getCollection } from 'astro:content'
-import Tick from '../../shared/components/Tick.astro'
 import NoteDrawing from '../spine/NoteDrawing.astro'
 
 // rev. YYYY.MM, from the newest changelog entry (the same order the Changelog section uses)
@@ -35,7 +34,6 @@ const conditions = [
 ---
 
 <section class="datasheet" aria-labelledby="datasheet-heading" data-datasheet>
-  <Tick />
   <div class="ds-frame">
     <svg class="ds-frame-art" aria-hidden="true" focusable="false">
       <rect data-ds-line x="0.5" y="0.5"></rect>
@@ -44,7 +42,7 @@ const conditions = [
     <header class="ds-head" data-ds-part>
       <h2 id="datasheet-heading" class="ds-title">Arthur Heberle — datasheet</h2>
       <div class="ds-titleblock" role="group" aria-label="Sheet information">
-        <p class="tb-top">Arthur Heberle / <a href="/">index</a></p>
+        <p class="tb-top">Arthur Heberle</p>
         <p class="tb-sheet">datasheet, sheet 01 of 01</p>
         <p class="tb-sheet">rev. {rev}</p>
       </div>
@@ -81,19 +79,19 @@ const conditions = [
             {
               characteristics.map(([k, v]) => (
                 <tr data-ds-row={k === 'Languages' ? 'languages' : undefined}>
-                  <th scope="row">{k}</th>
-                  <td>
-                    {k === 'Languages' ? (
-                      <span class="ds-val">
-                        <span>{v}</span>
+                  {k === 'Languages' ? (
+                    <th scope="row">
+                      <span class="ds-label-cell">
+                        <span>{k}</span>
                         <span class="ds-art ds-art-row">
                           <NoteDrawing kind="languages" />
                         </span>
                       </span>
-                    ) : (
-                      v
-                    )}
-                  </td>
+                    </th>
+                  ) : (
+                    <th scope="row">{k}</th>
+                  )}
+                  <td>{v}</td>
                 </tr>
               ))
             }

@@ -3,7 +3,6 @@
 // Email is the one the drawing points at and comes first; WhatsApp is published too
 // (decided at step 14). wa.me needs the country code, so the number Arthur gave as
 // `49 99194-2504` is +55 (Brazil) + 49 (area code) in the href.
-import Tick from '../../shared/components/Tick.astro'
 
 const email = 'a.gp.heberle@gmail.com'
 const whatsapp = { href: 'https://wa.me/5549991942504', label: '+55 49 99194-2504' }
@@ -12,7 +11,6 @@ const invitation =
 ---
 
 <section class="flex flex-col gap-4 py-16" aria-labelledby="contact-heading">
-  <Tick />
   <h2 id="contact-heading" class="text-h2 font-sans font-medium" data-anim>Contact</h2>
   <p class="measure text-body" data-anim data-delay="0.06">
     {invitation}

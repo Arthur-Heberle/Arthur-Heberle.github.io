@@ -1,5 +1,5 @@
 ---
-// The hero drawing — origin mark, datum line, vertical lead (design-spec.md §9's "origin
+// The hero drawing — origin mark and datum line (the vertical lead is gone, 2026-10-02: it ran through the heading) (design-spec.md §9's "origin
 // marks and first construction lines"). Ships fully drawn (motion-spec.md's initial-state
 // pattern); motion.ts's heroSequence() animates them in once per session on top of this
 // already-correct final state. Permanent page furniture from here on — not just present
@@ -34,16 +34,6 @@
 <svg class="datum" viewBox="0 0 100 1" preserveAspectRatio="none" aria-hidden="true">
   <path
     d="M0 0.5 H100"
-    fill="none"
-    stroke="var(--color-line)"
-    stroke-width="1"
-    vector-effect="non-scaling-stroke"
-  />
-</svg>
-
-<svg class="lead" viewBox="0 0 1 100" preserveAspectRatio="none" aria-hidden="true">
-  <path
-    d="M0.5 0 V100"
     fill="none"
     stroke="var(--color-line)"
     stroke-width="1"

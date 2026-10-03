@@ -3,7 +3,6 @@
 // Today there are only two entries, so no "show all" control renders at all — nothing
 // to hide yet.
 import { getCollection } from 'astro:content'
-import Tick from '../../shared/components/Tick.astro'
 
 const entries = await getCollection('changelog')
 const sorted = entries.slice().sort((a, b) => b.data.date.localeCompare(a.data.date) || b.id.localeCompare(a.id))
@@ -14,7 +13,6 @@ const rest = sorted.slice(VISIBLE)
 ---
 
 <section class="flex flex-col gap-8 py-16" aria-labelledby="changelog-heading">
-  <Tick />
   <h2 id="changelog-heading" class="text-h2 font-sans font-medium" data-anim>Changelog</h2>
   <ul class="flex flex-col gap-3" role="list" data-anim data-delay="0.06">
     {

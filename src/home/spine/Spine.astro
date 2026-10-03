@@ -9,14 +9,12 @@
 // notes follow their paragraph in the flow and each balloon is still a real link to its note.
 import { getCollection } from 'astro:content'
 import MarginNote from './MarginNote.astro'
-import Tick from '../../shared/components/Tick.astro'
 
 const notes = await getCollection('notes')
 const byLabel = Object.fromEntries(notes.map((note) => [note.data.label, note]))
 ---
 
 <section class="flex flex-col pb-16 pt-8" aria-label="About">
-  <Tick />
   <noscript><style>.rail-spine .rail-margin { height: auto }</style></noscript>
   <div class="rail rail-spine" data-anim-scope data-spine>
     <svg class="spine-leaders" aria-hidden="true"></svg>
