@@ -30,11 +30,23 @@ const outDir = join('shots', outName)
 mkdirSync(outDir, { recursive: true })
 
 // ---- the preview server ----
+// Whatever listens on the port is stopped, before (a server left behind by an earlier run would serve
+// an old build) and after. Killing by port, not by pid: `pnpm` runs astro in a child the pid tree can miss.
+const freePort = () => {
+  try {
+    execSync(
+      `powershell -NoProfile -Command "Get-NetTCPConnection -LocalPort ${PORT} -State Listen -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force }"`,
+      { stdio: 'ignore' },
+    )
+  } catch {}
+}
+freePort()
 const server = spawn('pnpm', ['exec', 'astro', 'preview', '--port', String(PORT)], { shell: true, stdio: 'ignore' })
 const stop = () => {
   try {
     execSync(`taskkill /pid ${server.pid} /T /F`, { stdio: 'ignore' })
   } catch {}
+  freePort()
 }
 process.on('exit', stop)
 process.on('SIGINT', () => process.exit(1))

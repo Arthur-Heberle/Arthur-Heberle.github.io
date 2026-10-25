@@ -316,14 +316,21 @@ export function initExperience(grid: HTMLElement) {
   }
   setActive(0, true)
 
-  const band = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((e) => {
-        if (e.isIntersecting) setActive(blocks.indexOf(e.target as HTMLElement))
-      })
-    },
-    { rootMargin: '-45% 0px -45% 0px' },
-  )
+  // The block across the middle of the viewport is the active one. In the lead-in above the first block (or
+  // the lead-out below the last) none is, and a jump (the Home key, a link) can leave the last one chosen
+  // far from where the page now is, so the stage shows the first block above the section and the last below.
+  const pick = () => {
+    const mid = innerHeight / 2
+    const rects = blocks.map((b) => b.getBoundingClientRect())
+    const at = rects.findIndex((r) => r.top <= mid && r.bottom > mid)
+    if (at >= 0) return setActive(at)
+    if (rects[0].top > mid) setActive(0)
+    else if (rects[rects.length - 1].bottom <= mid) setActive(blocks.length - 1)
+  }
+  const band = new IntersectionObserver(pick, { rootMargin: '-45% 0px -45% 0px' })
+  // at the very ends no block is in the band, so a jump away from there raises no band event: the section
+  // entering or leaving the viewport does
+  new IntersectionObserver(pick).observe(grid)
   blocks.forEach((b) => band.observe(b))
 
   // an object plays whenever it comes into view, and waits at its start when it leaves

@@ -186,9 +186,9 @@
   html.js .xp-mini {
     display: none;
   }
+  /* A block is at least 80vh and grows with its content. Padding, not vertical centring, keeps its text in
+   * its own box: a tall block (RP3 with its screenshot) can never spill over its neighbours. */
   html.js .xp-block {
-    display: flex;
-    align-items: center;
     min-height: 80vh;
     padding-block: 4rem;
     border-top: 0;
@@ -353,8 +353,19 @@
   transform-style: preserve-3d;
   transform: scaleX(-1) rotateX(55deg) rotateZ(32deg) scale3d(var(--m), var(--m), var(--m));
 }
+/* Lead-in and lead-out of 55vh (the middle band is 45% to 55% of the viewport): the first block reaches the
+ * band exactly when the stage has stuck at the top, and the last leaves it exactly as the stage unsticks, so
+ * the object is whole and in place whenever a block is active. */
 .xp-blocks {
-  padding-bottom: 8vh;
+  padding-block: 55vh;
+}
+@media (max-width: 899px) {
+  .xp-blocks {
+    padding-block: 0 8vh;
+  }
+}
+html:not(.js) .xp-blocks {
+  padding-block: 0 8vh;
 }
 .xp-lift,
 .pr-place,
