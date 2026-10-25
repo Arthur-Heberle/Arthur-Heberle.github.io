@@ -16,6 +16,8 @@
 @import "../../home/datasheet/datasheet.css";
 /* shared: the page rule and section ticks (both pages) */
 @import "./drawing.css";
+/* home: the 12-column page grid (768px and up; the sections below place themselves on it) */
+@import "../../home/home.css";
 /* home: hero drawing and its flash guard */
 @import "../../home/hero/hero.css";
 /* shared: button/summary chrome (changelog show-all) */

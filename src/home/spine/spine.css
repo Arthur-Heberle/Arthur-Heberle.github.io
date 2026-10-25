@@ -60,6 +60,87 @@
   }
 }
 
+/* On the home page's 12-column grid (home.css, 768px and up): the paragraph takes columns 1 to 7, column 8 is
+ * the gutter the leaders run through, the margin notes take columns 9 to 12. */
+@media (min-width: 768px) {
+  .rail-spine {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    grid-template-areas: none;
+    column-gap: var(--home-gap);
+  }
+  .rail-spine .rail-prose-1 {
+    grid-area: 1 / 1 / 2 / 8;
+  }
+  .rail-spine .rail-margin-a {
+    grid-area: 1 / 9 / 2 / 13;
+  }
+}
+/* Until spine.ts has stood each note at its balloon's line they would sit at the top of their column and
+ * jump: they wait, hidden (a hidden element is no layout shift; without JavaScript, or below 768px, they are
+ * always shown, in the flow). */
+@media (min-width: 768px) {
+  html.js .rail-spine:not(.notes-placed) .rail-margin {
+    visibility: hidden;
+  }
+}
+/* The height spine.ts sets once it has placed the notes, measured at each width (the notes' text wraps
+ * differently as the columns narrow), so the first paint is about right and nothing jumps. */
+@media (min-width: 768px) {
+  .rail-spine {
+    min-height: 632px;
+  }
+}
+@media (min-width: 800px) {
+  .rail-spine {
+    min-height: 562px;
+  }
+}
+@media (min-width: 840px) {
+  .rail-spine {
+    min-height: 541px;
+  }
+}
+@media (min-width: 880px) {
+  .rail-spine {
+    min-height: 520px;
+  }
+}
+@media (min-width: 920px) {
+  .rail-spine {
+    min-height: 499px;
+  }
+}
+@media (min-width: 960px) {
+  .rail-spine {
+    min-height: 450px;
+  }
+}
+@media (min-width: 1000px) {
+  .rail-spine {
+    min-height: 429px;
+  }
+}
+@media (min-width: 1040px) {
+  .rail-spine {
+    min-height: 408px;
+  }
+}
+@media (min-width: 1160px) {
+  .rail-spine {
+    min-height: 359px;
+  }
+}
+@media (min-width: 1340px) {
+  .rail-spine {
+    min-height: 338px;
+  }
+}
+@media (min-width: 1400px) {
+  .rail-spine {
+    min-height: 317px;
+  }
+}
+
 /* Callout balloon, as on a technical drawing: an 18px ring with its number. One mark used
  * for the marker in the text and the one that starts its note. The highlight is a second ring
  * stacked on it, crossfaded on opacity: a border colour can't transition (motion-spec.md's

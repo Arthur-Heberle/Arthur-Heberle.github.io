@@ -203,6 +203,25 @@
   vertical-align: middle;
 }
 
+/* On the home page's 12-column grid (home.css, 768px and up): the frame takes all 12 columns, and 10 from
+ * 1024px, left-aligned. */
+@media (min-width: 768px) {
+  .datasheet {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: var(--home-gap);
+  }
+  .ds-frame {
+    grid-column: 1 / -1;
+    width: auto;
+  }
+}
+@media (min-width: 1024px) {
+  .ds-frame {
+    grid-column: 1 / span 10;
+  }
+}
+
 /* below 768px: the frame is the page width, the title block moves under the header, the features and
  * the two tables take a column each, and each table row stacks (parameter above value). The column
  * headers stay in the accessibility tree, clipped out of sight. */

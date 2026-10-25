@@ -37,6 +37,27 @@
   }
 }
 
+/* On the home page's 12-column grid (home.css, 768px and up): the header is the same 12 columns, the
+ * display line may span 10 of them, and the datum line ends where the spine paragraph ends (7 columns). */
+@media (min-width: 768px) {
+  .hero {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: var(--home-gap);
+    row-gap: 1.5rem;
+  }
+  .hero > :not(svg) {
+    grid-column: 1 / -1;
+  }
+  .hero > h1 {
+    grid-column: 1 / span 10;
+    text-wrap: balance; /* no last word alone on a line */
+  }
+  .datum {
+    width: calc((100% - 11 * var(--home-gap)) / 12 * 7 + 6 * var(--home-gap));
+  }
+}
+
 /* Step 12 — SplitText's word wrapper defaults to display:inline (SplitText.js's
  * _getWrapper only forces inline-block for tag!=='span', and Hero.astro's split uses
  * tag:'span' so an <h1> ancestor stays valid). transform has no effect on a non-replaced

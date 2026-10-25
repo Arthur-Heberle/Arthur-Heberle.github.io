@@ -1,0 +1,26 @@
+/* The home page's 12-column grid (Arthur's brief, 2026-10-24). 768px and up only: below that the page is the
+ * single column it always was (drawing.css's `.page-main`, 1rem sides).
+ *
+ * Content is at most 1280px wide with clamp(24px, 5vw, 80px) at the sides, 12 equal columns and a 24px
+ * gap. Every section spans all 12 columns and places what it holds on the same tracks: a section that needs
+ * columns of its own (the hero, the spine, the datasheet, the experience grid) repeats `repeat(12, ...)` and
+ * the same gap, so its tracks line up with the page's exactly. Everything is left-aligned.
+ *
+ * `.page-home` is on the home page's <main> only; project pages share `.page-main` and keep their rail. */
+@media (min-width: 768px) {
+  .page-home {
+    --home-pad: clamp(24px, 5vw, 80px);
+    --home-gap: 24px;
+    width: 100%;
+    max-width: calc(1280px + 2 * var(--home-pad));
+    padding-inline: var(--home-pad);
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: var(--home-gap);
+    align-content: start;
+  }
+  .page-home > section,
+  .page-home > header {
+    grid-column: 1 / -1;
+  }
+}
