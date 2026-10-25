@@ -7,13 +7,32 @@
 }
 .ds-frame {
   position: relative;
+  isolation: isolate; /* the paper (z-index -1) stays inside this box */
   display: flex;
   flex-direction: column;
   gap: 2.5rem;
   margin-top: 2rem;
   padding: 2rem;
+}
+/* The sheet: --color-sheet paper, square-cornered, with a soft shadow thrown a little down and to the right
+ * (the site's light comes from the top left). From 768px up it lies turned -0.6deg; only this background layer
+ * turns, never the text on it. */
+.ds-paper {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
   background: var(--color-sheet);
-  border-radius: var(--radius-panel);
+  border-radius: 2px;
+  box-shadow:
+    0 0 0 1px rgb(35 38 42 / 0.05),
+    0 1px 2px rgb(35 38 42 / 0.1),
+    4px 9px 24px rgb(35 38 42 / 0.14);
+  pointer-events: none;
+}
+@media (min-width: 768px) {
+  .ds-paper {
+    rotate: -0.6deg;
+  }
 }
 .ds-head {
   display: flex;

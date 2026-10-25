@@ -191,7 +191,10 @@ Google Fonts, woff2, latin subset, `font-display: swap`. Preload the display fac
 2. **Spine with margins.** One paragraph carrying the through-line, with two numbered
    annotation markers pulling to margin notes. Followed by a **datasheet** (Arthur's brief,
    2026-10-02; the second paragraph and its three notes went out, the datasheet came in): a
-   full-width block styled as an electronic component datasheet.
+   full-width block styled as an electronic component datasheet. It is printed on a sheet of paper
+   (Arthur's brief, 2026-10-24): `--color-sheet`, lying on the page with a soft shadow thrown to the lower
+   right, turned -0.6deg from 768px up (only the background layer turns, the text does not) and flat below.
+   The corner title block keeps its thin rules.
 3. **Projects (the bench) and Experience.** Replaces the archive list and its tag filters (Arthur's
    decision, 2026-10-01; §6's one-for-one rule is his call and he made it: one section out, two in).
    The bench is three objects on one work surface, each a link; Experience (Arthur's brief, 2026-10-02) is a
