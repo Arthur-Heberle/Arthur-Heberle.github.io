@@ -12,8 +12,8 @@ const visible = sorted.slice(0, VISIBLE)
 const rest = sorted.slice(VISIBLE)
 ---
 
-<section class="flex flex-col gap-8 py-16" aria-labelledby="changelog-heading">
-  <h2 id="changelog-heading" class="text-h2 font-sans font-medium" data-anim>Changelog</h2>
+<section class="section-gap flex flex-col gap-8" aria-labelledby="changelog-heading">
+  <h2 id="changelog-heading" class="section-title" data-anim>Changelog</h2>
   <ul class="flex flex-col gap-3" role="list" data-anim data-delay="0.06">
     {
       visible.map((entry) => (

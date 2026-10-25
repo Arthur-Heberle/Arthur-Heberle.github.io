@@ -14,6 +14,32 @@
   letter-spacing: var(--text-display--letter-spacing);
 }
 
+/* The home page's section titles (Projects, Experience, Changelog, Contact): the display face, 44px (30px
+ * below 768px), with generous space above each section so the page has a rhythm (160px, 96px below 768px). */
+.section-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 1.875rem;
+  line-height: 1.1;
+  letter-spacing: var(--text-display--letter-spacing);
+}
+.section-gap {
+  padding-top: 96px;
+}
+@media (min-width: 768px) {
+  .section-title {
+    font-size: 2.75rem;
+  }
+  .section-gap {
+    padding-top: 160px;
+  }
+}
+/* the page's last section keeps room under it */
+.page-home > section:last-of-type {
+  padding-bottom: 96px;
+}
+
 .measure {
   max-width: var(--container-measure);
 }

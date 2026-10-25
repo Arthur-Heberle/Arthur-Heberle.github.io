@@ -5,7 +5,6 @@
 .datasheet {
   display: flex;
   flex-direction: column;
-  padding-bottom: 4rem;
 }
 .ds-frame {
   position: relative;
