@@ -206,6 +206,7 @@ html:not(.js) .hstory .ask {
   height: auto;
   aspect-ratio: 1280 / 800; /* the box is sized before the image loads, so nothing shifts */
   border: var(--hairline) solid var(--color-graphite-2);
+  border-radius: var(--radius-panel);
 }
 
 /* ---------- no layout shift when the story goes live ----------

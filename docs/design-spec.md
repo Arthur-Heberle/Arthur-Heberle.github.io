@@ -143,7 +143,8 @@ scoped tokens on `.device`, not site palette. No pure `#000`, no pure `#FFF`, no
 
 One family with two widths, plus a mono with a single justified job.
 
-- **Archivo Expanded**, weight 500 — display line only.
+- **Archivo Expanded**, weight 500 — the display line, and (Arthur, 2026-10-24) the four home section titles
+  (Projects, Experience, Changelog, Contact: 44px, 30px below 768px).
 - **Archivo**, weights 400/500 — everything else.
 - **IBM Plex Mono**, weight 400 — dimensions, dates, counts, measured values. Nothing
   else. Not for labels, not for eyebrows, not for tags.
@@ -167,9 +168,17 @@ Google Fonts, woff2, latin subset, `font-display: swap`. Preload the display fac
   to an origin; so does this page.
 - Spine column 68ch max. Margin column 200px. Gutter 32px, and the gutter is where
   leader lines are drawn.
-- Border radius 0 on all structural elements. 2px on interactive controls only, so they
-  read as controls.
-- Hairlines 0.5px `--line`. No rounded corners on single-sided borders.
+- Home page grid (Arthur, 2026-10-24), 768px and up: 12 columns, content at most 1280px, sides
+  `clamp(24px, 5vw, 80px)`, 24px gap, everything left-aligned. Hero line up to 10 columns, spine
+  paragraph 7, margin notes 4 (columns 9 to 12, leaders in column 8), datasheet 10 to 12; the bench and
+  Experience use the full width. Below 768px it is the single column it was.
+- Radius (Arthur, 2026-10-24): panels and cards `--radius-panel` 10px; buttons and controls
+  `--radius-control` 6px; physical objects in the drawings keep their own realistic radii.
+  Technical-drawing strokes (dimension lines, leader lines, grids, the drawing rule, the title block)
+  stay square.
+- Lines only where they mean something: dimensions, leaders, callouts, the title block, the timeline
+  axis. No decorative rules (the datasheet has none, its tables use spacing). Hairlines 0.5px `--line`.
+  No rounded corners on single-sided borders.
 
 ---
 

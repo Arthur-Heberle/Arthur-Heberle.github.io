@@ -71,9 +71,11 @@
 }
 
 :root {
-  /* Structural elements are square. Only interactive controls get a radius,
-   * so controls read as controls. */
-  --radius-control: 2px;
+  /* Panels and cards are rounded 10px, buttons and controls 6px (Arthur, 2026-10-24). Physical objects
+   * in the drawings keep their own realistic radii. Technical-drawing strokes (dimension lines, leader
+   * lines, grids, the drawing rule, the title block) stay square. */
+  --radius-panel: 10px;
+  --radius-control: 6px;
   --hairline: 0.5px;
 }
 

@@ -1,9 +1,9 @@
 ---
 // Datasheet — the spine's second paragraph and notes, rebuilt as an electronic component's
-// datasheet (Arthur's brief, 2026-10-02). Copy is verbatim from that brief. A thin ruled frame, section
-// rules, mono labels in sentence case, and a small title block in the corner. Real headings,
-// a list for Features and two real tables, so a screen reader can move through it.
-// Every drawn line is an aria-hidden SVG that ships in its final state; datasheet.ts draws them in.
+// datasheet (Arthur's brief, 2026-10-02). Copy is verbatim from that brief. A rounded panel (the frame and
+// the section rules went on 2026-10-24: spacing separates the parts), mono labels in sentence case, and a small
+// ruled title block in the corner, the one line left. Real headings, a list for Features and two real
+// tables, so a screen reader can move through it. datasheet.ts fades the parts in.
 import { getCollection } from 'astro:content'
 import NoteDrawing from '../spine/NoteDrawing.astro'
 
@@ -35,10 +35,6 @@ const conditions = [
 
 <section class="datasheet" aria-labelledby="datasheet-heading" data-datasheet>
   <div class="ds-frame">
-    <svg class="ds-frame-art" aria-hidden="true" focusable="false">
-      <rect data-ds-line x="0.5" y="0.5"></rect>
-    </svg>
-
     <header class="ds-head" data-ds-part>
       <h2 id="datasheet-heading" class="ds-title">Arthur Heberle — datasheet</h2>
       <div class="ds-titleblock" role="group" aria-label="Sheet information">
@@ -49,17 +45,12 @@ const conditions = [
     </header>
 
     <div class="ds-section" data-ds-part>
-      <svg class="ds-rule" aria-hidden="true" focusable="false"><line data-ds-line x1="0" x2="100%" y1="0.5" y2="0.5"></line></svg>
       <h3 class="ds-label">Features</h3>
       <ul class="ds-features" role="list">
         {
           features.map(([claim, proof]) => (
             <li class="ds-feature">
               <span class="ds-claim">{claim}</span>
-              <svg class="ds-claim-rule" aria-hidden="true" focusable="false">
-                <line class="ds-claim-base" x1="0" x2="100%" y1="0.5" y2="0.5"></line>
-                <line class="ds-claim-hi" x1="0" x2="100%" y1="0.5" y2="0.5"></line>
-              </svg>
               <span class="ds-proof text-small text-graphite-2">{proof}</span>
             </li>
           ))
@@ -69,7 +60,6 @@ const conditions = [
 
     <div class="ds-tables">
       <div class="ds-section" data-ds-part>
-        <svg class="ds-rule" aria-hidden="true" focusable="false"><line data-ds-line x1="0" x2="100%" y1="0.5" y2="0.5"></line></svg>
         <h3 class="ds-label">Typical characteristics</h3>
         <table class="ds-table">
           <thead>
@@ -100,7 +90,6 @@ const conditions = [
       </div>
 
       <div class="ds-section" data-ds-part>
-        <svg class="ds-rule" aria-hidden="true" focusable="false"><line data-ds-line x1="0" x2="100%" y1="0.5" y2="0.5"></line></svg>
         <h3 class="ds-label">Operating conditions</h3>
         <table class="ds-table">
           <thead>
@@ -114,7 +103,6 @@ const conditions = [
     </div>
 
     <div class="ds-section" data-ds-part>
-      <svg class="ds-rule" aria-hidden="true" focusable="false"><line data-ds-line x1="0" x2="100%" y1="0.5" y2="0.5"></line></svg>
       <h3 class="ds-label">Known side effects</h3>
       <p class="ds-effects">
         Plays chess, mostly fast games.<span class="ds-art ds-art-inline" data-ds-hover><NoteDrawing kind="chess" /></span>
@@ -123,7 +111,6 @@ const conditions = [
     </div>
 
     <div class="ds-section" data-ds-part>
-      <svg class="ds-rule" aria-hidden="true" focusable="false"><line data-ds-line x1="0" x2="100%" y1="0.5" y2="0.5"></line></svg>
       <h3 class="ds-label">Ordering information</h3>
       <p class="ds-order"><a href="mailto:a.gp.heberle@gmail.com">a.gp.heberle@gmail.com</a></p>
     </div>

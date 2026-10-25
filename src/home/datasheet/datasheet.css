@@ -1,7 +1,6 @@
-/* The home datasheet (Datasheet.astro). Lines are SVG strokes (the drawing layer's style:
- * 1px, no fill) so datasheet.ts can draw them in; they are absolute or 1px tall, so they take no
- * layout. Labels are mono in sentence case. Colour only on the claim rule's highlight (signal),
- * crossfaded on opacity. */
+/* The home datasheet (Datasheet.astro): a rounded panel (--radius-panel, --color-sheet) with mono
+ * labels in sentence case. No frame and no section rules: spacing separates the parts. The one line left
+ * is the corner title block, a square-ruled box like an engineering drawing's. */
 .datasheet {
   display: flex;
   flex-direction: column;
@@ -10,26 +9,11 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 1.75rem;
+  gap: 2.5rem;
   margin-top: 2rem;
-  padding: 1.5rem;
-  /* the spine rail's full width */
-  width: min(100%, calc(var(--container-measure) + var(--spacing-gutter) + var(--container-margin)));
-}
-.ds-frame-art {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  overflow: visible;
-}
-.ds-frame-art rect {
-  width: calc(100% - 1px);
-  height: calc(100% - 1px);
-  fill: none;
-  stroke: var(--color-graphite-2);
-  stroke-width: 1;
+  padding: 2rem;
+  background: var(--color-sheet);
+  border-radius: var(--radius-panel);
 }
 .ds-head {
   display: flex;
@@ -74,24 +58,9 @@
 
 .ds-section {
   position: relative;
-  padding-top: 0.75rem;
-}
-.ds-rule {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 1px;
-  overflow: visible;
-}
-.ds-rule line,
-.ds-claim-rule line {
-  fill: none;
-  stroke: var(--color-graphite-2);
-  stroke-width: 1;
 }
 .ds-label {
-  margin: 0 0 0.75rem;
+  margin: 0 0 1rem;
   font-family: var(--font-mono);
   font-weight: 400;
   font-size: var(--text-dimension);
@@ -117,24 +86,6 @@
   font-weight: 500;
   color: var(--color-graphite);
 }
-.ds-claim-rule {
-  position: relative;
-  width: 100%;
-  height: 1px;
-  overflow: visible;
-}
-.ds-claim-base {
-  stroke: var(--color-line);
-}
-.ds-claim-hi {
-  stroke: var(--color-signal);
-  opacity: 0;
-  transition: opacity var(--dur-feedback) var(--ease-out);
-}
-.ds-feature:hover .ds-claim-hi,
-.ds-feature:focus-within .ds-claim-hi {
-  opacity: 1;
-}
 
 /* the two tables, side by side */
 .ds-tables {
@@ -149,8 +100,7 @@
 }
 .ds-table th,
 .ds-table td {
-  padding: 0.4rem 0.75rem 0.4rem 0;
-  border-bottom: 1px solid var(--color-line);
+  padding: 0.55rem 0.75rem 0.55rem 0;
   text-align: left;
   vertical-align: top;
 }
@@ -226,9 +176,8 @@
  * headers stay in the accessibility tree, clipped out of sight. */
 @media (max-width: 767px) {
   .ds-frame {
-    width: 100%;
-    padding: 1rem;
-    gap: 1.5rem;
+    padding: 1.25rem;
+    gap: 2rem;
   }
   .ds-head {
     flex-direction: column;
@@ -254,12 +203,10 @@
   }
   .ds-table tr {
     padding: 0.5rem 0;
-    border-bottom: 1px solid var(--color-line);
   }
   .ds-table th,
   .ds-table td {
     padding: 0;
-    border-bottom: 0;
   }
   .ds-table tbody th {
     width: auto;

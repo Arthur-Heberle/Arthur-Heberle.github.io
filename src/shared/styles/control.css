@@ -1,6 +1,6 @@
 /* Shared chrome for an interactive control that isn't a plain link — "show all" today,
- * whatever step 05's filter buttons need tomorrow. 2px radius per design-spec.md §5:
- * structural elements stay square, controls read as controls. */
+ * the question choices and Play again / Pause / Sound on the project pages. The one button style: a
+ * rounded control (--radius-control, design-spec.md §5). */
 .control {
   display: inline-block;
   width: fit-content;

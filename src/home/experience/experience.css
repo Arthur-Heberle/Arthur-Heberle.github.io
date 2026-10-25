@@ -135,12 +135,9 @@
 }
 
 /* ---------- the blocks (every width) ---------- */
+/* entries are told apart by space, not by a rule */
 .xp-block {
-  padding-block: 2rem;
-  border-top: var(--hairline) solid var(--color-line);
-}
-.xp-block:first-child {
-  border-top: 0;
+  padding-block: 3rem;
 }
 .xp-inner {
   display: flex;
@@ -170,7 +167,7 @@
   display: block;
   width: 100%;
   height: auto;
-  border: var(--hairline) solid var(--color-line);
+  border-radius: var(--radius-panel);
 }
 .xp-shot figcaption {
   margin: 0;
@@ -248,7 +245,6 @@
   html.js .xp-block {
     min-height: 80vh;
     padding-block: 4rem;
-    border-top: 0;
   }
 
   /* the figures share one cell; the active one is shown, the others wait above or below it */
