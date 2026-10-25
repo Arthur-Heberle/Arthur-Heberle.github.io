@@ -6,6 +6,7 @@
 // interface (the figure's description says so). Action (experience.ts): the view turns once, then the layers
 // rise one at a time, each loop drawn by stroke-dashoffset, while the printer builds the same part.
 import Cub from '../../../projects/edubra/Cub.astro'
+import Glass from '../../../shared/components/Glass.astro'
 import Printer from './Printer.astro'
 
 // the platform: four corners on the 200 x 136 screen, origin at the back right (as in the real view)
@@ -69,7 +70,7 @@ kb.push({ x: 12, y: 15.4, w: 30 })
 <div class="xp-scene" style="--m:1.45;--fw:330px;--fd:130px;--dx:-10px;--dy:36px">
   <div class="xp-plane">
     <div class="xp-lift">
-      <Cub x={14} y={44} w={64} d={40} h={3} cls="xp-mon xp-turn">
+      <Cub x={14} y={44} w={64} d={40} h={3} cls="xp-mon xp-turn" shadow>
         <Cub x={4} y={4} w={56} d={32} h={1.5} cls="xp-mon2">
           <Cub x={20} y={10} w={16} d={10} h={26} cls="xp-mon">
             <Cub x={-62} y={2} w={140} d={6} h={95} cls="xp-screen">
@@ -109,19 +110,20 @@ kb.push({ x: 12, y: 15.4, w: 30 })
                     }
                   </g>
                 </g>
+                <Glass x="0" y="0" width="200" height="136" />
               </svg>
             </Cub>
           </Cub>
         </Cub>
       </Cub>
       <!-- the keyboard and mouse on the desk, and the tower beside the monitor -->
-      <Cub x={14} y={92} w={60} d={20} h={1.6} cls="xp-kb xp-turn">
+      <Cub x={14} y={92} w={60} d={20} h={1.6} cls="xp-kb xp-turn" shadow>
         <svg viewBox="0 0 60 20" width="100%" height="100%" focusable="false">
           {kb.map((k) => <rect class="kb-key" x={k.x.toFixed(2)} y={k.y} width={k.w.toFixed(2)} height="3.6" rx="0.6" />)}
         </svg>
       </Cub>
-      <Cub x={84} y={96} w={8} d={13} h={3} cls="xp-mouse" />
-      <Cub x={-46} y={44} w={24} d={46} h={64} cls="xp-pc">
+      <Cub x={84} y={96} w={8} d={13} h={3} cls="xp-mouse" shadow />
+      <Cub x={-46} y={44} w={24} d={46} h={64} cls="xp-pc" shadow>
         <svg slot="front" viewBox="0 0 24 64" width="100%" height="100%" focusable="false">
           <rect class="pc-bay" x="3" y="4" width="18" height="6" rx="0.6" />
           <rect class="pc-bay" x="3" y="12" width="18" height="6" rx="0.6" />

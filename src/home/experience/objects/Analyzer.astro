@@ -14,6 +14,7 @@
 // Everything is placed in SCREEN x, left to right as it reads (the plane is mirrored, so a box's plane x is
 // W - screen x - its width): `px()` does that conversion.
 import Cub from '../../../projects/edubra/Cub.astro'
+import Glass from '../../../shared/components/Glass.astro'
 import Cable from './Cable.astro'
 import MeterChart from './MeterChart.astro'
 import Clipboard from './Clipboard.astro'
@@ -73,7 +74,7 @@ const screws = [
   <div class="xp-plane">
     <div class="xp-lift">
       <div class="an-pose xp-turn" style={`left:${BX}px;top:${BY}px;width:${W}px;height:${D}px`}>
-        <Cub x={0} y={0} w={W} d={D} h={H} cls="xp-an">
+        <Cub x={0} y={0} w={W} d={D} h={H} cls="xp-an" shadow>
           <svg slot="front" class="an-svg" viewBox={`0 0 ${W} ${H}`} width="100%" height="100%" focusable="false">
             {
               screws.map(([x, y]) => (
@@ -92,6 +93,7 @@ const screws = [
                 </g>
               ))
             }
+            <Glass x="44" y="40" width="96" height="30" rx="2" />
             <g class="an-btn"><rect x="152" y="44" width="20" height="20" rx="1.5" /></g>
             <text class="an-pl" x="162" y="73" text-anchor="middle">DISPLAY</text>
             <rect class="an-usb" x="16" y="46" width="18" height="11" rx="1.5" />

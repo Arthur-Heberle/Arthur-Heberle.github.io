@@ -405,6 +405,13 @@
   height: var(--fd);
   transform-style: preserve-3d;
   transform: scaleX(-1) rotateX(55deg) rotateZ(32deg) scale3d(var(--m), var(--m), var(--m));
+  /* the light, from the top left of the screen (light.css). The plane is turned and mirrored: the top faces'
+   * grade runs along 225deg - 32deg in the plane, and the way away from the light (down and right on the
+   * screen) is mostly +y (toward the viewer) with a little -x */
+  --lg-angle: 193deg;
+  --lgf-angle: 225deg; /* mirrored on screen */
+  --sx: -0.32;
+  --sy: 1.4;
 }
 /* Lead-in and lead-out of 55vh (the middle band is 45% to 55% of the viewport): the first block reaches the
  * band exactly when the stage has stuck at the top, and the last leaves it exactly as the stage unsticks, so
@@ -461,34 +468,39 @@ html:not(.js) .xp-blocks {
 .xp-turn {
   transform: rotateZ(-20deg); /* a face that carries a drawing is turned to face the viewer */
 }
+/* the contact shadows (light.css): sized to the object, small for the flat things lying on the plane */
+.xp-scene .cs {
+  --cs: 0.8;
+}
+.xp-board > .cs {
+  --cs: 0.45;
+}
+.xp-clip > .cs,
+.xp-paper > .cs,
+.xp-kb > .cs,
+.xp-mouse > .cs {
+  --cs: 0.3;
+}
 
 /* ---------- materials: muted, the bench's greys and wood; no logos ---------- */
-.xp-wood > .top {
-  background: #b79a72;
-}
-.xp-wood > .front {
-  background: #8f7550;
-}
-.xp-wood > .right {
-  background: #7a6342;
+.xp-wood {
+  --base: #ae8f62;
 }
 
 /* Calculus II: a free-standing board, chalk on slate in a wooden frame */
-.xp-board > .top {
-  background: #8f7550;
+.xp-board {
+  --base: #ae8f62; /* the wooden frame */
 }
 .xp-board > .front {
-  /* slate, a soft haze of old chalk, the wiped patch in the free corner, and dust settled along the foot */
-  background:
+  /* slate (a front, so 18% darker than its base), a soft haze of old chalk, the wiped patch in the free corner,
+   * and dust settled along the foot; the frame's front edge is the wood's own front */
+  background-color: color-mix(in srgb, #3b4b44, black var(--lit-front));
+  background-image:
     linear-gradient(to top, rgb(255 255 255 / 0.2), rgb(255 255 255 / 0.05) 7%, transparent 14%),
     radial-gradient(ellipse 15% 18% at 41% 28%, rgb(255 255 255 / 0.13), transparent),
     radial-gradient(ellipse 70% 60% at 30% 38%, rgb(255 255 255 / 0.05), transparent),
-    radial-gradient(ellipse 55% 50% at 78% 70%, rgb(255 255 255 / 0.04), transparent),
-    #34423c;
-  box-shadow: inset 0 0 0 3px #8f7550;
-}
-.xp-board > .right {
-  background: #7a6342;
+    radial-gradient(ellipse 55% 50% at 78% 70%, rgb(255 255 255 / 0.04), transparent);
+  box-shadow: inset 0 0 0 3px color-mix(in srgb, #ae8f62, black var(--lit-front));
 }
 .ch-line,
 .ch-hatch {
@@ -563,20 +575,14 @@ html:not(.js) .xp-blocks {
 }
 
 /* the chalk tray: a wooden ledge with a lip, chalk and an eraser lying on it */
+.xp-tray {
+  --base: #957449;
+}
 .xp-tray > .top {
-  background:
+  background-image:
     radial-gradient(ellipse 36px 3.5px at 62% 55%, rgb(255 255 255 / 0.3), transparent),
     radial-gradient(ellipse 20px 3px at 18% 50%, rgb(255 255 255 / 0.18), transparent),
-    #a88b62;
-}
-.xp-tray > .front {
-  background: #7a5f3c;
-}
-.xp-tray > .right {
-  background: #6a5232;
-}
-.xp-lip > .top {
-  background: #b09468;
+    var(--lg);
 }
 .ch-stick {
   position: absolute;
@@ -589,30 +595,27 @@ html:not(.js) .xp-blocks {
   --cy: #e7dc99;
 }
 /* the eraser: a block on its edge, felt pad toward the viewer (dusty), wooden back and ends */
-.xp-erase > .top {
-  background: #b79f76;
+.xp-erase {
+  --base: #a28b61;
 }
 .xp-erase > .front {
-  background:
+  background-color: color-mix(in srgb, #45443f, black var(--lit-front));
+  background-image:
     radial-gradient(ellipse 70% 38% at 38% 32%, rgb(255 255 255 / 0.38), transparent),
-    linear-gradient(to right, transparent 82%, rgb(255 255 255 / 0.12) 82% 85%, transparent 85%),
-    #3a3935;
-}
-.xp-erase > .right {
-  background: #8f7a55;
+    linear-gradient(to right, transparent 82%, rgb(255 255 255 / 0.12) 82% 85%, transparent 85%);
 }
 
 /* Programming Techniques: a laptop, silver aluminium base with dark keys, a thin lid with a dark bezel */
+.xp-lap {
+  --base: #bec4ca;
+}
 .xp-lap > .top {
-  background: linear-gradient(165deg, #dcdfe1, #bfc3c7);
   border-radius: 4px;
 }
 .xp-lap > .front {
-  background: linear-gradient(#a9aeb3, #8f949a);
   border-radius: 0 0 4px 4px;
 }
 .xp-lap > .right {
-  background: #7d8288;
   border-radius: 0 4px 4px 0;
 }
 .lp-well {
@@ -652,16 +655,19 @@ html:not(.js) .xp-blocks {
   transform-origin: 50% 0;
   transform: rotateX(12deg);
 }
+/* the lid: a dark bezel on the inside, silver outside (its top edge and its side) */
+.xp-scr {
+  --base: #1c1d20;
+}
 .xp-scr > .top {
-  background: #4a4d52;
+  background-color: color-mix(in srgb, #8a9096, white var(--lit-top));
   border-radius: 4px 4px 0 0;
 }
 .xp-scr > .front {
-  background: #17181b;
   border-radius: 4px 4px 1px 1px;
 }
 .xp-scr > .right {
-  background: #8f949a;
+  background-color: color-mix(in srgb, #a4aab0, black var(--lit-side));
 }
 .lp-glass {
   fill: var(--color-sheet);
@@ -732,14 +738,8 @@ html:not(.js) .xp-blocks {
  * face; the print on it, and the greens of its terminals, display and button, are drawing materials of this
  * object only. No logo. The cables are real cylinders (Cable.astro), the current is a pair of bright bands
  * that travel along each one in the action (scaled to nothing at rest). */
-.xp-an > .top {
-  background: #2e3135;
-}
-.xp-an > .front {
-  background: #1b1d20;
-}
-.xp-an > .right {
-  background: #0f1012;
+.xp-an {
+  --base: #212428;
 }
 .an-pose,
 .an-blocks,
@@ -765,14 +765,8 @@ html:not(.js) .xp-blocks {
   height: 12px;
   transform-origin: 50% 0; /* the hinge is the lid's back edge */
 }
-.xp-tb > .top {
-  background: #3fae55;
-}
-.xp-tb > .front {
-  background: #2f8f46;
-}
-.xp-tb > .right {
-  background: #226b33;
+.xp-tb {
+  --base: #39ae55;
 }
 .tb-hole {
   fill: #0e2a14;
@@ -797,19 +791,11 @@ html:not(.js) .xp-blocks {
   stroke: #8fd39e;
   stroke-width: 0.8;
 }
-.xp-ct > .top {
-  background: #d3d7da;
+.xp-ct {
+  --base: #c7cdd2;
 }
-.xp-ct > .front {
-  background: #a3a8ac;
-}
-.xp-ct > .right {
-  background: #82878c;
-}
-.xp-lead > .top,
-.xp-lead > .front,
-.xp-lead > .right {
-  background: #2a2c2f;
+.xp-lead {
+  --base: #2f3235;
 }
 .an-pl {
   fill: #b4babe;
@@ -903,14 +889,8 @@ html:not(.js) .xp-blocks {
 }
 
 /* the spreadsheet on its clipboard, and the printed report: flat paper on the desk */
-.xp-clip > .top {
-  background: #9a7b52;
-}
-.xp-clip > .front {
-  background: #7a5f3c;
-}
-.xp-clip > .right {
-  background: #6a5232;
+.xp-clip {
+  --base: #957449;
 }
 .cb-sheet {
   fill: var(--color-sheet);
@@ -984,14 +964,19 @@ html:not(.js) .xp-blocks {
   top: 54px;
   transform: rotateZ(5deg);
 }
-.xp-paper > .top {
-  background: #f1f3f1;
+.xp-paper {
+  --base: #f1f3f1;
 }
+/* the stack's edges are page lines; the shading is laid over them */
 .xp-paper > .front {
-  background: repeating-linear-gradient(#f4f5f3 0 0.5px, #bcc2c0 0.5px 0.9px);
+  background-image:
+    linear-gradient(rgb(0 0 0 / 0.18), rgb(0 0 0 / 0.18)),
+    repeating-linear-gradient(#f4f5f3 0 0.5px, #bcc2c0 0.5px 0.9px);
 }
 .xp-paper > .right {
-  background: repeating-linear-gradient(90deg, #f4f5f3 0 0.5px, #bcc2c0 0.5px 0.9px);
+  background-image:
+    linear-gradient(rgb(0 0 0 / 0.12), rgb(0 0 0 / 0.12)),
+    repeating-linear-gradient(90deg, #f4f5f3 0 0.5px, #bcc2c0 0.5px 0.9px);
 }
 .mv-t {
   fill: var(--color-graphite);
@@ -1126,25 +1111,17 @@ html:not(.js) .xp-blocks {
  * build platform, X, Y and Z axis lines, and the part's layer contours. The reds, greens, blue and greys on the
  * screen are drawing materials of this object only (the real software's own colours), like the EduBra and
  * Agente H materials: they are not tokens and are not used anywhere else. */
-.xp-mon > .top {
-  background: #6c7176;
+.xp-mon {
+  --base: #646a70;
 }
-.xp-mon > .front {
-  background: #52575c;
-}
-.xp-mon > .right {
-  background: #41454a;
-}
-.xp-screen > .top {
-  background: #2c2e33;
+/* the monitor: the case takes the light; the screen face is emissive, so it is not shaded */
+.xp-screen {
+  --base: #34363c;
 }
 .xp-screen > .front {
   background: #f4f5f4;
   box-shadow: inset 0 0 0 4px #17181b;
   border-radius: 3px;
-}
-.xp-screen > .right {
-  background: #2c2e33;
 }
 .rp-plat {
   fill: #d9dbd9;
@@ -1190,46 +1167,20 @@ html:not(.js) .xp-blocks {
 .xp-part > .top svg {
   overflow: hidden; /* the filling can never fall outside the part */
 }
-.xp-black > .top {
-  background: #2e3033;
+.xp-black {
+  --base: #212224;
 }
-.xp-black > .front {
-  background: #1b1c1e;
+.xp-bed {
+  --base: #5e6266;
 }
-.xp-black > .right {
-  background: #0f1011;
+.xp-blackhead {
+  --base: #2b2c30;
 }
-.xp-bed > .top {
-  background: #6a6e73;
+.xp-cable {
+  --base: #0a0a0a;
 }
-.xp-bed > .front {
-  background: #4d5054;
-}
-.xp-bed > .right {
-  background: #3c3f42;
-}
-.xp-blackhead > .top {
-  background: #3a3d41;
-}
-.xp-blackhead > .front {
-  background: #232427;
-}
-.xp-blackhead > .right {
-  background: #141516;
-}
-.xp-cable > .top,
-.xp-cable > .front,
-.xp-cable > .right {
-  background: #050505;
-}
-.xp-spool > .top {
-  background: #6aa7ab;
-}
-.xp-spool > .front {
-  background: #4d8b8f;
-}
-.xp-spool > .right {
-  background: #3b6f73;
+.xp-spool {
+  --base: #5eaaae;
 }
 .pr-scr {
   fill: #2f8f46;
@@ -1241,19 +1192,11 @@ html:not(.js) .xp-blocks {
   stroke: #6a6e73;
   stroke-width: 0.6;
 }
-.xp-nozzle > .top,
-.xp-nozzle > .front,
-.xp-nozzle > .right {
-  background: #3a3d41;
+.xp-nozzle {
+  --base: #3a3d41;
 }
-.xp-part > .top {
-  background: #b9c4c9;
-}
-.xp-part > .front {
-  background: #8fa0a8;
-}
-.xp-part > .right {
-  background: #77888f;
+.xp-part {
+  --base: #aec3cd;
 }
 .pr-fill {
   fill: none;
@@ -1279,14 +1222,8 @@ html:not(.js) .xp-blocks {
 }
 
 /* RP3's computer: the stand, the application window on the screen, keyboard, mouse and tower */
-.xp-mon2 > .top {
-  background: #7c8187;
-}
-.xp-mon2 > .front {
-  background: #62676c;
-}
-.xp-mon2 > .right {
-  background: #4f5358;
+.xp-mon2 {
+  --base: #787e84;
 }
 .rp-cam {
   fill: #3b3e44;
@@ -1327,37 +1264,23 @@ html:not(.js) .xp-blocks {
 .rp-hdl {
   fill: #5a5e63;
 }
+.xp-kb {
+  --base: #232629;
+}
 .xp-kb > .top {
-  background: #2f3236;
   border-radius: 1px;
-}
-.xp-kb > .front {
-  background: #1d1f22;
-}
-.xp-kb > .right {
-  background: #131416;
 }
 .kb-key {
   fill: #54585d;
 }
+.xp-mouse {
+  --base: #c1c7cd;
+}
 .xp-mouse > .top {
-  background: #cfd3d6;
   border-radius: 3px;
 }
-.xp-mouse > .front {
-  background: #9ea3a8;
-}
-.xp-mouse > .right {
-  background: #82878c;
-}
-.xp-pc > .top {
-  background: #34373b;
-}
-.xp-pc > .front {
-  background: linear-gradient(#2a2c30, #1c1d20);
-}
-.xp-pc > .right {
-  background: #131416;
+.xp-pc {
+  --base: #2a2d31;
 }
 .pc-bay {
   fill: #3d4044;

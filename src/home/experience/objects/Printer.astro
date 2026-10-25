@@ -6,6 +6,7 @@
 // Action (experience.ts, driven by Monitor): per layer the gantry steps up and the layer appears; then for every
 // line the head slides in x and the bed in y, so the nozzle traces the line while it is drawn.
 import Cub from '../../../projects/edubra/Cub.astro'
+import Glass from '../../../shared/components/Glass.astro'
 
 const PW = 36 // the part, in the bed's coordinates: x 17, y 14
 const PD = 24
@@ -54,7 +55,7 @@ const f = (n: number) => n.toFixed(2)
 ---
 
 <div class="pr-wrap">
-  <Cub x={0} y={0} w={100} d={90} h={8} cls="xp-black">
+  <Cub x={0} y={0} w={100} d={90} h={8} cls="xp-black" shadow>
     <div class="pr-bm">
       <Cub x={15} y={16} w={70} d={56} h={2} cls="xp-bed">
         <Cub x={2} y={2} w={66} d={52} h={0.2} cls="xp-black" />
@@ -84,6 +85,7 @@ const f = (n: number) => n.toFixed(2)
     <Cub x={34} y={78} w={32} d={10} h={12} cls="xp-black">
       <svg slot="front" viewBox="0 0 32 12" width="100%" height="100%" focusable="false">
         <rect class="pr-scr" x="3" y="2" width="15" height="8" rx="1" />
+        <Glass x="3" y="2" width="15" height="8" rx="1" />
         <circle class="pr-knob" cx="25" cy="6" r="3" />
       </svg>
     </Cub>

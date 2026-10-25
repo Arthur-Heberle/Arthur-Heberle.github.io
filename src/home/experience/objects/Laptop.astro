@@ -8,6 +8,7 @@
 // the boxes appear, the inheritance arrows draw, the pointer arrow draws from Level to Entity, then the
 // code lines appear.
 import Cub from '../../../projects/edubra/Cub.astro'
+import Glass from '../../../shared/components/Glass.astro'
 
 const W = 160
 const D = 76
@@ -46,7 +47,7 @@ row(42.4, 6.6, [1.2, 1.2, 1.2, 1.2, 5.6, 1.2, 1.2, 1.2])
 <div class="xp-scene" style="--m:2;--fw:160px;--fd:76px;--dy:46px">
   <div class="xp-plane">
     <div class="xp-lift">
-      <Cub x={0} y={0} w={W} d={D} h={3.5} cls="xp-lap xp-turn">
+      <Cub x={0} y={0} w={W} d={D} h={3.5} cls="xp-lap xp-turn" shadow>
         <svg class="lp-deck" viewBox={`0 0 ${W} ${D}`} width="100%" height="100%" focusable="false">
           <rect class="lp-well" x="5" y="4" width="150" height="48" rx="2" />
           {keys.map((k) => <rect class="lp-key" x={k.x.toFixed(2)} y={k.y} width={k.w.toFixed(2)} height={k.h} rx="1" />)}
@@ -85,6 +86,7 @@ row(42.4, 6.6, [1.2, 1.2, 1.2, 1.2, 5.6, 1.2, 1.2, 1.2])
                   {code.map((c, i) => <text x="8" y={78 + i * 7}>{c}</text>)}
                 </g>
               </g>
+              <Glass x="4" y="5" width="152" height="95" rx="1.5" />
             </svg>
           </Cub>
         </div>

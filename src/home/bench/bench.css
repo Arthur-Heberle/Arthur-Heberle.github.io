@@ -51,7 +51,10 @@
   right: 10%;
   bottom: 14px;
   height: 36px;
-  background: radial-gradient(ellipse at 50% 50%, rgb(20 24 28 / 0.28), transparent 70%);
+  /* two shadows (light.css): a tight dark one right under the object and a wide soft one, thrown to the lower right */
+  background:
+    radial-gradient(ellipse 40% 48% at 50% 40%, rgb(14 17 20 / 0.45), transparent 100%),
+    radial-gradient(ellipse closest-side at 54% 52%, rgb(20 24 28 / 0.28), transparent);
   pointer-events: none;
 }
 .wb-cap {
@@ -94,6 +97,7 @@
   .wb-mat > .cub > .top {
     display: contents;
   }
+  .wb-mat > .cub > .cs,
   .wb-mat > .cub > .front,
   .wb-mat > .cub > .right,
   .wb-desk-obj,
@@ -216,16 +220,19 @@
 .mon-body > * {
   position: absolute;
 }
+.mon {
+  --base: #1c1d20; /* the light (light.css): front 18% darker, side 12% darker, top 8% lighter */
+}
 .mon-front {
   inset: 0;
   border-radius: 10px;
-  background: #1c1d20;
+  background: color-mix(in srgb, var(--base), black var(--lit-front));
   box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.14);
 }
 .mon-back {
   inset: 0;
   border-radius: 10px;
-  background: #141518;
+  background: color-mix(in srgb, var(--base), black 40%);
   transform: translateZ(calc(var(--mon-t) * -1));
 }
 .mon-right {
@@ -233,7 +240,7 @@
   top: 10px;
   width: var(--mon-t);
   height: calc(100% - 20px);
-  background: linear-gradient(90deg, #202125, #3a3b40);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--base), black var(--lit-side)), color-mix(in srgb, var(--base), white 12%));
   transform-origin: 0 0;
   transform: rotateY(90deg);
 }
@@ -242,7 +249,7 @@
   top: 0;
   width: calc(100% - 20px);
   height: var(--mon-t);
-  background: #2e2f34;
+  background: color-mix(in srgb, var(--base), white var(--lit-top));
   transform-origin: 0 0;
   transform: rotateX(-90deg);
 }
@@ -355,6 +362,12 @@
     margin: calc(-148px + max(0px, (1 - var(--k)) * 300px)) 0 0 -300px;
     transform-style: preserve-3d;
     transform: rotateX(55deg) rotateZ(32deg);
+    /* the light comes from the top left of the screen (light.css). The plane is turned 32deg clockwise, so the
+     * top faces' grade runs along 135deg - 32deg, and 'away from the light' (down and right on the screen) is
+     * mostly +x in the plane */
+    --lg-angle: 103deg;
+    --sx: 1.38;
+    --sy: 0.32;
   }
 
   /* the Cub helper's faces (story.css scopes the same rules to .story) */
@@ -407,29 +420,45 @@
     inset: 0;
     transform-style: preserve-3d;
   }
-  /* a soft contact shadow on the mat, under and a little behind each object: a static gradient */
+  /* the contact shadows on the mat under each object: the .cs pair of light.css (a tight one and a wide soft
+   * one, static), following the object's corners */
   .wb-shadow {
     position: absolute;
-    inset: -8px -22px -26px -6px;
-    background: radial-gradient(ellipse at 50% 50%, rgb(20 24 28 / 0.34), transparent 68%);
+    inset: 0;
     transform: translateZ(0.4px);
+    border-radius: var(--cs-r, 2px);
     pointer-events: none;
   }
+  .wb-item:nth-child(1) .wb-shadow {
+    --cs: 1.7; /* the box is 60px tall */
+  }
+  .wb-item:nth-child(2) .wb-shadow {
+    --cs-r: 14px;
+    --cs: 0.55; /* the phone is 8px thick */
+  }
+  .wb-item:nth-child(3) .wb-shadow {
+    --cs-r: 12px;
+    --cs: 0.7;
+  }
 
-  /* ---- the mat: top lightest, front and right edges darker ---- */
+  /* ---- the mat: a lit desk. The top is a soft spotlight (lighter at the centre, gently darker toward the
+   * edges) over the 20px grid and a very fine paper grain; its two edges take the light's shading ---- */
+  .dk-mat {
+    --base: #e0e4e2;
+    --cs: 2.4;
+    --paper-tex: none; /* the grain is fetched once the bench is live (bench.ts), like the MDF */
+  }
+  .wb-live .dk-mat {
+    --paper-tex: url('/textures/paper.webp');
+  }
   .dk-mat > .top {
-    background-color: var(--color-sheet);
     background-image:
+      radial-gradient(ellipse 64% 68% at 44% 42%, rgb(255 255 255 / 0.85), rgb(255 255 255 / 0.3) 52%, rgb(35 38 42 / 0.1) 100%),
       linear-gradient(rgb(35 38 42 / 0.06) 1px, transparent 1px),
-      linear-gradient(90deg, rgb(35 38 42 / 0.06) 1px, transparent 1px);
-    background-size: 20px 20px;
+      linear-gradient(90deg, rgb(35 38 42 / 0.06) 1px, transparent 1px),
+      var(--paper-tex);
+    background-size: 100% 100%, 20px 20px, 20px 20px, 96px 96px;
     box-shadow: inset 0 0 0 1px var(--color-line);
-  }
-  .dk-mat > .front {
-    background: #cdd2d0;
-  }
-  .dk-mat > .right {
-    background: #b6bcba;
   }
   /* the next project's place: a dashed outline lying on the mat */
   .wb-slot {
@@ -444,26 +473,20 @@
     transform: translateZ(0.3px);
     pointer-events: none;
   }
+  .dk-cal {
+    --base: #c3c7cb;
+  }
   .dk-cal > .top {
-    background:
-      repeating-linear-gradient(90deg, #5b6066 0 1px, transparent 1px 5px) 0 100% / 100% 7px no-repeat,
-      #cfd3d6;
+    background-image: repeating-linear-gradient(90deg, #5b6066 0 1px, transparent 1px 5px), var(--lg);
+    background-position: 0 100%, 0 0;
+    background-size: 100% 7px, 100% 100%;
+    background-repeat: no-repeat;
   }
-  .dk-cal > .front,
-  .dk-jaw > .front,
-  .dk-slider > .front {
-    background: #9ea3a8;
+  .dk-jaw {
+    --base: #b8bcc0;
   }
-  .dk-cal > .right,
-  .dk-jaw > .right,
-  .dk-slider > .right {
-    background: #82878c;
-  }
-  .dk-jaw > .top {
-    background: #c3c7cb;
-  }
-  .dk-slider > .top {
-    background: #b9bec2;
+  .dk-slider {
+    --base: #aeb3b7;
   }
   .dk-window {
     position: absolute;
@@ -495,18 +518,15 @@
   .wb-live .wb-dk-edubra {
     --mdf-tex: url('/textures/mdf.webp');
   }
+  .dk-mdf {
+    --base: var(--mdf-edge); /* the laser-cut edge; the lid's colour is its texture */
+  }
   .dk-mdf > .top {
-    background: var(--mdf) var(--mdf-tex) 0 0 / 512px 512px repeat;
-  }
-  .dk-mdf > .top::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    background: linear-gradient(to bottom, rgb(255 250 240 / 0.18), transparent 55%, rgb(80 55 25 / 0.08));
-  }
-  .dk-mdf > .right {
-    background: #74502f;
+    /* the texture is the lid's colour, so the light is laid over it: 8% toward white, then the grade */
+    background-color: var(--mdf);
+    background-image: linear-gradient(rgb(255 255 255 / 0.08), rgb(255 255 255 / 0.08)), var(--lg), var(--mdf-tex);
+    background-size: 100% 100%, 100% 100%, 512px 512px;
+    background-repeat: no-repeat, no-repeat, repeat;
   }
   .wb-dk-edubra .front .engrave {
     font-size: 24px;
@@ -561,16 +581,12 @@
     --st-pin: #1f4f66;
     --st-paper: #f2efe8;
   }
+  .dk-phone {
+    --base: #1c1d20;
+  }
   .dk-phone > .top {
     border-radius: 14px;
-    background: #1c1d20;
     box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.14);
-  }
-  .dk-phone > .front {
-    background: #141518;
-  }
-  .dk-phone > .right {
-    background: #0e0f11;
   }
   .wb-dk-phone .phone3d {
     top: 0;
@@ -612,16 +628,12 @@
   }
 
   /* ---- Brasilore: a handheld console, the pixel scene on its screen ---- */
+  .dk-hh {
+    --base: #2b2c31;
+  }
   .dk-hh > .top {
     border-radius: 12px;
-    background: #2b2c31;
     box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.12);
-  }
-  .dk-hh > .front {
-    background: #1a1b1e;
-  }
-  .dk-hh > .right {
-    background: #101113;
   }
   .hh-scr {
     position: absolute;
@@ -750,9 +762,6 @@
  * holes, the button wells) are lifted a hair above it, or they would be sorted against it in 3D and
  * lose. The pins and caps stand up from there as before. */
 @media (min-width: 768px) {
-  .dk-mdf > .top::before {
-    transform: translateZ(0.1px);
-  }
   .wb-dk-edubra .dots::before {
     inset: -5px -5px;
     transform: translateZ(0.3px);
@@ -766,9 +775,6 @@
   .wb-dk-edubra .label,
   .wb-dk-edubra .speed {
     transform: translateZ(0.3px);
-  }
-  .wb-shadow {
-    background: radial-gradient(ellipse at 50% 50%, rgb(20 24 28 / 0.5), transparent 70%);
   }
 }
 

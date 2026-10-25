@@ -10,6 +10,8 @@
 
 /* shared: layout primitives, skip link, feedback, [FILL] rendering */
 @import "./base.css";
+/* shared: the one light every 3D scene uses (face shading, contact shadows, glass) */
+@import "./light.css";
 /* home: spine prose, margin notes, leader lines */
 @import "../../home/spine/spine.css";
 /* home: the datasheet (reuses the spine's note drawings) */

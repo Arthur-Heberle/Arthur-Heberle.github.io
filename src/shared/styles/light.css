@@ -1,0 +1,81 @@
+/* One light for every 3D scene on the site: it comes from the top left, and it is static (nothing here
+ * animates). Faces are shaded by orientation, from one base colour per material:
+ *   top faces    8% lighter than the base
+ *   side faces   12% darker       (the .right face of a Cub, the near-vertical edge of a slab)
+ *   front faces  18% darker
+ * A material sets only `--base` (and, for a face that carries a texture or a gradient, its own
+ * background-image); the three colours come from here, so no two objects can drift apart.
+ *
+ * Contact shadows (.cs) are two static box-shadows on a layer lying in the surface the object stands on:
+ * a tight dark one right under it and a wide soft one, both thrown away from the light (--sx, --sy are the
+ * on-screen down-right direction expressed in the scene's own plane, set per scene).
+ * Glass (.glass) is the soft diagonal highlight laid across every screen.
+ *
+ * Constraints (see the 3D-chain notes in device.css and story.css): no filter, no opacity and no overflow on
+ * anything that has 3D children; every effect here is a background or a box-shadow on a leaf. */
+@property --base {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: transparent;
+}
+
+:root {
+  --lit-top: 8%;
+  --lit-side: 12%;
+  --lit-front: 18%;
+  /* the glass over a screen: bright at the top left, gone by two thirds of the way across */
+  --glass: linear-gradient(120deg, rgb(255 255 255 / 0.22) 0%, rgb(255 255 255 / 0.07) 36%, rgb(255 255 255 / 0) 64%);
+}
+
+/* The Cub helper's faces. A material that has not been converted keeps its own hex colours: its rules come later
+ * in the bundle and win. */
+.cub {
+  /* a Cub takes its material's colour from itself, never from the Cub it stands on (--base inherits, so the
+   * faces can read it; the material class on the same element overrides this reset, it comes later) */
+  --base: transparent;
+  /* the top face's grade: a little brighter toward the light, a little darker away from it; --lg-angle is set per
+   * scene so the grade runs top-left to bottom-right on the screen, whatever the scene's turn */
+  --lg: linear-gradient(var(--lg-angle, 135deg), rgb(255 255 255 / 0.07), rgb(255 255 255 / 0) 55%, rgb(0 0 0 / 0.06));
+  /* the same on the side faces, in the face's own plane (--lgf-angle: 135deg is toward the lower right of an
+   * unmirrored face; a mirrored scene sets 225deg), so no large face is a flat fill */
+  --lgf: linear-gradient(var(--lgf-angle, 135deg), rgb(255 255 255 / 0.05), rgb(255 255 255 / 0) 50%, rgb(0 0 0 / 0.07));
+}
+.cub > .top {
+  background-color: color-mix(in srgb, var(--base), white var(--lit-top));
+  background-image: var(--lg);
+}
+.cub > .front {
+  background-color: color-mix(in srgb, var(--base), black var(--lit-front));
+  background-image: var(--lgf);
+}
+.cub > .right {
+  background-color: color-mix(in srgb, var(--base), black var(--lit-side));
+  background-image: var(--lgf);
+}
+
+/* Contact shadows: first child of a Cub (Cub.astro, `shadow`). It lies on the surface the cuboid stands on,
+ * lifted a hair so it is not sorted against that surface. The cuboid hides the part of it under itself. */
+.cs {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: 2px;
+  transform: translateZ(0.3px);
+  /* --cs scales both with the object's height: a tall box throws a longer, softer shadow than a flat phone */
+  box-shadow:
+    calc(var(--sx, 1) * 2px * var(--cs, 1)) calc(var(--sy, 1) * 2px * var(--cs, 1)) calc(3px * var(--cs, 1)) rgb(14 17 20 / 0.5),
+    calc(var(--sx, 1) * 12px * var(--cs, 1)) calc(var(--sy, 1) * 12px * var(--cs, 1)) calc(26px * var(--cs, 1)) rgb(14 17 20 / 0.28);
+}
+
+/* Glass: an HTML screen gets it as ::after (a flat leaf), an SVG screen as a last <rect fill="url(#...)">. */
+.glass::after,
+.phone3d .scr::after,
+.hh-scr::after,
+.mon-scr::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--glass);
+  pointer-events: none;
+}

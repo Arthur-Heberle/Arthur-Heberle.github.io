@@ -185,7 +185,8 @@ const holes = [1, 2, 3, 4, 5, 6].map((n) => ({
         <div class="scene" aria-hidden="true">
           <div class="obj" id="o-pi" style="left:452px;top:150px;width:290px;height:210px">
             <div class="bench" style="width:250px;height:160px;left:20px;bottom:10px">
-              <div class="shadow" style="left:-14px;top:0px;width:284px;height:194px"></div>
+              <div class="shadow" style="left:-4px;top:8px;width:284px;height:194px"></div>
+              <div class="shadow tight" style="left:0px;top:3px;width:244px;height:162px"></div>
               <!-- Raspberry Pi 4: board 240x160 (85x56 mm at ~2.85 px/mm). GPIO along the far edge, pin 1 at its
                    left end (inner row odd, edge row even); Ethernet, the USB 3 pair and the USB 2 pair on the
                    right edge; USB-C, two micro-HDMI and the AV jack on the near edge. -->
@@ -246,7 +247,8 @@ const holes = [1, 2, 3, 4, 5, 6].map((n) => ({
 
           <div class="obj" id="o-cell" style="left:810px;top:126px;width:170px;height:190px">
             <div class="bench" style="width:120px;height:170px;left:20px;bottom:10px">
-              <div class="shadow" style="left:-14px;top:-2px;width:150px;height:198px"></div>
+              <div class="shadow" style="left:-4px;top:6px;width:150px;height:198px"></div>
+              <div class="shadow tight" style="left:0px;top:3px;width:124px;height:174px"></div>
               <!-- Braille cell: the yellow PLA insert with six recesses; each black pin is stacked discs that rise -->
               <Cub x={0} y={0} w={120} d={170} h={26} cls="cellblk" part="cell">
                 {
@@ -270,7 +272,8 @@ const holes = [1, 2, 3, 4, 5, 6].map((n) => ({
 
           <div class="obj" id="o-spk" style="left:825px;top:340px;width:140px;height:150px">
             <div class="bench" style="width:96px;height:30px;left:22px;bottom:14px">
-              <div class="shadow" style="left:-18px;top:-24px;width:130px;height:64px"></div>
+              <div class="shadow" style="left:-8px;top:-18px;width:130px;height:64px"></div>
+              <div class="shadow tight" style="left:2px;top:-6px;width:100px;height:36px"></div>
               <!-- speaker: a round driver standing on the table, turned to face the viewer. Frame with four
                    screws, rubber surround, ribbed cone, dust cap; the magnet stacks up behind it -->
               <div class="drv">
