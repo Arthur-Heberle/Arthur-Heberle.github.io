@@ -233,6 +233,17 @@ the gutter; note labels are mono as briefed (**diverges from design-spec §5**, 
 | 4 Mobile | done | below 768px `spine.ts` leaves the flow alone (no `notes-placed`, no leaders, overlay `display: none`), so each note follows its paragraph: balloon and mono label, then the floated drawing with the text; balloons stay in the text. The drawings still play when their note reaches 85% of the viewport. Checked in headless Edge over CDP at a real 375px viewport: no horizontal scroll (`scrollWidth` 360 against 375), 0 leaders, notes in flow. **Also changed:** each balloon's `aria-describedby` now points at the note's text (`#note-text-<id>`), not the whole `<aside>`, so the description is the text only and no longer starts with the back-link's "back to reference N"; the lanes sit 1px lower in the line gap |
 | 5 Check | done | headless Edge over CDP (not Brave), real viewports 375, 768, 900, 1024, 1280, 1440, 1920: at 768 and up all 5 leaders start at their in-text balloon and end exactly at their note's balloon, 0 note overlaps, notes never touch the prose, 32px between notes, no horizontal scroll at any width; at 375 no leaders and the notes follow their paragraph. AX tree (`Accessibility.getFullAXTree`, 1280): both paragraphs and all five notes as text, five links "note N, label" described by the note's text; no "hello", "olá", "ciao" or "bonjour?" anywhere. Reduced motion: leaders drawn, no dash styles, bonjour? and the flat string showing. JavaScript off: notes visible in the flow. Console clean on home and on EduBra (whose plain note keeps its old leader and its rail). JS 77.5 KB gzip in total (under 90). **Not done:** Firefox, Safari and a real touch device; Lighthouse was not re-run; hover and replay were checked by dispatched events, not a real pointer (the harness tab is hidden, so rAF only advances while screenshots wake it) |
 
+### Home redesign, part 1: structure (2026-10-24, Arthur's brief)
+
+Six stages, in order. Commit message `redesign: <stage>`. Arthur's choices this session: the datasheet
+frame becomes a rounded panel and its section and claim rules go; the hero's origin mark and datum line stay;
+the Experience text column gets half a screen of lead-in and lead-out so the stage is stuck whenever a block
+is active. Screenshots are taken with headless Edge (not Brave) through Playwright.
+
+| Stage | Status | Notes |
+|---|---|---|
+| 0 Screenshots | done | `playwright` added as a devDependency (Arthur approved it in the brief); `pnpm shots` builds, starts `astro preview` on :4399 and saves to `shots/` (gitignored): each page scrolled through first, then full-page plus viewport shots (home: hero, spine, datasheet, bench, each Experience block centred, changelog, contact; project pages: top, story start and end, numbers, bottom) at 1440, 1024 and 390. `node scripts/shots.mjs [home\|edubra\|agente-h] [1440\|1024\|390] [--out name]` runs a subset without building. The "before" set is in `shots/before/` (local only) |
+
 ---
 
 ## Open questions for Arthur
