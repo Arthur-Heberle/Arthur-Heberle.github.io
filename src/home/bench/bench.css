@@ -101,6 +101,7 @@
   .wb-mat > .cub > .front,
   .wb-mat > .cub > .right,
   .wb-desk-obj,
+  .wb-hit,
   .wb-slot,
   .wb-caliper,
   .wb-lines,
@@ -847,14 +848,21 @@
 
 /* ---- lift and turn (hover or keyboard focus, hover devices, 768px and up) ----
  * bench.ts lifts the object off the mat and turns it toward the viewer with one transform on
- * .wb-lift. The footprint link keeps a flat, slightly larger hit area on the mat, so an object that
- * moves out from under the pointer does not end its own hover. The wide, soft shadow is a second,
- * static layer under the first; only its opacity changes. */
+ * .wb-lift. The hover area is the flat footprint plus .wb-hit, an invisible copy of the object's box
+ * at rest, which never moves; the lifted object takes no pointer events. So lifting it can never move
+ * it out from under the pointer and end its own hover. The wide, soft shadow is a second, static
+ * layer under the first; only its opacity changes. */
 @media (min-width: 768px) {
   .wb-link::before {
     content: '';
     position: absolute;
     inset: -6px;
+  }
+  .wb-desk-obj {
+    pointer-events: none;
+  }
+  .wb-desk .wb-hit.cub > * {
+    background: none;
   }
   .wb-shadow-lift {
     inset: -34px -60px -64px -26px;
