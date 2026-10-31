@@ -17,18 +17,22 @@
 // stance as braille.ts throwing on an unmapped letter). An unresolved [FILL] value inside
 // `project` is shown as written, so the post-build check (scripts/check-fill.mjs) fails the build.
 import type { CollectionEntry } from 'astro:content'
-import { getCollection } from 'astro:content'
 import OriginLink from './OriginLink.astro'
 import TitleBlock from './TitleBlock.astro'
 import { sortProjects } from './sortProjects'
 import { hasProjectPage, projectPageHref } from './projects'
 import MarginNote from '../home/spine/MarginNote.astro'
 import Tick from '../shared/components/Tick.astro'
+import { getLang, localePath } from '../shared/i18n/lang'
+import { getProjects } from '../shared/i18n/content'
+import { text } from './text'
 
 interface Props {
   entry: CollectionEntry<'projects'>
 }
 const { entry } = Astro.props
+const lang = getLang(Astro)
+const t = text[lang]
 const { title, links, project } = entry.data
 
 if (!project) {
@@ -41,13 +45,13 @@ const hasLinks = Boolean(links.repo || links.live || project.paper)
 
 // The title block: this project's place on the home bench, and the next entry
 // if it has a project page of its own. "Project name" is the title before its dash.
-const sorted = sortProjects(await getCollection('projects'))
+const sorted = sortProjects(await getProjects(lang))
 const at = sorted.findIndex((e) => e.id === entry.id)
 const nameOf = (t: string) => t.split(' — ')[0]
 const following = sorted[at + 1]
 const next =
   following && hasProjectPage(following.id)
-    ? { sheet: at + 2, href: projectPageHref(following.id), name: nameOf(following.data.title) }
+    ? { sheet: at + 2, href: localePath(lang, projectPageHref(following.id)), name: nameOf(following.data.title) }
     : undefined
 ---
 
@@ -97,7 +101,7 @@ const next =
     project.built && (
       <section class="flex flex-col gap-3" aria-labelledby="project-built-heading">
         <h2 id="project-built-heading" class="text-h3 font-sans font-medium" data-anim>
-          {project.solo ? 'How I built it' : 'How we built it'}
+          {project.solo ? t.builtSolo : t.builtTeam}
         </h2>
         {project.built.map((text, i) => (
           <p class="measure text-body" data-anim data-delay={i === 0 ? '0.06' : undefined}>
@@ -112,7 +116,7 @@ const next =
     project.next && (
       <section class="flex flex-col gap-3" aria-labelledby="project-next-heading">
         <h2 id="project-next-heading" class="text-h3 font-sans font-medium" data-anim>
-          What's next
+          {t.next}
         </h2>
         {project.next.map((text, i) => (
           <p class="measure text-body" data-anim data-delay={i === 0 ? '0.06' : undefined}>
@@ -127,7 +131,7 @@ const next =
     project.part && (
       <section class="flex flex-col gap-3" aria-labelledby="project-part-heading">
         <h2 id="project-part-heading" class="text-h3 font-sans font-medium" data-anim>
-          My part
+          {t.part}
         </h2>
         {project.part.map((text, i) => (
           <p class="measure text-body" data-anim data-delay={i === 0 ? '0.06' : undefined}>
@@ -142,7 +146,7 @@ const next =
     project.differently && (
       <section class="flex flex-col gap-3" aria-labelledby="project-differently-heading">
         <h2 id="project-differently-heading" class="text-h3 font-sans font-medium" data-anim>
-          What I'd do differently
+          {t.differently}
         </h2>
         {project.differently.map((text, i) => (
           <p class="measure text-body" data-anim data-delay={i === 0 ? '0.06' : undefined}>
@@ -157,17 +161,17 @@ const next =
     hasLinks && (
       <section class="flex flex-col gap-3" aria-labelledby="project-links-heading">
         <h2 id="project-links-heading" class="text-h3 font-sans font-medium" data-anim>
-          Links
+          {t.links}
         </h2>
         <p class="flex flex-wrap gap-x-gutter gap-y-2 text-small" data-anim data-delay="0.06">
           {links.repo && (
             <a class="feedback" href={links.repo}>
-              Code on GitHub
+              {t.repo}
             </a>
           )}
           {links.live && (
             <a class="feedback" href={links.live}>
-              live
+              {t.live}
             </a>
           )}
           {project.paper && (

@@ -1,0 +1,41 @@
+---
+// A project page, shared by both languages: src/pages/projects/[slug].astro (English) and
+// src/pages/pt/projects/[slug].astro (Portuguese) pick the entries to build and render this.
+//
+// The Braille word (`EDUBRA`) is deliberately not a schema field — docs/plans/step-03.md
+// left it open for this step rather than adding a `brailleWord` field neither spec lists.
+// It's passed here, at the one call site that needs it, the same way each future project
+// (RP3, Agente H — step 15) will pass its own set-piece into the slot below.
+import type { CollectionEntry } from 'astro:content'
+import Base from '../shared/layouts/Base.astro'
+import Rule from '../shared/components/Rule.astro'
+import ProjectPage from './ProjectPage.astro'
+import EdubraDevice from './edubra/EdubraDevice.astro'
+import EdubraStory from './edubra/EdubraStory.astro'
+import EdubraNumbers from './edubra/EdubraNumbers.astro'
+import AgenteStory from './agente-h/AgenteStory.astro'
+import AgenteNumbers from './agente-h/AgenteNumbers.astro'
+import AgenteDashboard from './agente-h/AgenteDashboard.astro'
+import { getLang } from '../shared/i18n/lang'
+import { text } from './text'
+
+interface Props {
+  entry: CollectionEntry<'projects'>
+}
+const { entry } = Astro.props
+const t = text[getLang(Astro)]
+---
+
+<Base title={t.pageTitle(entry.data.title)} preloadFonts={entry.id === 'agente-h' ? ['archivo-500-latin.woff2', 'ibm-plex-mono-400-latin.woff2'] : []}>
+  <main id="main" tabindex="-1" class="page-main">
+    <Rule />
+    <ProjectPage entry={entry}>
+      {entry.id === 'edubra' && <EdubraDevice word="EDUBRA" />}
+      {entry.id === 'edubra' && <EdubraStory slot="after" />}
+      {entry.id === 'edubra' && <EdubraNumbers slot="after" />}
+      {entry.id === 'agente-h' && <AgenteStory slot="after" />}
+      {entry.id === 'agente-h' && <AgenteNumbers slot="after" />}
+      {entry.id === 'agente-h' && <AgenteDashboard slot="after" />}
+    </ProjectPage>
+  </main>
+</Base>

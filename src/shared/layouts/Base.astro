@@ -1,5 +1,7 @@
 ---
 import '../styles/global.css'
+import { HTML_LANG, getLang } from '../i18n/lang'
+import { text } from '../text'
 
 interface Props {
   title: string
@@ -11,9 +13,11 @@ interface Props {
 }
 
 const { title, noindex = false, preloadFonts = [] } = Astro.props
+const lang = getLang(Astro)
+const t = text[lang]
 ---
 
-<html lang="en">
+<html lang={HTML_LANG[lang]}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -77,7 +81,7 @@ const { title, noindex = false, preloadFonts = [] } = Astro.props
   <body>
     <!-- Every page rendering this layout must give its main content element id="main":
          this is what the skip link lands on. -->
-    <a class="skip" href="#main">Skip to main content</a>
+    <a class="skip" href="#main">{t.skip}</a>
     <slot />
     <!-- The single scroll authority (docs/motion-spec.md): one Lenis instance, one
          gsap.ticker hook, registered plugins, and the matchMedia scaffold steps 08-13

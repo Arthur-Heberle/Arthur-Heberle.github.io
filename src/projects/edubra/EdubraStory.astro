@@ -12,28 +12,29 @@
 // the one table the site trusts.
 import Cub from './Cub.astro'
 import { BRAILLE_ALPHABET } from './braille'
+import { getLang } from '../../shared/i18n/lang'
+import { text } from './text'
+import { fmt } from '../../shared/i18n/runtime'
+import Data from '../../shared/i18n/Data.astro'
+import { SPEECH_LANG } from '../../shared/i18n/lang'
 
-const TEXT = 'hello world'
+const lang = getLang(Astro)
+const t = text[lang].story
+const TEXT = t.word
+const WORDS = TEXT.split(' ')
 const LAST = TEXT[TEXT.length - 1]
 const RAISED = BRAILLE_ALPHABET[LAST]
 const PIN_H = 8
 const PIN_LAYERS = [0.35, 0.7, 1]
-const LETTERS = ['h', 'e', 'l', 'o', 'w', 'r', 'd']
-const STEPS = ['Send a file', 'Over Wi-Fi', 'Audio first', 'Read']
+// the distinct letters of the text, in order of appearance (one big letter each)
+const LETTERS = [...new Set(TEXT.replace(' ', '').split(''))]
 
 // The six header pins the device code drives the servos with: dot n -> physical pin (BCM 18, 23,
 // 14, 1, 12, 21). Verified against pinout.xyz. Every one is on the even, board-edge row.
 const PIN_OF_DOT: Record<number, number> = { 1: 12, 2: 16, 3: 8, 4: 28, 5: 32, 6: 40 }
 const DOT_OF_PIN: Record<number, number> = Object.fromEntries(Object.entries(PIN_OF_DOT).map(([d, p]) => [p, +d]))
 // A callout's component, its name and its one-line label (copy from Arthur's brief).
-const PARTS = [
-  { id: 'gpio', name: 'GPIO header', text: 'Drives the six servos' },
-  { id: 'jack', name: 'Audio jack', text: 'Out to your headphones or speaker' },
-  { id: 'led', name: 'Green LED', text: 'Blinks while the Pi works' },
-  { id: 'soc', name: 'Processor', text: 'Runs the reading loop' },
-  { id: 'cell', name: 'Braille cell', text: 'Six pins, one per servo' },
-  { id: 'spk', name: 'Headphones or speaker', text: 'Says each word, then each letter' },
-]
+const PARTS = t.parts
 const NBSP = ' '
 
 // The three wires, as story.ts's wire() measures them at rest (canvas scale independent).
@@ -52,8 +53,8 @@ const CUR_X0 = 440 + (TEXT.length - 1) * 30 - 12
 const CUR_X1 = 440 + (TEXT.length - 1) * 30 + 12
 
 const cards = [
-  { id: 0, x: 478, name: 'hello.mp3', wave: WAVE0 },
-  { id: 1, x: 598, name: 'world.mp3', wave: WAVE1 },
+  { id: 0, x: 478, name: `${WORDS[0]}.mp3`, wave: WAVE0 },
+  { id: 1, x: 598, name: `${WORDS[1]}.mp3`, wave: WAVE1 },
 ]
 const holes = [1, 2, 3, 4, 5, 6].map((n) => ({
   n,
@@ -64,40 +65,39 @@ const holes = [1, 2, 3, 4, 5, 6].map((n) => ({
 ---
 
 <section class="story" data-story aria-labelledby="how">
+  <!-- the words story.ts writes at runtime -->
+  <Data id="edubra-story-text" data={{ speech: SPEECH_LANG[lang], word: t.word, stepLive: t.stepLive, again: t.again, againLabel: t.againLabel, play: t.play, playLabel: t.playLabel, frame: t.frame }} />
   <div class="head">
-    <h2 id="how" class="text-h2 font-sans font-medium">How it works</h2>
+    <h2 id="how" class="text-h2 font-sans font-medium">{t.heading}</h2>
     <div class="caps">
-      <p class="cap"><b>1</b><strong>Send a file</strong><span>Drop in a .txt, .docx or .pdf. Song lyrics, an article, anything.</span></p>
-      <p class="cap"><b>2</b><strong>Over Wi-Fi</strong><span>The page splits it into words and sends them to the Raspberry Pi inside the box.</span></p>
-      <p class="cap"><b>3</b><strong>Audio first</strong><span>Before reading, the Pi prepares a voice file for every word, so it doesn't stall mid-sentence.</span></p>
-      <p class="cap"><b>4</b><strong>Read</strong><span>It says the word, then each letter, raising the pins as it goes.</span></p>
+      {t.caps.map((cap, i) => <p class="cap"><b>{i + 1}</b><strong>{cap.title}</strong><span>{cap.text}</span></p>)}
     </div>
-    <div class="ticks" role="group" aria-label="Steps">
+    <div class="ticks" role="group" aria-label={t.steps}>
       {
-        STEPS.map((title, i) => (
-          <button type="button" class="tickbtn" aria-label={`Go to step ${i + 1}: ${title}`}><u></u></button>
+        t.caps.map((cap, i) => (
+          <button type="button" class="tickbtn" aria-label={fmt(t.goStep, { n: i + 1, title: cap.title })}><u></u></button>
         ))
       }
     </div>
     <div class="controls">
-      <button type="button" class="control feedback" data-toggle aria-label="Pause the drawing" aria-pressed="false" hidden>Pause</button>
-      <button type="button" class="control feedback" data-again hidden>Play again</button>
-      <button type="button" class="control feedback" data-sound aria-pressed="false" hidden>Sound</button>
+      <button type="button" class="control feedback" data-toggle aria-label={t.pauseLabel} aria-pressed="false" hidden>{t.pause}</button>
+      <button type="button" class="control feedback" data-again hidden>{t.again}</button>
+      <button type="button" class="control feedback" data-sound aria-pressed="false" hidden>{t.sound}</button>
     </div>
     <p class="sr-only" aria-live="polite" data-live></p>
   </div>
   <!-- a nudge that the drawing is playable; absent without JS, where the parts are not clickable -->
-  <p class="hint text-small">Tap a part of the hardware to see what it does, or turn on the sound.</p>
+  <p class="hint text-small">{t.hint}</p>
   <!-- One labelled image for the whole drawing: everything drawn inside is aria-hidden, and the
        controls and callout buttons sit outside the image so they stay reachable. The frame is a
        focus stop only while it scrolls sideways (the static layout); story.ts takes the three
        attributes off when the live layout has nothing to scroll. -->
-  <div class="frame" role="group" aria-label="Drawing, scrolls sideways" tabindex="0">
+  <div class="frame" role="group" aria-label={t.frame} tabindex="0">
     <div class="fit">
       <div
         class="canvas"
         role="img"
-        aria-label="A file is uploaded to a web page, split into words and sent over Wi-Fi to a Raspberry Pi. The Pi prepares a voice file for each word, then reads the text: it says each word, then each letter, while six pins rise to form the letter in Braille."
+        aria-label={t.canvas}
       >
         <svg id="story-svg" viewBox="0 -10 1060 570" width="1060" height="570" aria-hidden="true">
           <!-- 2D: software. The web page, the text, the words, the audio files, the wires. -->
@@ -106,21 +106,21 @@ const holes = [1, 2, 3, 4, 5, 6].map((n) => ({
             <path class="ln fade" d="M40 138H340"></path>
             <text class="mono s12 fade" x="56" y="129">localhost:8000</text>
             <rect class="ln dash fade" x="64" y="158" width="252" height="108" rx="3"></rect>
-            <text class="t14 dim fade mid" x="190" y="206">drop a file</text>
+            <text class="t14 dim fade mid" x="190" y="206">{t.drop}</text>
             <text class="mono s11 dim fade mid" x="190" y="229">.txt   .docx   .pdf</text>
             <rect class="ln fade" x="64" y="280" width="252" height="6" rx="1"></rect>
             <rect id="bar" x="0" y="0" width="252" height="6" rx="1" class="fill-pin" transform="translate(64 280) scale(1 1)"></rect>
-            <text id="rawtext" class="mono s18" x="64" y="324" opacity="0">hello world</text>
-            <text class="mono s12 fade" x="64" y="379">interval  0.5 s</text>
+            <text id="rawtext" class="mono s18" x="64" y="324" opacity="0">{TEXT}</text>
+            <text class="mono s12 fade" x="64" y="379">{t.interval}</text>
             <g id="runbtn" class="fade" transform="translate(0 0)">
               <rect x="246" y="358" width="70" height="30" rx="3" class="fill-cap"></rect>
-              <text class="t14 mid" x="281" y="378">Run</text>
+              <text class="t14 mid" x="281" y="378">{t.run}</text>
             </g>
           </g>
           <g id="file" opacity="0" transform="translate(168 184)">
             <path class="ln doc" d="M0 0H30L44 14V56H0Z M30 0V14H44"></path>
             <path class="ln" d="M8 24H36M8 32H36M8 40H26"></path>
-            <text class="mono s11" x="22" y="72" text-anchor="middle">hello.txt</text>
+            <text class="mono s11" x="22" y="72" text-anchor="middle">{t.file}</text>
           </g>
           <path id="arc" class="ln draw" d={WIRE_ARC}></path>
           <g id="wifi" class="fade" transform="translate(405 150)">
@@ -146,19 +146,19 @@ const holes = [1, 2, 3, 4, 5, 6].map((n) => ({
               </g>
             ))
           }
-          <text id="bank" class="mono s11 dim" x="478" y="146">a.mp3 … z.mp3  made in advance</text>
+          <text id="bank" class="mono s11 dim" x="478" y="146">{t.bank}</text>
           <path id="w-cell" class="ln draw" d={WIRE_CELL}></path>
           <path id="w-spk" class="ln draw" d={WIRE_SPK}></path>
           <text class="t15 fade mid" x="597" y="372">Raspberry Pi 4</text>
-          <text class="t15 fade mid" x="895" y="322">six servos</text>
-          <text class="t15 fade mid" x="895" y="524">your headphones or speaker</text>
+          <text class="t15 fade mid" x="895" y="322">{t.servos}</text>
+          <text class="t15 fade mid" x="895" y="524">{t.speaker}</text>
           {LETTERS.map((l) => <text class="bigletter mono s44" data-l={l} x="1000" y="216" opacity={l === LAST ? 1 : 0}>{l}</text>)}
           <g id="waves" opacity="0.55" transform={WAVES_AT}>
             <path class="ln wv" d="M8 -22 A 30 30 0 0 1 8 22"></path>
             <path class="ln wv" d="M20 -32 A 44 44 0 0 1 20 32"></path>
           </g>
           <g id="tape">
-            <text class="mono s11 dim" x="415" y="500">reading</text>
+            <text class="mono s11 dim" x="415" y="500">{t.reading}</text>
             <rect class="ln" x="415" y="505" width="350" height="40" rx="3"></rect>
             {
               TEXT.split('').map((c, i) => (
@@ -174,8 +174,8 @@ const holes = [1, 2, 3, 4, 5, 6].map((n) => ({
             <path id="cur-t" class="cursor line" d="M0 509H1" transform={`translate(${CUR_X0 + 3} 0) scale(${CUR_X1 - CUR_X0 - 6} 1)`}></path>
             <path id="cur-b" class="cursor line" d="M0 541H1" transform={`translate(${CUR_X0 + 3} 0) scale(${CUR_X1 - CUR_X0 - 6} 1)`}></path>
           </g>
-          <g id="chip0" opacity="0"><rect x="-34" y="-14" width="68" height="28" rx="3" class="fill-pin"></rect><text class="mono s15 chip mid" y="5">hello</text></g>
-          <g id="chip1" opacity="0"><rect x="-36" y="-14" width="72" height="28" rx="3" class="fill-pin"></rect><text class="mono s15 chip mid" y="5">world</text></g>
+          <g id="chip0" opacity="0"><rect x={-t.chipWidths[0] / 2} y="-14" width={t.chipWidths[0]} height="28" rx="3" class="fill-pin"></rect><text class="mono s15 chip mid" y="5">{WORDS[0]}</text></g>
+          <g id="chip1" opacity="0"><rect x={-t.chipWidths[1] / 2} y="-14" width={t.chipWidths[1]} height="28" rx="3" class="fill-pin"></rect><text class="mono s15 chip mid" y="5">{WORDS[1]}</text></g>
           <circle id="dotRun" r="5" class="fill-pin" opacity="0"></circle>
           <circle id="dotCell" r="5" class="fill-pin" opacity="0"></circle>
           <circle id="dotSpk" r="5" class="fill-pin" opacity="0"></circle>
@@ -312,7 +312,7 @@ const holes = [1, 2, 3, 4, 5, 6].map((n) => ({
   <!-- Below 768px the camera frames the canvas and this HTML tape replaces the SVG one (11px floor).
        Same box as the SVG tape (350 wide, chars every 30), so story.ts moves one cursor model. -->
   <div class="tape-html" aria-hidden="true">
-    <span class="tlabel">reading</span>
+    <span class="tlabel">{t.reading}</span>
     <div class="tbox">
       {
         TEXT.split('').map((c, i) => (

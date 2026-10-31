@@ -12,11 +12,34 @@
 // paths that move and scale instead of a rect whose x/width change).
 import { gsap } from 'gsap'
 import { BRAILLE_ALPHABET } from './braille'
+import { fmt, readData } from '../../shared/i18n/runtime'
+
+// The words this script writes, in the page's language (EdubraStory.astro embeds them).
+interface Words {
+  speech: string
+  word: string
+  stepLive: string
+  again: string
+  againLabel: string
+  play: string
+  playLabel: string
+  frame: string
+}
+let tx: Words
+let TEXT = ''
+let ITEMS: Item[] = []
+let READ_N = 0
+/** Reads the words once the story is found (grab()): this module is loaded on every page. */
+function readWords() {
+  tx = readData<Words>('edubra-story-text')
+  TEXT = tx.word
+  ITEMS = buildItems(TEXT)
+  READ_N = ITEMS.length
+}
 
 const W = 1060
 const H = 570
 const DURATION = 10 // seconds, linear: render(p) is driven by a tween of p from 0 to 1
-const TEXT = 'hello world'
 const PIN_H = 8
 // The element each callout points at (its top face for cuboids) and where its label goes, in screen px
 // from the part: the elbow of the leader line. Negative x puts the label to the left.
@@ -53,12 +76,18 @@ const inout = (t: number) => -(Math.cos(Math.PI * t) - 1) / 2 // travel: no bunc
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t
 
 // The Pi's reading loop, in order: the word's audio, then each of its letters.
-const ITEMS: Item[] = [
-  { w: 0, from: 0, to: 4 },
-  ...[0, 1, 2, 3, 4].map((i) => ({ c: i })),
-  { w: 1, from: 6, to: 10 },
-  ...[6, 7, 8, 9, 10].map((i) => ({ c: i })),
-]
+/** The loop for a text of words split by single spaces: each word, then each of its letters. */
+function buildItems(text: string): Item[] {
+  const items: Item[] = []
+  let from = 0
+  text.split(' ').forEach((word, w) => {
+    const to = from + word.length - 1
+    items.push({ w, from, to })
+    for (let c = from; c <= to; c++) items.push({ c })
+    from = to + 2
+  })
+  return items
+}
 const cx = (i: number) => 440 + i * 30
 
 // Timeline, as fractions of the scroll distance.
@@ -181,6 +210,7 @@ function grab(): Story | null {
   if (S) return S
   const root = document.querySelector<HTMLElement>('[data-story]')
   if (!root) return null
+  readWords()
   const $ = <E extends Element>(sel: string) => root.querySelector<E>(sel)!
   const $$ = <E extends Element>(sel: string) => [...root.querySelectorAll<E>(sel)]
   const pins: Record<number, HTMLElement[]> = {}
@@ -567,7 +597,6 @@ const sceneAt = (p: number) => {
 }
 
 // The read loop's items, in p: item i spans [itemStart(i), itemEnd(i)] of the read scene.
-const READ_N = ITEMS.length
 const itemIndex = (p: number) => (p < T.read[0] ? -1 : Math.min(READ_N - 1, Math.floor(seg(p, ...T.read) * READ_N)))
 const itemEnd = (i: number) => T.read[0] + ((i + 1) / READ_N) * (T.read[1] - T.read[0])
 // What the Pi says for an item: the whole word, or one letter in capitals ("H"), so an engine reads
@@ -599,7 +628,7 @@ export function storyPlayer(opts: { autoplay: boolean; ease?: string | gsap.Ease
   const state = { p: 0 }
   const capText = s.caps.map((c) => {
     const part = (sel: string) => c.querySelector(sel)?.textContent?.trim() ?? ''
-    return `Step ${part('b')}, ${part('strong')}. ${part('span')}`
+    return fmt(tx.stepLive, { n: part('b'), title: part('strong'), text: part('span') })
   })
 
   const goLive = () => {
@@ -623,8 +652,8 @@ export function storyPlayer(opts: { autoplay: boolean; ease?: string | gsap.Ease
     s.toggle.hidden = !(s.live && started && !done)
     s.toggle.setAttribute('aria-pressed', String(userPaused))
     s.again.hidden = !(done || (!opts.autoplay && !started))
-    s.again.textContent = done ? 'Play again' : 'Play'
-    s.again.setAttribute('aria-label', done ? 'Play the story again' : 'Play the story')
+    s.again.textContent = done ? tx.again : tx.play
+    s.again.setAttribute('aria-label', done ? tx.againLabel : tx.playLabel)
     s.sound.hidden = !canSpeak || !(started || !opts.autoplay)
   }
 
@@ -637,7 +666,7 @@ export function storyPlayer(opts: { autoplay: boolean; ease?: string | gsap.Ease
     if (announce) s.liveMsg.textContent = capText[sc]
   }
 
-  // ---- voice: the browser's speechSynthesis (en-US), off until the reader turns it on. With sound on
+  // ---- voice: the browser's speechSynthesis (the page's language), off until the reader turns it on. With sound on
   // the story waits at the end of each read item for that item's utterance (see itemStep).
   const canSpeak = typeof speechSynthesis !== 'undefined' && typeof SpeechSynthesisUtterance !== 'undefined'
   let soundOn = false
@@ -693,7 +722,7 @@ export function storyPlayer(opts: { autoplay: boolean; ease?: string | gsap.Ease
     spoken = false
     const my = ++utt
     const u = new SpeechSynthesisUtterance(itemText(i))
-    u.lang = 'en-US'
+    u.lang = tx.speech
     u.onstart = () => my === utt && coneStart()
     u.onboundary = () => my === utt && coneKick()
     const over = () => {
@@ -955,7 +984,7 @@ export function storyPlayer(opts: { autoplay: boolean; ease?: string | gsap.Ease
     s.capsBox.removeAttribute('aria-hidden')
     s.frame.setAttribute('tabindex', '0')
     s.frame.setAttribute('role', 'group')
-    s.frame.setAttribute('aria-label', 'Drawing, scrolls sideways')
+    s.frame.setAttribute('aria-label', tx.frame)
     s.caps.forEach((c) => c.style.removeProperty('opacity'))
     s.ticks.forEach((t) => t.style.removeProperty('opacity'))
     s.toggle.hidden = true

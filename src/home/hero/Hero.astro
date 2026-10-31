@@ -3,8 +3,10 @@
 // archive/notes/changelog only). Verbatim from docs/content.md's Hero block: final, not
 // provisional.
 import HeroDrawing from './HeroDrawing.astro'
+import { getLang } from '../../shared/i18n/lang'
+import { text } from './text'
 
-const identity = ['Curitiba, Brasil', 'EU citizen', 'open to global remote']
+const t = text[getLang(Astro)]
 const email = 'a.gp.heberle@gmail.com'
 ---
 
@@ -24,14 +26,14 @@ const email = 'a.gp.heberle@gmail.com'
 
   <!-- a real list, so a screen reader doesn't read the three facts as one run-on phrase -->
   <ul role="list" class="flex flex-wrap gap-x-gutter gap-y-1 font-mono text-dimension text-graphite-2">
-    {identity.map((item) => <li>{item}</li>)}
+    {t.identity.map((item) => <li>{item}</li>)}
   </ul>
 
   <!-- data-hero-display: the one element step 12's word-arrival sequence splits and
        animates. Read by Base.astro's flash-guard CSS and motion.ts's heroSequence(). -->
-  <h1 class="display" data-hero-display>I make technical things make sense to people who didn't build them.</h1>
+  <h1 class="display" data-hero-display>{t.headline}</h1>
 
   <p class="measure text-body">
-    Computer engineering at UTFPR, in Curitiba. Embedded systems, C++, and AI automation.
+    {t.intro}
   </p>
 </header>

@@ -7,9 +7,14 @@
 // L-shaped corner bracket, not a circle and crosshair, and Arthur chose the circle.
 // Decorative SVGs are aria-hidden; the link's name is the aria-label. The focus ring is the
 // global :focus-visible one (tokens.css). No arrow character.
+import { getLang, localePath } from '../shared/i18n/lang'
+import { text } from './text'
+
+const lang = getLang(Astro)
+const t = text[lang]
 ---
 
-<a class="origin-link" href="/" aria-label="Arthur Heberle, back to home">
+<a class="origin-link" href={localePath(lang, '/')} aria-label={t.backToHome}>
   <!-- the leader: 14 units long in a 14px box, so its dash length is its real length -->
   <svg class="origin-leader" viewBox="0 0 14 2" aria-hidden="true" focusable="false">
     <path d="M14 1H0"></path>

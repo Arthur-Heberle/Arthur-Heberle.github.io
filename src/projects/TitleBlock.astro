@@ -5,6 +5,9 @@
 // project's place on the home bench and TT the number of projects.
 // When the next entry in that order has a project page, "sheet NN+1" is a link to it. Left
 // aligned, nothing centred. No middle dots.
+import { getLang, localePath } from '../shared/i18n/lang'
+import { text } from './text'
+
 interface Props {
   name: string
   sheet: number
@@ -12,19 +15,21 @@ interface Props {
   next?: { sheet: number; href: string; name: string }
 }
 const { name, sheet, total, next } = Astro.props
+const lang = getLang(Astro)
+const t = text[lang]
 const nn = (n: number) => String(n).padStart(2, '0')
 ---
 
-<div class="titleblock" role="group" aria-label="Sheet information">
-  <p class="tb-top">Arthur Heberle / <a href="/">index</a></p>
+<div class="titleblock" role="group" aria-label={t.sheetInfo}>
+  <p class="tb-top">Arthur Heberle / <a href={localePath(lang, '/')}>{t.index}</a></p>
   <p class="tb-sheet">
-    {name}, sheet {nn(sheet)} of {nn(total)}
+    {t.sheetOf(name, nn(sheet), nn(total))}
     {
       next && (
         <>
           {' / '}
-          <a href={next.href} aria-label={`Next: ${next.name}, sheet ${nn(next.sheet)}`}>
-            sheet {nn(next.sheet)}
+          <a href={next.href} aria-label={t.nextLabel(next.name, nn(next.sheet))}>
+            {t.sheetLink(nn(next.sheet))}
           </a>
         </>
       )

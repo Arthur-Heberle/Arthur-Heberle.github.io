@@ -8,6 +8,8 @@
 import { render } from 'astro:content'
 import type { CollectionEntry } from 'astro:content'
 import NoteDrawing from './NoteDrawing.astro'
+import { getLang } from '../../shared/i18n/lang'
+import { text } from './text'
 
 interface Props {
   entry?: CollectionEntry<'notes'>
@@ -18,6 +20,7 @@ interface Props {
   sibling?: number
 }
 const { entry, marker, sibling = 0 } = Astro.props
+const t = text[getLang(Astro)]
 const Content = entry ? (await render(entry)).Content : null
 // 0.2 + 0.06 * sibling, but toFixed keeps the rendered attribute clean: 0.2 + 0.06 * 2 is
 // 0.32000000000000006 in binary floating point.
@@ -53,7 +56,7 @@ const delay = (0.2 + 0.06 * sibling).toFixed(2)
       entry && Content ? (
         <>
           <div class="note-head">
-            <a class="balloon" href={`#marker-${entry.id}`} aria-label={`back to reference ${marker}`}>
+            <a class="balloon" href={`#marker-${entry.id}`} aria-label={t.backTo(marker!)}>
               {marker}
             </a>
             <span class="note-label">{entry.data.label}</span>

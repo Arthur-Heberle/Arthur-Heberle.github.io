@@ -5,28 +5,21 @@
 // conversations and leads, with phone numbers whose area code "00" does not exist. No real phone
 // number, name or message appears in them. The English interface is the dashboard's own.
 // 1280x800, so the boxes are sized before the images load.
+import { getLang } from '../../shared/i18n/lang'
+import { text } from './text'
+
+const t = text[getLang(Astro)].dashboard
 const SHOTS = [
-  {
-    src: '/agente-h/dashboard-catalogue.webp',
-    alt: 'The dashboard\'s catalogue page: a table of twenty demo products with name, category, price, stock and status, above it a search box, filters and the Import CSV and Add product buttons.',
-  },
-  {
-    src: '/agente-h/dashboard-conversations.webp',
-    alt: 'The dashboard\'s conversations page: a list of five demo customers on the left and, on the right, one conversation in which a customer asks for a 3-seat sofa and the agent answers, with the switch that turns the agent off for this conversation at the top.',
-  },
-  {
-    src: '/agente-h/dashboard-leads.webp',
-    alt: 'The dashboard\'s leads page: a table of four demo leads, each with a one-line summary, a status menu (New, Contacted, Won) and a WhatsApp link, and an Export CSV button.',
-  },
+  { src: '/agente-h/dashboard-catalogue.webp', alt: t.shots[0] },
+  { src: '/agente-h/dashboard-conversations.webp', alt: t.shots[1] },
+  { src: '/agente-h/dashboard-leads.webp', alt: t.shots[2] },
 ]
 ---
 
 <section class="flex flex-col gap-3" aria-labelledby="dashboard-heading">
-  <h2 id="dashboard-heading" class="text-h3 font-sans font-medium" data-anim>The dashboard</h2>
+  <h2 id="dashboard-heading" class="text-h3 font-sans font-medium" data-anim>{t.heading}</h2>
   <p class="measure text-body" data-anim data-delay="0.06">
-    Owners run it from a dashboard: the catalogue, with a CSV import that maps the columns using AI;
-    the conversations; the leads; the agent's instructions; the business hours. In any conversation
-    they can switch the agent off and answer themselves.
+    {t.text}
   </p>
   <div class="shots">
     {

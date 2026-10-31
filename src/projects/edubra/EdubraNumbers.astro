@@ -11,9 +11,13 @@
 // stroke-dashoffset and the labels' opacity; the numbers and captions never move). Every
 // drawing is hand-made paths, no rect/circle/line, so that one length-measuring tween covers
 // it and no stroke uses vector-effect (which would change the dash units).
+import { getLang } from '../../shared/i18n/lang'
+import { text } from './text'
+
 interface Props {
   class?: string
 }
+const t = text[getLang(Astro)].numbers
 
 // One servo (an SG90 seen from above): a body with two mounting ears and a horn circle.
 // `s` scales it; x, y is its top-left corner at s = 1 (50 wide, 20 high).
@@ -37,28 +41,28 @@ const figures = [
   {
     n: '2.5',
     unit: ' mm',
-    label: 'how far each pin rises, measured with a caliper',
+    label: t.labels[0],
   },
   {
     n: '6',
     unit: '',
-    label: 'servos under the lid, one per dot',
+    label: t.labels[1],
   },
   {
     n: '~3',
     unit: ' s',
-    label: 'per letter at full speed. Each pin adds about 0.2 s; the voice takes the rest.',
+    label: t.labels[2],
   },
   {
     n: '8',
     unit: '',
-    label: 'servos we burned on the way there',
+    label: t.labels[3],
   },
 ]
 ---
 
 <section class="flex flex-col gap-6" aria-labelledby="numbers-heading">
-  <h2 id="numbers-heading" class="text-h3 font-sans font-medium" data-anim>By the numbers</h2>
+  <h2 id="numbers-heading" class="text-h3 font-sans font-medium" data-anim>{t.heading}</h2>
   <div class="numbers" data-numbers>
     <figure>
       <svg viewBox="0 0 160 100" aria-hidden="true" focusable="false">
@@ -107,8 +111,8 @@ const figures = [
           <path d="M124 34V56"></path>
           <path d="M132 34V56"></path>
         </g>
-        <text x="68" y="74" text-anchor="middle">voice</text>
-        <text x="128" y="74" text-anchor="middle">pins</text>
+        <text x="68" y="74" text-anchor="middle">{t.voice}</text>
+        <text x="128" y="74" text-anchor="middle">{t.pins}</text>
       </svg>
       <figcaption>
         <p class="num"><span class="n">{figures[2].n}</span><span class="u">{figures[2].unit}</span></p>

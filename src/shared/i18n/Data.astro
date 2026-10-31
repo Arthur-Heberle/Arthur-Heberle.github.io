@@ -1,0 +1,12 @@
+---
+// Embeds JSON for a script to read with readData(id) (runtime.ts). is:inline keeps Astro from bundling it.
+interface Props {
+  id: string
+  data: unknown
+}
+const { id, data } = Astro.props
+// "<" is escaped so no text in the data can close the tag.
+const json = JSON.stringify(data).replace(/</g, '\\u003c')
+---
+
+<script is:inline type="application/json" id={id} set:html={json} />

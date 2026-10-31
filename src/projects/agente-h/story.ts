@@ -15,8 +15,49 @@
 import { gsap } from 'gsap'
 import { arrow, chipW, parsePts, poly, slotsFor } from './flow'
 import type { Pt } from './flow'
-import { HULLS, LABELS, LANDINGS } from './map'
-import { QUESTIONS, rankFor } from './questions'
+import { LANDINGS, rankFor } from './map'
+import type { At, Hull, Prod, QKey } from './map'
+import { fmt, readData } from '../../shared/i18n/runtime'
+
+// The page's words, the questions, the product names and the label places for its language
+// (AgenteStory.astro embeds them). This module is loaded on every page, so it reads them only once the story is
+// found (grab()).
+interface Question {
+  key: QKey
+  button: string
+  msgs: string[]
+  typo?: string
+  reply: string
+  cls: string
+  lead: boolean
+  extra: string
+  label: string
+}
+interface Words {
+  stepLive: string
+  again: string
+  againLabel: string
+  play: string
+  playLabel: string
+  frame: string
+  askedLead: string
+  askedNoLead: string
+  classes: Record<string, string>
+  questions: Question[]
+  products: Prod[]
+  hulls: Hull[]
+  labels: Record<QKey, Record<string, At>>
+}
+let tx: Words
+let QUESTIONS: Question[]
+let HULLS: Hull[]
+let LABELS: Record<QKey, Record<string, At>>
+function readWords() {
+  tx = readData<Words>('agente-story-text')
+  QUESTIONS = tx.questions
+  HULLS = tx.hulls
+  LABELS = tx.labels
+}
 
 const W = 760
 const H = 560
@@ -197,6 +238,7 @@ function grab(): Story | null {
   if (S) return S
   const root = document.querySelector<HTMLElement>('[data-hstory]')
   if (!root) return null
+  readWords()
   const $ = <E extends Element>(sel: string) => root.querySelector<E>(sel)!
   const $$ = <E extends Element>(sel: string) => [...root.querySelectorAll<E>(sel)]
   const prods = $$<SVGElement>('.prod').map((g) => {
@@ -463,7 +505,7 @@ function applyQuestion(i: number) {
   const q = QUESTIONS[i]
   const Q = LANDINGS[q.key]
   const lab = LABELS[q.key]
-  const ranked = rankFor(q.key)
+  const ranked = rankFor(q.key, tx.products)
   s.q = i
   s.nmsg = q.msgs.length
   s.typo = !!q.typo
@@ -519,7 +561,7 @@ function applyQuestion(i: number) {
     })
   })
   s.hullLabels.forEach((el, k) => {
-    const at = lab['hull-' + HULLS[k].name]
+    const at = lab['hull-' + HULLS[k].id]
     el.setAttribute('x', String(at.x))
     el.setAttribute('y', String(at.y))
   })
@@ -529,7 +571,7 @@ function applyQuestion(i: number) {
   // the words around it: the second caption, and the drawing's one description
   s.cap2.textContent = q.extra ? `${s.cap2Base} ${q.extra}` : s.cap2Base
   s.canvas.setAttribute('aria-label', q.label)
-  s.askLive.textContent = `${q.button}. Reply: ${q.reply} Classified as ${q.cls.replaceAll('_', ' ').toLowerCase()}${q.lead ? ', so the owner gets a lead.' : ', so there is no lead.'}`
+  s.askLive.textContent = fmt(q.lead ? tx.askedLead : tx.askedNoLead, { button: q.button, reply: q.reply, cls: tx.classes[q.cls] })
 }
 
 // The canvas is a fixed 760x560 box scaled as a whole. CSS sizes .fit (aspect-ratio), so the scale
@@ -681,7 +723,7 @@ export function hstoryPlayer(opts: { autoplay: boolean; ease?: string | gsap.Eas
   const state = { p: 0 }
   const capText = (i: number) => {
     const part = (sel: string) => s.caps[i].querySelector(sel)?.textContent?.trim() ?? ''
-    return `Step ${part('b')}, ${part('strong')}. ${part('span')}` // read now: the second caption can have a sentence more
+    return fmt(tx.stepLive, { n: part('b'), title: part('strong'), text: part('span') }) // read now: the second caption can have a sentence more
   }
 
   const goLive = () => {
@@ -705,8 +747,8 @@ export function hstoryPlayer(opts: { autoplay: boolean; ease?: string | gsap.Eas
     s.toggle.hidden = !(s.live && started && !done)
     s.toggle.setAttribute('aria-pressed', String(userPaused))
     s.again.hidden = !(done || (!opts.autoplay && !started))
-    s.again.textContent = done ? 'Play again' : 'Play'
-    s.again.setAttribute('aria-label', done ? 'Play the story again' : 'Play the story')
+    s.again.textContent = done ? tx.again : tx.play
+    s.again.setAttribute('aria-label', done ? tx.againLabel : tx.playLabel)
   }
 
   const tick = (announce: boolean) => {
@@ -842,7 +884,7 @@ export function hstoryPlayer(opts: { autoplay: boolean; ease?: string | gsap.Eas
     s.capsBox.removeAttribute('aria-hidden')
     s.frame.setAttribute('tabindex', '0')
     s.frame.setAttribute('role', 'group')
-    s.frame.setAttribute('aria-label', 'Drawing, scrolls sideways')
+    s.frame.setAttribute('aria-label', tx.frame)
     s.caps.forEach((c) => c.style.removeProperty('opacity'))
     s.ticks.forEach((t) => t.style.removeProperty('opacity'))
     s.toggle.hidden = true

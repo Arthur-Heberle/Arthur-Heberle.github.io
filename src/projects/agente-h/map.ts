@@ -1,6 +1,7 @@
 // The map of the catalogue in Agente H's "How it works": where each product sits, the clusters, where each
 // question lands, and where every label goes. All of it is drawn by hand, in advance, for the demo: the
-// real search runs on the server. Product names are catalogo_moveis.csv, translated.
+// real search runs on the server. This file is geometry only, the same in every language; the names are in
+// text.ts and localized.ts puts them together, so the story's script (story.ts) carries no text.
 //
 // Labels are placed per question, by a search (kept out of the repo) that tries every spot near a dot and
 // keeps one where no label crosses a line to the eight nearest products, a highlight ring, a dot, another
@@ -16,6 +17,7 @@ export interface Prod {
   y: number
 }
 export interface Hull {
+  id: string
   name: string
   cx: number
   cy: number
@@ -27,33 +29,35 @@ export interface At {
   y: number
 }
 
-export const PRODUCTS: Prod[] = [
-  { id: 'rubi', name: 'Rubi 3-seat sofa', x: 549, y: 192 },
-  { id: 'dublin', name: 'Dublin 2-seat sofa', x: 545, y: 235 },
-  { id: 'veneza', name: 'Veneza corner sofa', x: 520, y: 262 },
-  { id: 'amelie', name: 'Amélie armchair', x: 444, y: 135 },
-  { id: 'toscana', name: 'Toscana table', x: 632, y: 120 },
-  { id: 'oslo', name: 'Oslo coffee table', x: 680, y: 130 },
-  { id: 'round', name: 'Round side table', x: 647, y: 152 },
-  { id: 'milano', name: 'Milano chair', x: 616, y: 289 },
-  { id: 'berlim', name: 'Berlim office chair', x: 698, y: 250 },
-  { id: 'serenno', name: 'Serenno queen bed', x: 457, y: 342 },
-  { id: 'lugano', name: 'Lugano wardrobe', x: 515, y: 345 },
-  { id: 'provencal', name: 'Provençal dressing table', x: 543, y: 323 },
+export const PRODUCT_AT = [
+  { id: 'rubi', x: 549, y: 192 },
+  { id: 'dublin', x: 545, y: 235 },
+  { id: 'veneza', x: 520, y: 262 },
+  { id: 'amelie', x: 444, y: 135 },
+  { id: 'toscana', x: 632, y: 120 },
+  { id: 'oslo', x: 680, y: 130 },
+  { id: 'round', x: 647, y: 152 },
+  { id: 'milano', x: 616, y: 289 },
+  { id: 'berlim', x: 698, y: 250 },
+  { id: 'serenno', x: 457, y: 342 },
+  { id: 'lugano', x: 515, y: 345 },
+  { id: 'provencal', x: 543, y: 323 },
 ]
-export const HULLS: Hull[] = [
-  { name: 'sofas', cx: 496.5, cy: 198.5, rx: 96.5, ry: 85.5 },
-  { name: 'tables', cx: 656, cy: 136, rx: 68, ry: 38 },
-  { name: 'chairs', cx: 657, cy: 269.5, rx: 85, ry: 41.5 },
-  { name: 'beds', cx: 500, cy: 334, rx: 87, ry: 33 },
+export const HULL_AT = [
+  { id: 'sofas', cx: 496.5, cy: 198.5, rx: 96.5, ry: 85.5 },
+  { id: 'tables', cx: 656, cy: 136, rx: 68, ry: 38 },
+  { id: 'chairs', cx: 657, cy: 269.5, rx: 85, ry: 41.5 },
+  { id: 'beds', cx: 500, cy: 334, rx: 87, ry: 33 },
 ]
+
 /** Where each question's point lands on the map. */
 export const LANDINGS: Record<QKey, At> = {
   sofa: { x: 521, y: 211 },
   sleep: { x: 478, y: 324 },
   cars: { x: 748, y: 345 },
 }
-export const LABELS: Record<QKey, Record<string, At>> = {
+/** Where every label goes, per question, for the English names. Portuguese gets its own table in stage 3. */
+export const LABELS_EN: Record<QKey, Record<string, At>> = {
   sofa: {
     rubi: { x: 494.6, y: 174 },
     dublin: { x: 559.4, y: 235 },
@@ -111,4 +115,12 @@ export const LABELS: Record<QKey, Record<string, At>> = {
     'hull-beds': { x: 398, y: 348 },
     tag: { x: 664, y: 359 },
   },
+}
+
+const dist = (p: Prod, q: { x: number; y: number }) => Math.hypot(p.x - q.x, p.y - q.y)
+
+/** The products ordered by how close they are to where the question lands. */
+export function rankFor(key: QKey, products: Prod[]): Prod[] {
+  const q = LANDINGS[key]
+  return [...products].sort((a, b) => dist(a, q) - dist(b, q))
 }

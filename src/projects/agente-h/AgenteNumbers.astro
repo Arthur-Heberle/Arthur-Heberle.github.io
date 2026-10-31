@@ -12,6 +12,11 @@
 // backend/tests (27 + 13 + 6; no parametrized tests, no duplicate names). The commit history
 // mentions 42 and has since grown.
 
+import { getLang } from '../../shared/i18n/lang'
+import { text } from './text'
+
+const t = text[getLang(Astro)].numbers
+
 // a closed circle as two arcs (a path, not a <circle>): centre, radius
 const circle = (cx: number, cy: number, r: number) =>
   `M${cx - r} ${cy}a${r} ${r} 0 1 0 ${2 * r} 0a${r} ${r} 0 1 0 ${-2 * r} 0`
@@ -55,15 +60,15 @@ const rows = [24, 50, 76].map((y) => ({
 }))
 
 const figures = [
-  { n: '30', unit: ' s', label: 'of silence before it answers' },
-  { n: '1,536', unit: '', label: 'numbers that describe each product to the search' },
-  { n: '8', unit: '', label: 'closest products it reads before every reply' },
-  { n: '46', unit: '', label: 'automated tests' },
+  { n: '30', unit: ' s', label: t.labels[0] },
+  { n: '1,536', unit: '', label: t.labels[1] },
+  { n: '8', unit: '', label: t.labels[2] },
+  { n: '46', unit: '', label: t.labels[3] },
 ]
 ---
 
 <section class="flex flex-col gap-6" aria-labelledby="agente-numbers-heading">
-  <h2 id="agente-numbers-heading" class="text-h3 font-sans font-medium" data-anim>By the numbers</h2>
+  <h2 id="agente-numbers-heading" class="text-h3 font-sans font-medium" data-anim>{t.heading}</h2>
   <div class="numbers" data-numbers>
     <figure>
       <svg viewBox="0 0 160 100" aria-hidden="true" focusable="false">

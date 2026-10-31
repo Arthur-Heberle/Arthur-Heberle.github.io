@@ -1946,3 +1946,24 @@ Home fixes (2026-10-02, Arthur's brief) — **the vertical page rule, the sectio
 Bench fix (2026-10-31, Arthur's report) — **a project's leader line stayed drawn after the pointer left.** The hide tween used the path length measured while the object was still lifted; the drop re-measured a different length. Leader paths now use `pathLength="1"` (dasharray 1, hidden offset 1, drawn 0), so re-measuring cannot desync them. Checked in Chrome: all three retract fully, the hovered one draws.
 
 Bench fix 2 (2026-10-31, Arthur's report) — **an object bounced up and down when the pointer was on its side.** The lifted faces moved out from under the pointer, ending the hover, then dropped back under it. Each link now holds `.wb-hit`, an invisible Cub of the object's box at rest (never moves), and the lifted `.wb-desk-obj` takes no pointer events. Checked in Chrome on the top, front and right faces of all three: one enter, no leave while held.
+
+### Portuguese version + EN/PT switch (2026-10-31, Arthur's brief)
+
+Five stages, in order. Commit message `i18n: <stage>`. Arthur's choices: English at `/`, Portuguese at `/pt/` as separate
+static pages (the switch is a link to the same page and section in the other language, not a script that swaps text);
+I write the Portuguese and Arthur reviews it **before the commit of stages 2 and 3**; the switch sits in a thin bar at the
+top of the page that scrolls with it; the whole site is translated, including the text inside the drawings. Plan:
+`C:\Users\Arthur Heberle\.claude\plans\agora-quero-que-implemente-zazzy-kazoo.md`.
+
+| Stage | Status | Notes |
+|---|---|---|
+| 1 Extract the text | done | **No visible change in English:** built HTML of the three pages is identical to the previous build apart from `'` written `&#39;`, one extra `<script>` (Astro's prefetch runtime, `page.*.js`, 1.1 KB), the new JSON data scripts (see below); the CSS bundle is byte-identical; behaviour re-checked in headless Edge (not Brave): no console errors, EduBra knob/live text/ticks/Play again, Agente H questions 1 and 2 announcements, canvas label, hull names, stamp. `astro.config.mjs` gets `i18n` (en default, `prefixDefaultLocale: false`) and `prefetch: { prefetchAll: false }`. JS 81.9 KB gzip (82.1 before) |
+
+Stage 1 divergences from the plan:
+- **One `text.ts` per domain, not one `ui.ts`** (`src/home/<section>/text.ts`, `src/projects/text.ts`, `src/projects/edubra/text.ts`, `src/projects/agente-h/text.ts`, `src/shared/text.ts`), each `{ en, pt: en }` with `pt` a placeholder until stage 2/3 (grep `pt: en` to find what is still untranslated). Components read `text[getLang(Astro)]`.
+- **Scripts do not read the language; the page hands them their words.** `story.ts` (both), and EduBra's device script read JSON that the component embeds (`src/shared/i18n/Data.astro`, read with `readData()` from `runtime.ts`; templates use `{name}` and `fmt()`). Reason: importing both languages' text into the bundle made JS 85.8 KB; this way no text is in the JS and a language adds nothing to it. Both `story.ts` files are loaded on every page, so they read their data lazily, in `grab()`, once the story's section is found.
+- **Agente H:** `questions.ts` is gone. `map.ts` is geometry only (plus `rankFor(key, products)`); `localized.ts` joins geometry and words for the Astro files (`questionsFor`, `productsFor`, `hullsFor`, `labelsFor`). `labelsFor` still returns the English table for both languages: **stage 3 must solve the Portuguese label places.**
+- **EduBra story** now builds its demo from one word: `ITEMS` (`buildItems`), the letters, the chips, the cards and the file name derive from `text.story.word` (two words, `a` to `z` only), so a Portuguese word needs no code change; the chips' widths are in `text.story.chipWidths`.
+- **Collections not touched yet** (`getProjects/getExperience/getNotes/getChangelog` in `src/shared/i18n/content.ts` return the English ones for both languages; stage 2 adds the Portuguese). Notes are looked up by file id (`reading`, `working-on`), not by their shown label; the datasheet's languages row is keyed by `id`.
+- **Not extracted yet (stage 3):** the text inside the Experience objects (`Chalkboard`, `Clipboard`, `MeterChart`, `Report`, `Analyzer`, `Laptop`). The pages `/pt/` do not exist yet; `Base.astro` already sets `<html lang>` from the language, but has no `hreflang` links (stage 2).
+- Route bodies moved to `src/home/HomePage.astro` and `src/projects/ProjectRoute.astro`; `src/pages/*` are thin wrappers, `getStaticPaths` stays in the page.

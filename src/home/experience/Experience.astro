@@ -11,15 +11,19 @@
 // (aria-hidden or role="img" with one description); the accessibility tree holds the headings with their
 // text, the timeline links and one description per visible object. Optional fields are omitted when missing
 // or still a [FILL] (src/shared/fill.ts).
-import { getCollection } from 'astro:content'
 import { isFilled } from '../../shared/fill'
+import { getLang } from '../../shared/i18n/lang'
+import { getExperience } from '../../shared/i18n/content'
+import { text } from './text'
 import { layout, monthOf, months } from './months'
 import Chalkboard from './objects/Chalkboard.astro'
 import Analyzer from './objects/Analyzer.astro'
 import Laptop from './objects/Laptop.astro'
 import Monitor from './objects/Monitor.astro'
 
-const entries = (await getCollection('experience')).sort((a, b) => b.data.start.localeCompare(a.data.start))
+const lang = getLang(Astro)
+const t = text[lang]
+const entries = (await getExperience(lang)).sort((a, b) => b.data.start.localeCompare(a.data.start))
 const now = monthOf(new Date())
 const { spans, ticks, pct } = layout(
   entries.map((e) => e.data),
@@ -27,36 +31,22 @@ const { spans, ticks, pct } = layout(
 )
 const yearAt = pct(12) // where 2026 starts on the axis
 
-// Each experience's object, and the one description that names it for assistive technology (the drawing
-// itself is aria-hidden). The RP3, laptop and analyzer descriptions say what is illustrative.
-const OBJECTS: Record<string, { Object: any; desc: string }> = {
-  rp3: {
-    Object: Monitor,
-    desc: "An illustration, not RP3's real interface: a monitor showing a part sliced into layers on a gridded build platform with X, Y and Z axes, the layer contours rising one layer at a time, and beside it a small generic 3D printer building the same part layer by layer.",
-  },
-  'programming-techniques': {
-    Object: Laptop,
-    desc: "A laptop showing a class diagram: Entity, with Player and Enemy inheriting from it, and a Level holding a pointer to an Entity, above a few lines of C++. The class names and code are illustrative of the course's SFML game, not its real code.",
-  },
-  'eletron-energia': {
-    Object: Analyzer,
-    desc: 'An illustration of a power analyzer in the style of the IMS PowerNET T-500, with green terminal blocks standing out of its front, and three current transformers clamped around cables L1 to L3, current pulsing through them, wired to its inputs, its display cycling through illustrative readings; beside it a clipboard with a spreadsheet, a printed measurement-and-verification report, and a chart of consumption before and after with the savings between the two. The readings and figures are illustrative, not measured values.',
-  },
-  'calculus-ii': {
-    Object: Chalkboard,
-    desc: 'A chalkboard in a wooden frame, with a tray along its foot holding chalk and an eraser. It is written on in chalk and shows worked problems: Calculus II on one half (the curve y equals 3x squared from 0 to 2 with the area under it hatched, and its integral worked out, with one wrong attempt struck through, to 8) and Calculus III on the other (the surface z equals x squared plus y squared, and a double integral of x plus y worked out to 3). Faint marks show where it was wiped.',
-  },
+// Each experience's object. Its description (t.desc) is the one text that names it for assistive technology.
+const OBJECTS: Record<string, any> = {
+  rp3: Monitor,
+  'programming-techniques': Laptop,
+  'eletron-energia': Analyzer,
+  'calculus-ii': Chalkboard,
 }
 
 // "2026-07" displays as "2026.07" (design-spec.md §7).
 const show = (month: string) => month.replace('-', '.')
 // "Programming Techniques — academic monitor" -> "Programming Techniques"
 const shortName = (title: string) => title.split(' — ')[0]
-const plural = (n: number) => `${n} month${n === 1 ? '' : 's'}`
 ---
 
 <section class="xp section-gap" aria-labelledby="experience-heading">
-  <h2 id="experience-heading" class="section-title" data-anim>Experience</h2>
+  <h2 id="experience-heading" class="section-title" data-anim>{t.heading}</h2>
   <div class="xp-grid" data-xp>
     <!-- the stage: sticky, with JavaScript from 900px up. A small timeline, then the active experience's object. -->
     <div class="xp-stage">
@@ -73,7 +63,7 @@ const plural = (n: number) => `${n} month${n === 1 ? '' : 's'}`
           }
           <span class="xp-now" style="left:100%">
             <span class="xp-now-tick"></span>
-            <span class="xp-now-label font-mono text-dimension text-graphite-2">now</span>
+            <span class="xp-now-label font-mono text-dimension text-graphite-2">{t.now}</span>
           </span>
         </div>
         <ul class="xp-lanes" role="list">
@@ -96,11 +86,11 @@ const plural = (n: number) => `${n} month${n === 1 ? '' : 's'}`
       <div class="xp-figs">
         {
           entries.map(({ id }, i) => {
-            const o = OBJECTS[id]
+            const Obj = OBJECTS[id]
             return (
-              <div class="xp-fig xp-fig-stage" data-obj={id} data-state={i === 0 ? 'on' : 'before'} role="img" aria-label={o.desc}>
+              <div class="xp-fig xp-fig-stage" data-obj={id} data-state={i === 0 ? 'on' : 'before'} role="img" aria-label={t.desc[id]}>
                 <div class="xp-box" aria-hidden="true">
-                  <o.Object />
+                  <Obj />
                 </div>
               </div>
             )
@@ -114,7 +104,7 @@ const plural = (n: number) => `${n} month${n === 1 ? '' : 's'}`
         entries.map(({ id, data }, i) => {
           const span = spans[i]
           const n = months(data.start, data.end, now)
-          const o = OBJECTS[id]
+          const Obj = OBJECTS[id]
           return (
             <article class="xp-block" id={`xp-${id}`} data-id={id} tabindex="-1">
               <div class="xp-inner">
@@ -126,12 +116,12 @@ const plural = (n: number) => `${n} month${n === 1 ? '' : 's'}`
                   <span class="xp-mini-tick" style="left:calc(100% - 1px)" />
                   <span class="xp-mini-label font-mono text-dimension text-graphite-2" style="left:0">2025</span>
                   <span class="xp-mini-label font-mono text-dimension text-graphite-2" style={`left:${yearAt}%`}>2026</span>
-                  <span class="xp-mini-label font-mono text-dimension text-graphite-2" style="right:0">now</span>
+                  <span class="xp-mini-label font-mono text-dimension text-graphite-2" style="right:0">{t.now}</span>
                   <span class="xp-mini-bar" />
                 </div>
-                <div class="xp-fig xp-fig-art" data-obj={id} role="img" aria-label={o.desc}>
+                <div class="xp-fig xp-fig-art" data-obj={id} role="img" aria-label={t.desc[id]}>
                   <div class="xp-box" aria-hidden="true">
-                    <o.Object />
+                    <Obj />
                   </div>
                 </div>
                 <h3 class="text-h3 font-sans font-medium">{data.title}</h3>
@@ -140,9 +130,9 @@ const plural = (n: number) => `${n} month${n === 1 ? '' : 's'}`
                   <span>
                     <time datetime={data.start}>{show(data.start)}</time>
                     {' – '}
-                    {data.end ? <time datetime={data.end}>{show(data.end)}</time> : 'now'}
+                    {data.end ? <time datetime={data.end}>{show(data.end)}</time> : t.now}
                   </span>
-                  <span>{plural(n)}{data.end ? '' : ' so far'}</span>
+                  <span>{t.months(n)}{data.end ? '' : t.soFar}</span>
                 </p>
                 {isFilled(data.role) && <p class="xp-role text-small text-graphite-2">{data.role}</p>}
                 {data.text.filter(isFilled).map((p) => <p class="measure text-body">{p}</p>)}
@@ -154,7 +144,7 @@ const plural = (n: number) => `${n} month${n === 1 ? '' : 's'}`
                 )}
                 {isFilled(data.hard) && (
                   <p class="xp-hard measure text-body">
-                    <strong class="font-medium">The hard part:</strong> {data.hard}
+                    <strong class="font-medium">{t.hard}</strong> {data.hard}
                   </p>
                 )}
               </div>

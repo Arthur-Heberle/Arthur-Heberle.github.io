@@ -7,39 +7,40 @@
 // From 768px up spine.ts places each note beside its marker's line and draws a leader from the
 // balloon in the text to the one that starts its note; below that, or without JavaScript, the
 // notes follow their paragraph in the flow and each balloon is still a real link to its note.
-import { getCollection } from 'astro:content'
 import MarginNote from './MarginNote.astro'
+import { getLang } from '../../shared/i18n/lang'
+import { getNotes } from '../../shared/i18n/content'
+import { text } from './text'
 
-const notes = await getCollection('notes')
-const byLabel = Object.fromEntries(notes.map((note) => [note.data.label, note]))
+const lang = getLang(Astro)
+const t = text[lang]
+// keyed by id (the file name), not by the label, which is shown text and differs by language
+const notes = await getNotes(lang)
+const byId = Object.fromEntries(notes.map((note) => [note.id, note]))
 ---
 
-<section class="flex flex-col pb-16 pt-8" aria-label="About">
+<section class="flex flex-col pb-16 pt-8" aria-label={t.about}>
   <noscript><style>.rail-spine .rail-margin { height: auto }</style></noscript>
   <div class="rail rail-spine" data-anim-scope data-spine>
     <svg class="spine-leaders" aria-hidden="true"></svg>
     <p class="rail-prose rail-prose-1 text-body" data-anim>
-      I build things that sit between software and the physical world. A device that
-      turns digital text into Braille. A WhatsApp agent that sells from a shop's own
-      catalogue. A 2D platformer in C++. The part I'm best at is the handover: getting
-      the thing understood by the people who have to use it, sign it off, or pay for
-      it.<a
+      {t.before1}<a
         class="balloon"
         id="marker-reading"
         href="#note-reading"
-        aria-label="note 1, reading"
+        aria-label={t.note1}
         aria-describedby="note-text-reading">1</a
-      > And I build my own projects when nobody asked me to.<a
+      >{t.between}<a
         class="balloon"
         id="marker-working-on"
         href="#note-working-on"
-        aria-label="note 2, working on"
+        aria-label={t.note2}
         aria-describedby="note-text-working-on">2</a
       >
     </p>
     <div class="rail-margin rail-margin-a flex flex-col">
-      <MarginNote entry={byLabel['reading']} marker={1} sibling={0} />
-      <MarginNote entry={byLabel['working on']} marker={2} sibling={1} />
+      <MarginNote entry={byId['reading']} marker={1} sibling={0} />
+      <MarginNote entry={byId['working-on']} marker={2} sibling={1} />
     </div>
   </div>
 </section>

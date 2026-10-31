@@ -10,10 +10,12 @@
 // Nothing here moves on its own. bench.ts (loaded when the bench nears the viewport) brings the objects
 // down onto the surface once, and plays each object's action on hover, focus, or, on touch and on
 // phones, once as it scrolls into view. Without it every object shows its final state.
-import { getCollection } from 'astro:content'
 import Cub from '../../projects/edubra/Cub.astro'
 import { isFilled } from '../../shared/fill'
+import { getLang, localePath } from '../../shared/i18n/lang'
+import { getProjects } from '../../shared/i18n/content'
 import { sortProjects } from '../../projects/sortProjects'
+import { text } from './text'
 import EdubraObject from './EdubraObject.astro'
 import AgenteObject from './AgenteObject.astro'
 import BrasiloreObject from './BrasiloreObject.astro'
@@ -21,7 +23,9 @@ import DeskEdubra from './DeskEdubra.astro'
 import DeskAgente from './DeskAgente.astro'
 import DeskBrasilore from './DeskBrasilore.astro'
 
-const projects = sortProjects(await getCollection('projects'))
+const lang = getLang(Astro)
+const t = text[lang]
+const projects = sortProjects(await getProjects(lang))
 const OBJECTS = { edubra: EdubraObject, 'agente-h': AgenteObject, brasilore: BrasiloreObject }
 const DESK = { edubra: DeskEdubra, 'agente-h': DeskAgente, brasilore: DeskBrasilore }
 
@@ -45,7 +49,7 @@ const SLOT = { x: 452, y: 40, w: 120, d: 130 }
 ---
 
 <section class="section-gap flex flex-col gap-8" aria-labelledby="projects-heading">
-  <h2 id="projects-heading" class="section-title" data-anim>Projects</h2>
+  <h2 id="projects-heading" class="section-title" data-anim>{t.heading}</h2>
   <div class="wb" data-bench>
     <div class="wb-desk">
       <div class="wb-scene">
@@ -63,7 +67,7 @@ const SLOT = { x: 452, y: 40, w: 120, d: 130 }
                     <li class="wb-item" style={`--x:${geo.x}px;--y:${geo.y}px;--w:${geo.w}px;--d:${geo.d}px`}>
                       <a
                         class="wb-link"
-                        href={link}
+                        href={localePath(lang, link)}
                         rel={external ? 'noopener' : undefined}
                         aria-labelledby={`${project.id}-title`}
                         aria-describedby={`${project.id}-line ${project.id}-meta`}
@@ -158,7 +162,7 @@ const SLOT = { x: 452, y: 40, w: 120, d: 130 }
         })
       }
     </div>
-    <p class="wb-hint font-mono text-dimension text-graphite-2" aria-hidden="true">Point at something on the desk.</p>
+    <p class="wb-hint font-mono text-dimension text-graphite-2" aria-hidden="true">{t.hint}</p>
   </div>
 </section>
 

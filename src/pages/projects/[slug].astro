@@ -1,28 +1,16 @@
 ---
-// Project page routing — one route per id in PROJECT_PAGES (src/lib/projects.ts), the one
+// Project page routing — one route per id in PROJECT_PAGES (src/projects/projects.ts), the one
 // list this file and the home bench both read so a bench link can never point
 // at a route that doesn't exist. getStaticPaths() is required here: astro.config.mjs
-// declares no `output` key, so the default static output applies.
-//
-// The Braille word (`EDUBRA`) is deliberately not a schema field — docs/plans/step-03.md
-// left it open for this step rather than adding a `brailleWord` field neither spec lists.
-// It's passed here, at the one call site that needs it, the same way each future project
-// (RP3, Agente H — step 15) will pass its own set-piece into the slot below.
-import { getCollection } from 'astro:content'
+// declares no `output` key, so the default static output applies. The page itself is
+// src/projects/ProjectRoute.astro, shared with the Portuguese route.
 import type { CollectionEntry } from 'astro:content'
-import Base from '../../shared/layouts/Base.astro'
-import Rule from '../../shared/components/Rule.astro'
-import ProjectPage from '../../projects/ProjectPage.astro'
-import EdubraDevice from '../../projects/edubra/EdubraDevice.astro'
-import EdubraStory from '../../projects/edubra/EdubraStory.astro'
-import EdubraNumbers from '../../projects/edubra/EdubraNumbers.astro'
-import AgenteStory from '../../projects/agente-h/AgenteStory.astro'
-import AgenteNumbers from '../../projects/agente-h/AgenteNumbers.astro'
-import AgenteDashboard from '../../projects/agente-h/AgenteDashboard.astro'
+import ProjectRoute from '../../projects/ProjectRoute.astro'
 import { PROJECT_PAGES } from '../../projects/projects'
+import { getProjects } from '../../shared/i18n/content'
 
 export async function getStaticPaths() {
-  const projects = await getCollection('projects')
+  const projects = await getProjects('en')
   const pages = projects.filter((entry) => (PROJECT_PAGES as readonly string[]).includes(entry.id))
   return pages.map((entry) => ({
     params: { slug: entry.id },
@@ -36,16 +24,4 @@ interface Props {
 const { entry } = Astro.props
 ---
 
-<Base title={`${entry.data.title} — Arthur Gabriel Pellegrini Heberle`} preloadFonts={entry.id === 'agente-h' ? ['archivo-500-latin.woff2', 'ibm-plex-mono-400-latin.woff2'] : []}>
-  <main id="main" tabindex="-1" class="page-main">
-    <Rule />
-    <ProjectPage entry={entry}>
-      {entry.id === 'edubra' && <EdubraDevice word="EDUBRA" />}
-      {entry.id === 'edubra' && <EdubraStory slot="after" />}
-      {entry.id === 'edubra' && <EdubraNumbers slot="after" />}
-      {entry.id === 'agente-h' && <AgenteStory slot="after" />}
-      {entry.id === 'agente-h' && <AgenteNumbers slot="after" />}
-      {entry.id === 'agente-h' && <AgenteDashboard slot="after" />}
-    </ProjectPage>
-  </main>
-</Base>
+<ProjectRoute entry={entry} />

@@ -12,16 +12,21 @@
 // position below are computed here once, so story.ts only reads them.
 import Phone from './Phone.astro'
 import { P, poly, arrow, fmtPts, QUERY_LINE, slotsFor, chipW } from './flow'
-import { QUESTIONS } from './questions'
-import { MAP, PRODUCTS as BASE, HULLS, LANDINGS, LABELS } from './map'
+import { questionsFor, productsFor, hullsFor, labelsFor } from './localized'
+import { MAP, LANDINGS } from './map'
 import type { Pt } from './flow'
-const CAPTIONS = [
-  { n: 1, title: 'Wait', text: 'Customers send three short messages instead of one. The agent waits until they stop typing, so it answers once.' },
-  { n: 2, title: 'Find', text: 'The question becomes a point on a map of the catalogue. The closest products win, even with a typo.' },
-  { n: 3, title: 'Answer', text: 'A language model writes the reply with those products in front of it, and it goes back on WhatsApp.' },
-  { n: 4, title: 'Hand off', text: 'If the customer is ready to buy, the owner gets a lead with a one-line summary.' },
-]
-const STEPS = ['Wait', 'Find', 'Answer', 'Hand off']
+import { getLang } from '../../shared/i18n/lang'
+import { fmt } from '../../shared/i18n/runtime'
+import Data from '../../shared/i18n/Data.astro'
+import { text } from './text'
+
+const lang = getLang(Astro)
+const t = text[lang].story
+const QUESTIONS = questionsFor(lang)
+const BASE = productsFor(lang)
+const HULLS = hullsFor(lang)
+const LABELS = labelsFor(lang)
+const CAPTIONS = t.captions.map((c, i) => ({ n: i + 1, ...c }))
 // The page opens on the first question (the story as it was); story.ts swaps the three that follow.
 const FIRST = QUESTIONS[0]
 const LABEL = FIRST.label
@@ -40,12 +45,12 @@ const QX = QUERY_LINE.x // the query line's left edge; mono, 14px, so 8.4px a ch
 const QY = QUERY_LINE.y
 const SLOTS = slotsFor(MSGS)
 const NUMS_Y = 58
-const NUMS = '0.12  -0.48  0.07  ...  1,536 numbers'
+const NUMS = t.nums
 
 // ---- the map of the catalogue: names from catalogo_moveis.csv, in English (src/projects/agente-h/map.ts) ----
 const Q = LANDINGS.sofa // where the query lands
 const LAB = LABELS.sofa // where this question's labels go
-const WORD: Record<string, string> = { rubi: 'sofa' } // the word of a label the typo "sofs" is matched to
+const WORD = t.typoWord // the word of a label the typo "sofs" is matched to
 const PRODUCTS = BASE.map((p) => ({ ...p, word: WORD[p.id] }))
 type Prod = (typeof PRODUCTS)[number]
 const hull = (h: { cx: number; cy: number; rx: number; ry: number }) =>
@@ -91,17 +96,36 @@ const WIRES: Pt[][] = [
 const DASH = { x: 392, y: 394, w: 366, h: 160 }
 const SIDE = 70
 const COLS = [
-  { name: 'New', x: 474, w: 130 },
-  { name: 'Contacted', x: 610, w: 76 },
-  { name: 'Won', x: 692, w: 58 },
+  { name: t.columns[0], x: 474, w: 130 },
+  { name: t.columns[1], x: 610, w: 76 },
+  { name: t.columns[2], x: 692, w: 58 },
 ]
 const LEAD = { w: 120, h: 46, x: 544, y: 480 } // the lead card's centre once it has landed
-const LEAD_LINES = ['Wants a 3-seat', 'leather sofa.']
+const LEAD_LINES = t.leadLines
 ---
 
 <section class="story hstory" data-hstory aria-labelledby="how">
+  <!-- the words story.ts writes at runtime, and the map and questions it swaps between -->
+  <Data
+    id="agente-story-text"
+    data={{
+      stepLive: t.stepLive,
+      again: t.again,
+      againLabel: t.againLabel,
+      play: t.play,
+      playLabel: t.playLabel,
+      frame: t.frame,
+      askedLead: t.askedLead,
+      askedNoLead: t.askedNoLead,
+      classes: t.classes,
+      questions: QUESTIONS,
+      products: BASE,
+      hulls: HULLS,
+      labels: LABELS,
+    }}
+  />
   <div class="head">
-    <h2 id="how" class="text-h2 font-sans font-medium">How it works</h2>
+    <h2 id="how" class="text-h2 font-sans font-medium">{t.heading}</h2>
     <div class="caps">
       {
         CAPTIONS.map((c) => (
@@ -109,16 +133,16 @@ const LEAD_LINES = ['Wants a 3-seat', 'leather sofa.']
         ))
       }
     </div>
-    <div class="ticks" role="group" aria-label="Steps">
+    <div class="ticks" role="group" aria-label={t.steps}>
       {
-        STEPS.map((title, i) => (
-          <button type="button" class="tickbtn" aria-label={`Go to step ${i + 1}: ${title}`}><u></u></button>
+        CAPTIONS.map((c, i) => (
+          <button type="button" class="tickbtn" aria-label={fmt(t.goStep, { n: i + 1, title: c.title })}><u></u></button>
         ))
       }
     </div>
     <div class="controls">
-      <button type="button" class="control feedback" data-toggle aria-label="Pause the drawing" aria-pressed="false" hidden>Pause</button>
-      <button type="button" class="control feedback" data-again hidden>Play again</button>
+      <button type="button" class="control feedback" data-toggle aria-label={t.pauseLabel} aria-pressed="false" hidden>{t.pause}</button>
+      <button type="button" class="control feedback" data-again hidden>{t.again}</button>
     </div>
     <p class="sr-only" aria-live="polite" data-live></p>
   </div>
@@ -127,7 +151,7 @@ const LEAD_LINES = ['Wants a 3-seat', 'leather sofa.']
        controls sit outside the image so they stay reachable. The frame is a focus stop only while
        it scrolls sideways (the static layout); story.ts takes the three attributes off when the
        live layout has nothing to scroll. -->
-  <div class="frame" role="group" aria-label="Drawing, scrolls sideways" tabindex="0">
+  <div class="frame" role="group" aria-label={t.frame} tabindex="0">
     <div class="fit">
       <div class="canvas" role="img" aria-label={LABEL}>
         <!-- 2D, under the phone: the timer, the query, the map, the prompt, the model, the dashboard -->
@@ -151,7 +175,7 @@ const LEAD_LINES = ['Wants a 3-seat', 'leather sofa.']
             <circle id="hs-arc" class="arc" cx={RING.x} cy={RING.y} r={RING.r} transform={`rotate(-90 ${RING.x} ${RING.y})`} stroke-dasharray={CIRC} stroke-dashoffset="0"></circle>
             <text class="mono s13 stepn" x={RING.x - RING.r} y={RING.y - RING.r - 6}>1</text>
             <text id="hs-ringtxt" class="mono s15 mid" x={RING.x} y={RING.y + 5}>30 s</text>
-            <text class="mono s12 dim mid" x={RING.x} y={RING.y + RING.r + 20}>silence timer</text>
+            <text class="mono s12 dim mid" x={RING.x} y={RING.y + RING.r + 20}>{t.silenceTimer}</text>
           </g>
 
           <!-- the query line: the three messages, merged -->
@@ -166,16 +190,16 @@ const LEAD_LINES = ['Wants a 3-seat', 'leather sofa.']
           <!-- the catalogue as a map -->
           <path id="hs-frame" class="ln" d={rect(MAP)}></path>
           <text class="mono s13 stepn hs-stepn" x={MAP.x} y={MAP.y - 6}>2</text>
-          <text class="mono s12 dim hs-fade" x={MAP.x + 8} y={MAP.y + 18}>the catalogue, as a map</text>
+          <text class="mono s12 dim hs-fade" x={MAP.x + 8} y={MAP.y + 18}>{t.catalogue}</text>
           <g class="hs-fade" id="hs-hulls">
             {HULLS.map((h) => <path class="hull" d={hull(h)}></path>)}
-            {HULLS.map((h) => <text class="s12 dim" x={LAB['hull-' + h.name].x} y={LAB['hull-' + h.name].y}>{h.name}</text>)}
+            {HULLS.map((h) => <text class="s12 dim" x={LAB['hull-' + h.id].x} y={LAB['hull-' + h.id].y}>{h.name}</text>)}
           </g>
 
           <!-- the nearest eight: a line to each; the closest three are drawn again, in blue -->
           {nearest.map((p, i) => <path class="nl" data-rank={i} d={`M${Q.x} ${Q.y}L${p.x} ${p.y}`}></path>)}
           {top.map((p, i) => <path class="nl hi" data-rank={i} d={`M${Q.x} ${Q.y}L${p.x} ${p.y}`}></path>)}
-          <text id="hs-tag" class="mono s12 dim" x={LAB.tag.x} y={LAB.tag.y}>8 closest</text>
+          <text id="hs-tag" class="mono s12 dim" x={LAB.tag.x} y={LAB.tag.y}>{t.closest}</text>
 
           {
             PRODUCTS.map((p, i) => {
@@ -206,16 +230,16 @@ const LEAD_LINES = ['Wants a 3-seat', 'leather sofa.']
             <path class="paper" d={rect(CARD)}></path>
             <path id="hs-cardframe" class="ln" d={rect(CARD)}></path>
             <g class="hs-fade">
-              <text class="mono s12" x={CARD.x + 10} y={CARD.y + 18}>prompt</text>
-              <text class="mono s12 dim" x={CARD.x + 10} y="176">products</text>
-              <text class="mono s12 dim" x={CARD.x + 10} y="252">messages</text>
+              <text class="mono s12" x={CARD.x + 10} y={CARD.y + 18}>{t.prompt}</text>
+              <text class="mono s12 dim" x={CARD.x + 10} y="176">{t.products}</text>
+              <text class="mono s12 dim" x={CARD.x + 10} y="252">{t.messages}</text>
             </g>
           </g>
           <g id="hs-model">
             <path class="paper" d={rect(MODEL)}></path>
             <path id="hs-modelframe" class="ln" d={rect(MODEL)}></path>
             <path id="hs-modelhi" class="mhi" d={rect(MODEL)} opacity="0"></path>
-            <text class="t15 mid hs-fade" x={MODEL.x + MODEL.w / 2} y={MODEL.y + MODEL.h / 2 + 5}>language model</text>
+            <text class="t15 mid hs-fade" x={MODEL.x + MODEL.w / 2} y={MODEL.y + MODEL.h / 2 + 5}>{t.model}</text>
             <!-- while the model writes, this tick steps along under its name, one notch a word (data-run is its travel) -->
             <path id="hs-mtick" class="mtick" data-run={MODEL.w - 28 - 16} d={`M${MODEL.x + 14} ${MODEL.y + MODEL.h - 12}h16`} opacity="0"></path>
           </g>
@@ -228,7 +252,7 @@ const LEAD_LINES = ['Wants a 3-seat', 'leather sofa.']
             <g class="hs-fade">
               <path class="side" d={rect({ x: DASH.x, y: DASH.y, w: SIDE, h: DASH.h })}></path>
               {[0, 1, 2, 3, 4].map((i) => <path class={`navline ${i === 2 ? 'on' : ''}`} d={`M${DASH.x + 12} ${DASH.y + 24 + i * 26}H${DASH.x + SIDE - 12}`}></path>)}
-              <text class="t15 hs-ink" x={DASH.x + SIDE + 14} y={DASH.y + 24}>Leads</text>
+              <text class="t15 hs-ink" x={DASH.x + SIDE + 14} y={DASH.y + 24}>{t.leads}</text>
               {COLS.map((c) => <text class="s12 dim" x={c.x + 4} y={DASH.y + 50}>{c.name}</text>)}
               {COLS.map((c) => <path class="ln dash col" d={rect({ x: c.x, y: DASH.y + 58, w: c.w, h: 88 })}></path>)}
             </g>
@@ -277,7 +301,7 @@ const LEAD_LINES = ['Wants a 3-seat', 'leather sofa.']
           <!-- the prompt, going into the model -->
           <g id="hs-mini" opacity="0" transform={`translate(${CX} ${CARD.y + CARD.h})`}>
             <rect class="fill-pin" x="-27" y="-9" width="54" height="18" rx="3"></rect>
-            <text class="mono s12 chip mid" y="4">prompt</text>
+            <text class="mono s12 chip mid" y="4">{t.prompt}</text>
           </g>
           <circle id="hs-dot" class="fill-pin" r="5" opacity="0"></circle>
           <!-- data pulses, one on each of three wires (the query dot, the prompt, the reply and the lead are the others) -->
@@ -298,11 +322,11 @@ const LEAD_LINES = ['Wants a 3-seat', 'leather sofa.']
        JavaScript there is nothing to press, so the whole control is left out (story.css). The replies,
        landing points and classifications are prepared in advance (questions.ts); no API is called. -->
   <div class="ask" data-ask>
-    <p class="ask-label" id="ask-label">Try another question</p>
+    <p class="ask-label" id="ask-label">{t.tryLabel}</p>
     <div class="ask-choices" role="group" aria-labelledby="ask-label">
       {QUESTIONS.map((q, i) => <button type="button" class="control feedback" data-q={i} aria-pressed={i === 0 ? 'true' : 'false'}>{q.button}</button>)}
     </div>
-    <p class="ask-note">Positions and replies are prepared in advance for this demo. The real search runs on the server.</p>
+    <p class="ask-note">{t.tryNote}</p>
     <p class="sr-only" aria-live="polite" data-ask-live></p>
   </div>
 </section>

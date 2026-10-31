@@ -4,33 +4,18 @@
 // the section rules went on 2026-10-24: spacing separates the parts), mono labels in sentence case, and a small
 // ruled title block in the corner, the one line left. Real headings, a list for Features and two real
 // tables, so a screen reader can move through it. datasheet.ts fades the parts in.
-import { getCollection } from 'astro:content'
 import NoteDrawing from '../spine/NoteDrawing.astro'
+import { getLang } from '../../shared/i18n/lang'
+import { getChangelog } from '../../shared/i18n/content'
+import { text } from './text'
+
+const lang = getLang(Astro)
+const t = text[lang]
 
 // rev. YYYY.MM, from the newest changelog entry (the same order the Changelog section uses)
-const entries = await getCollection('changelog')
+const entries = await getChangelog(lang)
 const newest = entries.slice().sort((a, b) => b.data.date.localeCompare(a.data.date) || b.id.localeCompare(a.id))[0]
 const rev = newest.data.date.slice(0, 7).replace('-', '.')
-
-const features = [
-  ['Learns fast, under load.', 'Electrical engineering from zero at ELETRON. OpenGL and a research codebase built over more than a decade at RP3.'],
-  ['Explains things.', 'Monitor twice, in Calculus II and in Programming Techniques, about four students a week.'],
-  ['Starts things nobody asked for.', 'Agente H: designed, built and tested alone, with 46 automated tests.'],
-  ['Works from the wire to the web.', 'EduBra: most of the hardware and all of the software. Agente H: the backend, the search and the dashboard.'],
-]
-const characteristics = [
-  ['Languages', 'Portuguese (native), English (advanced), Italian (intermediate), French (basic)'],
-  ['Students helped', 'about 4 a week for 12 weeks, in each of two monitor posts'],
-  ['Projects built', '3'],
-  ['Automated tests, Agente H', '46'],
-  ['Graduation', 'Computer engineering, UTFPR, December 2028'],
-]
-const conditions = [
-  ['Location', 'Curitiba, Brasil'],
-  ['Time zone', 'UTC−3'],
-  ['Citizenship', 'EU'],
-  ['Mode', 'Open to global remote'],
-]
 ---
 
 <section class="datasheet" aria-labelledby="datasheet-heading" data-datasheet>
@@ -39,19 +24,19 @@ const conditions = [
          stays unrotated and crisp. Decoration: aria-hidden. -->
     <div class="ds-paper" aria-hidden="true"></div>
     <header class="ds-head" data-ds-part>
-      <h2 id="datasheet-heading" class="ds-title">Arthur Heberle — datasheet</h2>
-      <div class="ds-titleblock" role="group" aria-label="Sheet information">
+      <h2 id="datasheet-heading" class="ds-title">{t.title}</h2>
+      <div class="ds-titleblock" role="group" aria-label={t.sheetInfo}>
         <p class="tb-top">Arthur Heberle</p>
-        <p class="tb-sheet">datasheet, sheet 01 of 01</p>
-        <p class="tb-sheet">rev. {rev}</p>
+        <p class="tb-sheet">{t.sheet}</p>
+        <p class="tb-sheet">{t.rev} {rev}</p>
       </div>
     </header>
 
     <div class="ds-section" data-ds-part>
-      <h3 class="ds-label">Features</h3>
+      <h3 class="ds-label">{t.featuresHeading}</h3>
       <ul class="ds-features" role="list">
         {
-          features.map(([claim, proof]) => (
+          t.features.map(([claim, proof]) => (
             <li class="ds-feature">
               <span class="ds-claim">{claim}</span>
               <span class="ds-proof text-small text-graphite-2">{proof}</span>
@@ -63,16 +48,16 @@ const conditions = [
 
     <div class="ds-tables">
       <div class="ds-section" data-ds-part>
-        <h3 class="ds-label">Typical characteristics</h3>
+        <h3 class="ds-label">{t.characteristicsHeading}</h3>
         <table class="ds-table">
           <thead>
-            <tr><th scope="col">Parameter</th><th scope="col">Value</th></tr>
+            <tr><th scope="col">{t.parameter}</th><th scope="col">{t.value}</th></tr>
           </thead>
           <tbody>
             {
-              characteristics.map(([k, v]) => (
-                <tr data-ds-row={k === 'Languages' ? 'languages' : undefined}>
-                  {k === 'Languages' ? (
+              t.characteristics.map(({ id, k, v }) => (
+                <tr data-ds-row={id === 'languages' ? 'languages' : undefined}>
+                  {id === 'languages' ? (
                     <th scope="row">
                       <span class="ds-label-cell">
                         <span>{k}</span>
@@ -93,28 +78,28 @@ const conditions = [
       </div>
 
       <div class="ds-section" data-ds-part>
-        <h3 class="ds-label">Operating conditions</h3>
+        <h3 class="ds-label">{t.conditionsHeading}</h3>
         <table class="ds-table">
           <thead>
-            <tr><th scope="col">Parameter</th><th scope="col">Value</th></tr>
+            <tr><th scope="col">{t.parameter}</th><th scope="col">{t.value}</th></tr>
           </thead>
           <tbody>
-            {conditions.map(([k, v]) => <tr><th scope="row">{k}</th><td>{v}</td></tr>)}
+            {t.conditions.map(([k, v]) => <tr><th scope="row">{k}</th><td>{v}</td></tr>)}
           </tbody>
         </table>
       </div>
     </div>
 
     <div class="ds-section" data-ds-part>
-      <h3 class="ds-label">Known side effects</h3>
+      <h3 class="ds-label">{t.effectsHeading}</h3>
       <p class="ds-effects">
-        Plays chess, mostly fast games.<span class="ds-art ds-art-inline" data-ds-hover><NoteDrawing kind="chess" /></span>
-        Plays guitar and sings, badly, on purpose.<span class="ds-art ds-art-inline" data-ds-hover><NoteDrawing kind="guitar" /></span>
+        {t.chess}<span class="ds-art ds-art-inline" data-ds-hover><NoteDrawing kind="chess" /></span>
+        {t.guitar}<span class="ds-art ds-art-inline" data-ds-hover><NoteDrawing kind="guitar" /></span>
       </p>
     </div>
 
     <div class="ds-section" data-ds-part>
-      <h3 class="ds-label">Ordering information</h3>
+      <h3 class="ds-label">{t.orderHeading}</h3>
       <p class="ds-order"><a href="mailto:a.gp.heberle@gmail.com">a.gp.heberle@gmail.com</a></p>
     </div>
   </div>

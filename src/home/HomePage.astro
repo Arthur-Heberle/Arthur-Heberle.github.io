@@ -1,0 +1,24 @@
+---
+// The home page, shared by both languages: src/pages/index.astro (English) and src/pages/pt/index.astro
+// (Portuguese) render this, and every component under it reads the language from Astro.currentLocale.
+import Base from '../shared/layouts/Base.astro'
+import Hero from './hero/Hero.astro'
+import Spine from './spine/Spine.astro'
+import Datasheet from './datasheet/Datasheet.astro'
+import Bench from './bench/Bench.astro'
+import Experience from './experience/Experience.astro'
+import Changelog from './changelog/Changelog.astro'
+import Contact from './contact/Contact.astro'
+---
+
+<Base title="Arthur Gabriel Pellegrini Heberle">
+  <main id="main" tabindex="-1" class="page-main page-home">
+    <Hero />
+    <Spine />
+    <Datasheet />
+    <Bench />
+    <Experience />
+    <Changelog />
+    <Contact />
+  </main>
+</Base>

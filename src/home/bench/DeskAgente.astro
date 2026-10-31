@@ -4,7 +4,8 @@
 // stamp from the first question; at rest all shown, the final state); the body is the cuboid.
 import Cub from '../../projects/edubra/Cub.astro'
 import Phone from '../../projects/agente-h/Phone.astro'
-import { QUESTIONS } from '../../projects/agente-h/questions'
+import { questionsFor } from '../../projects/agente-h/localized'
+import { getLang } from '../../shared/i18n/lang'
 
 interface Props {
   w: number
@@ -14,7 +15,7 @@ interface Props {
   ay: number
 }
 const { w, d, h, ax, ay } = Astro.props
-const question = QUESTIONS[0]
+const question = questionsFor(getLang(Astro))[0]
 ---
 
 <div class="wb-dk wb-dk-phone" data-wb-desk="agente">

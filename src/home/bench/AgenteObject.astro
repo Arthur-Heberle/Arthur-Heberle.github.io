@@ -3,9 +3,10 @@
 // by the sizes set in bench.css. One customer message, the agent's reply and the gold stamp, all
 // from the page's first question; at rest they are all shown, the final state.
 import Phone from '../../projects/agente-h/Phone.astro'
-import { QUESTIONS } from '../../projects/agente-h/questions'
+import { questionsFor } from '../../projects/agente-h/localized'
+import { getLang } from '../../shared/i18n/lang'
 
-const question = QUESTIONS[0]
+const question = questionsFor(getLang(Astro))[0]
 ---
 
 <div class="wb-phone" data-wb="agente">
