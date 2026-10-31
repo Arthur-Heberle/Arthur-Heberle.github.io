@@ -86,7 +86,6 @@ function initNotes(bench: HTMLElement, items: HTMLElement[], reduced: boolean) {
     label: HTMLElement
     path: SVGPathElement
     dot: SVGCircleElement
-    len: number
     shown: boolean
     tl?: gsap.core.Timeline
   }
@@ -96,7 +95,6 @@ function initNotes(bench: HTMLElement, items: HTMLElement[], reduced: boolean) {
     label: labels[i],
     path: paths[i],
     dot: dots[i],
-    len: 0,
     shown: false,
   }))
 
@@ -115,9 +113,7 @@ function initNotes(bench: HTMLElement, items: HTMLElement[], reduced: boolean) {
       n.path.setAttribute('d', `M${ax.toFixed(1)} ${ay.toFixed(1)} L${ex.toFixed(1)} ${ty.toFixed(1)} H${tx.toFixed(1)}`)
       n.dot.setAttribute('cx', ax.toFixed(1))
       n.dot.setAttribute('cy', ay.toFixed(1))
-      n.len = n.path.getTotalLength()
-      n.path.style.strokeDasharray = String(n.len)
-      if (!n.tl?.isActive()) n.path.style.strokeDashoffset = String(n.shown ? 0 : n.len)
+      if (!n.tl?.isActive()) n.path.style.strokeDashoffset = n.shown ? '0' : '1'
     })
   }
   remeasure = measure
@@ -125,7 +121,7 @@ function initNotes(bench: HTMLElement, items: HTMLElement[], reduced: boolean) {
   const setNow = (n: Note, on: boolean) => {
     n.tl?.kill()
     n.shown = on
-    n.path.style.strokeDashoffset = String(on ? 0 : n.len)
+    n.path.style.strokeDashoffset = on ? '0' : '1'
     gsap.set([n.dot, n.label], { opacity: on ? 1 : 0 })
   }
   const show = (n: Note) => {
@@ -146,7 +142,7 @@ function initNotes(bench: HTMLElement, items: HTMLElement[], reduced: boolean) {
     n.tl = gsap
       .timeline()
       .to(n.label, { opacity: 0, duration: 0.08 })
-      .to(n.path, { strokeDashoffset: n.len, duration: 0.18, ease: 'none' })
+      .to(n.path, { strokeDashoffset: 1, duration: 0.18, ease: 'none' })
       .to(n.dot, { opacity: 0, duration: 0.08 })
   }
 

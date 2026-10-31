@@ -803,6 +803,9 @@
     fill: none;
     stroke: var(--color-graphite-2);
     stroke-width: 1;
+    /* pathLength="1": hidden is offset 1, drawn is 0, whatever the line's real length */
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
   }
   .wb-dot {
     fill: var(--color-signal);
