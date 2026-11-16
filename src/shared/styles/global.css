@@ -12,7 +12,7 @@
 @import "./base.css";
 /* shared: the one light every 3D scene uses (face shading, contact shadows, glass) */
 @import "./light.css";
-/* home: spine prose; the rail, margin note and leader project pages use */
+/* the rail, margin note and leader project pages use (home spine removed, stage 3) */
 @import "../../home/spine/spine.css";
 /* shared: the page rule and section ticks (both pages) */
 @import "./drawing.css";

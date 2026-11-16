@@ -37,24 +37,84 @@
   }
 }
 
-/* On the home page's 12-column grid (home.css, 768px and up): the header is the same 12 columns, the
- * display line may span 10 of them, and the datum line ends where the spine paragraph ends (7 columns). */
+/* Home refactor stage 3 (Arthur, 2026-11-16, after TODO/image.png): photo with the name under it,
+ * identity and intro beside it. Text is centred: Arthur's override of design-spec §5. */
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2.5rem;
+  text-align: center;
+}
+.hero-id {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 320px;
+}
+/* The file is 604x1073 (width/height attributes); aspect-ratio crops it to a 4:5 portrait. */
+.hero-photo {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  object-position: 50% 30%;
+  border-radius: var(--radius-panel);
+}
+.hero-greeting {
+  margin: 1.5rem 0 0.25rem;
+}
+/* Larger than the 56/40 display size (§5 scale change, Arthur's brief); size lives here, tokens untouched. */
+.hero-name {
+  margin: 0;
+  font-size: 3rem;
+  text-wrap: balance;
+}
+.hero-role {
+  margin: 0.5rem 0 0;
+}
+.hero-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+.hero-identity {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.hero-info p {
+  margin: 0;
+}
+
+/* On the home page's 12-column grid (home.css, 768px and up): photo and name on columns 1 to 5, the
+ * info on 6 to 12, centred vertically on the photo like the reference. */
 @media (min-width: 768px) {
   .hero {
     display: grid;
     grid-template-columns: repeat(12, minmax(0, 1fr));
     column-gap: var(--home-gap);
-    row-gap: 1.5rem;
+    align-items: center;
   }
-  .hero > :not(svg) {
-    grid-column: 1 / -1;
+  .hero-id {
+    grid-column: 1 / span 5;
+    justify-self: center;
+    max-width: 360px; /* about the reference's photo size; bigger pushes the role line off the first screen */
   }
-  .hero > h1 {
-    grid-column: 1 / span 10;
-    text-wrap: balance; /* no last word alone on a line */
+  .hero-info {
+    grid-column: 6 / -1;
+  }
+  .hero-name {
+    font-size: 4.5rem;
   }
   .datum {
-    width: calc((100% - 11 * var(--home-gap)) / 12 * 7 + 6 * var(--home-gap));
+    width: calc((100% - 11 * var(--home-gap)) / 12 * 5 + 4 * var(--home-gap));
   }
 }
 
@@ -77,7 +137,8 @@
  * never sees the heading stay hidden. motion.ts removes the class synchronously, in the
  * same call as gsap.set()'s initial state, in every branch including the ones that skip
  * the sequence entirely. */
-.hero-pending [data-hero-display] {
+.hero-pending [data-hero-display],
+.hero-pending [data-hero-photo] {
   opacity: 0;
 }
 

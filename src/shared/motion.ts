@@ -75,7 +75,7 @@ function tier2Reveals(scoped: boolean) {
         start: 'clamp(top 85%)',
         once: true,
         // Found at step 14, live: clamp() pins the start of anything already in view at
-        // load (a project page's h1 and intro, the first spine paragraph) to exactly 0, and
+        // load (a project page's h1 and intro) to exactly 0, and
         // ScrollTrigger only fires onEnter once progress goes *above* 0 — so at scroll 0 the
         // reveal never fired and the content sat at opacity 0 until the reader scrolled a
         // pixel. Play it from the refresh instead, once the start is known and already
@@ -418,6 +418,10 @@ function heroSequence(withDrawing: boolean) {
   // when the drawing runs alongside it, or immediately when it doesn't (<768px) — the
   // word arrival is the whole sequence there. Last word starts at 0.3 + 11*0.06 = 0.96s,
   // ends at 1.56s — under the 1.6s ceiling.
+  // The hero photo (home refactor stage 3): an opacity fade only, once per session like the words.
+  const photo = document.querySelector<HTMLElement>('[data-hero-photo]')
+  if (photo) tl.from(photo, { opacity: 0, duration: HERO_DUR, ease: EASE_OUT }, 0)
+
   tl.from(
     words,
     { y: 16, opacity: 0, duration: HERO_DUR, ease: EASE_OUT, stagger: HERO_STAGGER },

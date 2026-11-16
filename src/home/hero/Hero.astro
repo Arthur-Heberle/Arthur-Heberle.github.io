@@ -1,39 +1,43 @@
 ---
-// Hero — page copy, not a collection (docs/plans/step-03.md scoped the collections to
-// archive/notes/changelog only). Verbatim from docs/content.md's Hero block: final, not
-// provisional.
+// Hero (home refactor stage 3, Arthur 2026-11-16, after TODO/image.png): the photo with "Hi! I'm",
+// the name and the role under it; the identity list and the intro line beside it. Centred text is
+// Arthur's override of design-spec §5. The name is the page's single <h1>.
 import HeroDrawing from './HeroDrawing.astro'
 import { getLang } from '../../shared/i18n/lang'
 import { text } from './text'
 
 const t = text[getLang(Astro)]
-const email = 'a.gp.heberle@gmail.com'
 ---
 
-<!-- relative: the hero drawing (origin mark, datum, lead) positions against this header,
-     not .page-main — design-spec.md §9, docs/plans/step-12.md. -->
-<header class="hero relative flex flex-col gap-6 pb-8 pt-12">
+<!-- relative: the hero drawing (origin mark, datum) positions against this header. -->
+<header class="hero relative pb-8 pt-12">
   <HeroDrawing />
 
-  <div class="flex flex-wrap items-baseline justify-between gap-x-gutter gap-y-2">
-    <p class="text-h3 font-sans font-medium">Arthur Gabriel Pellegrini Heberle</p>
-    <!-- direct wins the tiebreak here: the real address on the first screen, not a jump
-         link to a "Contact" section further down (design-spec.md §2). -->
-    <a class="feedback font-mono text-small text-graphite-2 no-underline" href={`mailto:${email}`}>
-      {email}
-    </a>
+  <div class="hero-id">
+    <!-- width/height are the file's real size; CSS crops it to 4:5, so the box is known from first paint -->
+    <img
+      class="hero-photo"
+      src="/images/arthur-hero.jpeg"
+      width="604"
+      height="1073"
+      alt={t.photoAlt}
+      loading="eager"
+      fetchpriority="high"
+      decoding="async"
+      data-hero-photo
+    />
+    <p class="hero-greeting text-body text-graphite-2">{t.greeting}</p>
+    <!-- data-hero-display: the element motion.ts's heroSequence() splits into words, and that
+         Base.astro's flash guard (hero-pending) hides until the sequence starts. -->
+    <h1 class="display hero-name" data-hero-display>{t.name}</h1>
+    <p class="hero-role text-body text-graphite-2">{t.role}</p>
   </div>
 
-  <!-- a real list, so a screen reader doesn't read the three facts as one run-on phrase -->
-  <ul role="list" class="flex flex-wrap gap-x-gutter gap-y-1 font-mono text-dimension text-graphite-2">
-    {t.identity.map((item) => <li>{item}</li>)}
-  </ul>
-
-  <!-- data-hero-display: the one element step 12's word-arrival sequence splits and
-       animates. Read by Base.astro's flash-guard CSS and motion.ts's heroSequence(). -->
-  <h1 class="display" data-hero-display>{t.headline}</h1>
-
-  <p class="measure text-body">
-    {t.intro}
-  </p>
+  <div class="hero-info">
+    <!-- a real list, so a screen reader doesn't read the three facts as one run-on phrase -->
+    <ul role="list" class="hero-identity text-h3 font-sans">
+      {t.identity.map((item) => <li>{item}</li>)}
+    </ul>
+    <p class="measure text-body text-graphite-2">{t.intro}</p>
+  </div>
 </header>

@@ -56,11 +56,11 @@ Arthur Heberle  (larger than today's 56px)   info lines
 
 ## Acceptance
 
-- [ ] Photo, name, headline and info visible on the first screen at 1440 and 1024; at 390 the photo
+- [x] Photo, name, headline and info visible on the first screen at 1440 and 1024; at 390 the photo
       and name at least.
-- [ ] No `[FILL]` in shown text (the build enforces it).
-- [ ] One `<h1>`; the photo's alt text is Arthur's.
-- [ ] CLS 0 with the photo, cold cache (Lighthouse mobile and the layout-shift observer).
-- [ ] Hero sequence: no flash on first visit, no animation on repeat visit or reduced motion.
-- [ ] Clear of the fixed corner name at every width.
-- [ ] `pnpm build` passes.
+- [x] No `[FILL]` in shown text (the build enforces it).
+- [x] One `<h1>`; the photo's alt text is Arthur's.
+- [x] CLS 0 with the photo, cold cache (Lighthouse mobile and the layout-shift observer).
+- [x] Hero sequence: no flash on first visit, no animation on repeat visit or reduced motion.
+- [ ] Clear of the fixed corner name at every width. (Pending: stage 2 not built yet; the hero starts 48px down.)
+- [x] `pnpm build` passes.
