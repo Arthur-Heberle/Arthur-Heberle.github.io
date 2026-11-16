@@ -10,7 +10,8 @@ const t = text[getLang(Astro)]
 ---
 
 <!-- relative: the hero drawing (origin mark, datum) positions against this header. -->
-<header class="hero relative pb-8 pt-12">
+<!-- top space: 64px, 120px from 768px (Arthur, 2026-11-16: more room above, like the reference) -->
+<header class="hero relative pb-8 pt-16 md:pt-30">
   <HeroDrawing />
 
   <div class="hero-id">
