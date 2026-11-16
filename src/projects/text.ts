@@ -15,7 +15,6 @@ const en = {
   sheetOf: (name: string, nn: string, total: string) => `${name}, sheet ${nn} of ${total}`,
   sheetLink: (nn: string) => `sheet ${nn}`,
   nextLabel: (name: string, nn: string) => `Next: ${name}, sheet ${nn}`,
-  backToHome: 'Arthur Heberle, back to home',
   // <title> of a project page: "<project> — Arthur Gabriel Pellegrini Heberle"
   pageTitle: (project: string) => `${project} — Arthur Gabriel Pellegrini Heberle`,
 }

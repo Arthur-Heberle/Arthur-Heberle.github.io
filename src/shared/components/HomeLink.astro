@@ -1,0 +1,61 @@
+---
+// The way home, top left on every page (Arthur, 2026-11-16): his name as an SVG he drew, one link.
+// Fixed in the corner by chrome.css, floating above the content with no bar behind it. The SVG is
+// aria-hidden so the link's aria-label is the only name read. Strokes take currentColor (graphite).
+// Paths from arthur-heberle.svg (his file), C2PA metadata and the fixed width stripped.
+//
+// The strokes are drawn twice: first a wider copy in the ground colour (the halo, Arthur's choice:
+// no bar, no blur), then the name itself. On a phone, text scrolls under the name and the halo keeps
+// both apart; from 1024px the content has its own column and nothing passes under it.
+import { getLang, localePath } from '../i18n/lang'
+import { text } from '../text'
+
+const lang = getLang(Astro)
+const t = text[lang]
+
+// "arthur", thin, drawn at half scale; "heberle", bold. [x offset, path] per letter.
+const arthur: [number, string][] = [
+  [0, 'M53 -53H17L7 -43V-17L17 -7H53M53 -53V-7'],
+  [72, 'M7 -7V-43L17 -53H36'],
+  [123, 'M19 -78V-7M7 -53H31'],
+  [172, 'M7 -83V-7M7 -53H43L53 -43V-7'],
+  [244, 'M7 -53V-17L17 -7H53M53 -53V-7'],
+  [316, 'M7 -7V-43L17 -53H36'],
+]
+const heberle: [number, string][] = [
+  [0, 'M7 -83V-7M7 -53H43L53 -43V-7'],
+  [72, 'M7 -30H53V-43L43 -53H17L7 -43V-17L17 -7H53'],
+  [144, 'M7 -83V-7M7 -53H43L53 -43V-17L43 -7H7'],
+  [216, 'M7 -30H53V-43L43 -53H17L7 -43V-17L17 -7H53'],
+  [288, 'M7 -7V-43L17 -53H36'],
+  [343, 'M7 -83V-7'],
+  [369, 'M7 -30H53V-43L43 -53H17L7 -43V-17L17 -7H53'],
+]
+// stroke widths in each group's own units; the halo adds HALO on top (about 3px each side at 104px wide, 2.3px at 80px)
+const HALO = 26
+const layers = [
+  { cls: 'home-link-halo', a: 12 + 2 * HALO, h: 14 + HALO },
+  { cls: 'home-link-name', a: 12, h: 14 },
+]
+---
+
+<a class="home-link" href={localePath(lang, '/')} aria-label={t.home}>
+  <svg viewBox="0 0 449 167" aria-hidden="true" focusable="false">
+    {
+      layers.map((l) => (
+        <g class={l.cls} fill="none" stroke-linecap="square" stroke-linejoin="miter">
+          <g transform="translate(10 55) scale(0.5)" stroke-width={l.a}>
+            {arthur.map(([x, d]) => (
+              <path transform={`translate(${x} 0)`} d={d} />
+            ))}
+          </g>
+          <g transform="translate(10 157)" stroke-width={l.h}>
+            {heberle.map(([x, d]) => (
+              <path transform={`translate(${x} 0)`} d={d} />
+            ))}
+          </g>
+        </g>
+      ))
+    }
+  </svg>
+</a>

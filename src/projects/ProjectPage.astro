@@ -17,7 +17,6 @@
 // stance as braille.ts throwing on an unmapped letter). An unresolved [FILL] value inside
 // `project` is shown as written, so the post-build check (scripts/check-fill.mjs) fails the build.
 import type { CollectionEntry } from 'astro:content'
-import OriginLink from './OriginLink.astro'
 import TitleBlock from './TitleBlock.astro'
 import { sortProjects } from './sortProjects'
 import { hasProjectPage, projectPageHref } from './projects'
@@ -57,9 +56,6 @@ const next =
 
 <article class="flex flex-col gap-16 py-16">
   <Tick />
-
-  <!-- the way back: first in the page, not revealed by motion -->
-  <OriginLink />
 
   <div class="flex flex-col gap-4">
     <h1 id="project-heading" class="text-h2 font-sans font-medium" data-anim>{title}</h1>
