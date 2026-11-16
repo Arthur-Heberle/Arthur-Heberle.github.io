@@ -18,7 +18,9 @@ Arthur decides.
 
 1. Remove the datasheet.
 2. Replace the target mark (`src/projects/OriginLink.astro`, a circle with a crosshair) with his
-   **name in a different font**, **fixed in the corner on every page, home included**, linking home.
+   **name as an SVG he drew** (`arthur-heberle.svg`), **top left on every page, home included**,
+   linking home. The **EN/PT switch goes top right**. Both stay **always visible while scrolling**, on
+   a floating layer above the content, with **no bar or background strip** behind them.
 3. Hero: **photo on top**, name **bigger** under it, basic info beside the photo. Arthur adds the
    photo files himself and gives the info when this stage is built. The headline "I make technical
    things make sense to people who didn't build them." moves to the **right of the photo**. The
@@ -32,7 +34,7 @@ Arthur decides.
 
 | # | Section | Status |
 |---|---|---|
-| — | Corner name, fixed, every page | new (replaces the target mark) |
+| — | Name SVG top left + EN/PT switch top right, floating, every page | new (replaces the target mark) |
 | 1 | Hero: photo, name, info, headline | reworked |
 | 2 | Projects (the bench) | unchanged |
 | 3 | Roadmap | new |
@@ -49,16 +51,22 @@ One stage per session, in order. Each must pass its checklist and `pnpm build` b
 Commit message `home-refactor: <stage>`, then push. When stage 1 starts, add a table
 "Home refactor (2026-11-16, Arthur's brief)" to `docs/progress.md` and track the stages there.
 
-| Stage | File | Needs from Arthur before starting |
+Arthur gives the content (texts, photos, info lines, roadmap goals and studies) **when each stage is
+implemented**, not in advance. The agent asks for it at the start of the stage.
+
+| Stage | File | Ask Arthur at the start |
 |---|---|---|
 | 1 | [01-remove-datasheet.md](01-remove-datasheet.md) | nothing |
-| 2 | [02-corner-name.md](02-corner-name.md) | the font, the exact text |
+| 2 | [02-corner-name.md](02-corner-name.md) | is the SVG final, its size |
 | 3 | [03-hero.md](03-hero.md) | the photo, the info lines, what stays of the hero/spine |
 | 4 | [04-roadmap.md](04-roadmap.md) | the goals and study items |
 | 5 | [05-about.md](05-about.md) | the copy, the second photo |
 | 6 | Check (below) | — |
 
 ## Rules for every stage
+
+Arthur's request wins over any rule below or in the docs (CLAUDE.md, "What wins"): build what he
+asked, tell him in one line which rule it breaks, update the doc.
 
 - **design-spec §6 is rewritten** to the new order. Its rule "adding one requires removing one" is
   Arthur's call, and he made it: datasheet and notes out, roadmap and about in. Update §5 (type, layout
@@ -67,7 +75,7 @@ Commit message `home-refactor: <stage>`, then push. When stage 1 starts, add a t
   i18n stage 1 pattern, `src/shared/i18n/`). Collections are read through `src/shared/i18n/content.ts`.
 - **Never invent facts.** Anything only Arthur knows is a `[FILL]`. `scripts/check-fill.mjs` runs inside
   `pnpm build` and fails it on a marker in shown prose, so a stage with missing copy stops and asks.
-- **Tokens unchanged** (`src/shared/styles/tokens.css`). A new font is a type change: ask first.
+- **Tokens unchanged** (`src/shared/styles/tokens.css`) unless Arthur asks.
 - **No new library.**
 - **Motion:** only `transform`, `opacity`, `stroke-dashoffset`; `prefers-reduced-motion` gives final
   states; all content readable with JavaScript off.
@@ -76,11 +84,12 @@ Commit message `home-refactor: <stage>`, then push. When stage 1 starts, add a t
 - New CSS gets one `@import` line in `src/shared/styles/global.css`, in cascade order.
 - JS stays under 90 KB gzip.
 
-## Conflicts with the unfinished i18n work
+## The unfinished i18n work
 
 The Portuguese version is at stage 1 of 5 (`docs/progress.md`, "Portuguese version + EN/PT switch").
-Its stage 2 plans **a thin bar at the top of every page with the EN/PT switch**. The fixed corner name
-(stage 2 here) sits on the same edge. Whichever lands second must place both; decide with Arthur then.
+Its plan had the switch in "a thin bar at the top that scrolls with the page"; **that is superseded**:
+the switch is a floating element in the top-right corner, always visible, no bar, sharing
+`chrome.css` with the name (see 02). No conflict: name left, switch right.
 New sections ship `pt: en` until the i18n stages translate them.
 
 ## Stage 6: check
@@ -96,13 +105,15 @@ New sections ship `pt: en` until the i18n stages translate them.
 
 ## Open questions (collected from the stage files)
 
-- **02:** which font for the corner name; the exact text; whether the hero's L-bracket origin mark and
-  datum line stay.
+Content (texts, photos, info, goals) is not listed here: Arthur gives it at each stage.
+
+- **02:** the SVG's size; whether the hero's L-bracket origin mark and datum line stay; legibility of the
+  bare name over busy sections.
 - **03:** the info lines beside the photo; whether the intro line, the identity list
   (Curitiba, EU citizen, open to global remote), the email link and the spine paragraph stay; the
   photo's alt text; the name centred under the photo (as in the reference) against design-spec §5
   "no centered text anywhere".
-- **04:** the phases and items; one axis for studies and life goals, or two tracks; whether an item
-  has a period (week, month, year).
-- **05:** the copy; whether it takes the datasheet's leftovers (languages, chess, guitar).
+- **04:** one axis for studies and life goals, or two tracks; whether an item has a period (week,
+  month, year).
+- **05:** whether it takes the datasheet's leftovers (languages, chess, guitar).
 - **All:** the datasheet facts that would otherwise vanish (see 01).

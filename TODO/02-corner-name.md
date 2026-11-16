@@ -1,57 +1,62 @@
 # Stage 2: the name in the corner
 
 Today the way home is `src/projects/OriginLink.astro`: a circle with a crosshair (the "target") plus
-"Arthur Heberle", at the top of project pages only. Arthur's decision: **his name, in a different font,
-fixed in the top-left corner of every page, home included**, linking home. The target mark goes.
+"Arthur Heberle", at the top of project pages only. Arthur's decision (2026-11-16):
+
+- **Top left, every page (home included): his name as an SVG he drew**, `arthur-heberle.svg` (repo
+  root today; paths only, `viewBox="0 0 449 167"`), linking home. The target mark goes.
+- **Top right: the EN/PT language switch** (built by the i18n brief, see below).
+- **Both always visible**: they stay on screen while the page scrolls, on a floating layer above the
+  content. **No bar, no white or ground-coloured strip behind them.** Only the two elements float.
 
 ## Build
 
-- New `src/shared/components/HomeLink.astro`, rendered once in `src/shared/layouts/Base.astro`, right
-  after the skip link, so every page has it and it is the first stop after "skip".
-- `<a href={localePath(lang, '/')}>` with the name as real text (not an image), so the link is named by
-  its text. On the home page it still links to `/` (back to the top).
-- CSS in a new `src/shared/styles/homelink.css` (one `@import` in `global.css`):
-  `position: fixed`, top-left inside the page's side margin (`clamp(24px, 5vw, 80px)` at 768px+,
-  16px below), above the content (`z-index`), small enough that it covers nothing it shouldn't.
-- Content must not hide under it: either a `--color-ground` backing behind the name, or enough top
-  padding on the first section. Check scrolled states, not only the top.
-- Focus: the global `:focus-visible` ring, visible over any section it floats above.
-- Hover: a quiet change only (opacity or the existing `--signal` text colour, design-spec §5).
+- Move the SVG into the source: `src/shared/components/HomeLink.astro` inlines it (so it can take
+  `currentColor` and a focus ring), or `public/images/arthur-heberle.svg` as an `<img>`. Prefer inline.
+  Strip the `<metadata>` C2PA block (most of its 9 KB); keep the paths. Fix `width="443"` against the
+  449 viewBox (size it in CSS instead).
+- Rendered once in `src/shared/layouts/Base.astro`, right after the skip link, so every page has it
+  and it is the first stop after "skip".
+- `<a href={localePath(lang, '/')} aria-label="Arthur Heberle, home">` (label in `src/shared/text.ts`,
+  both languages); the SVG inside is `aria-hidden` so the name is read once.
+- New `src/shared/styles/chrome.css` (one `@import` in `global.css`) for both floating elements:
+  `position: fixed`, top inset equal to the page side margin (`clamp(24px, 5vw, 80px)` from 768px,
+  16px below), a `z-index` above every section (check the bench's 3D scene, Experience's sticky stage,
+  the project pages' pinned stories), `pointer-events` only on the link itself.
+- Size: small, like the reference's corner logo (about 90-120px wide on desktop, smaller on mobile);
+  `aspect-ratio: 449 / 167` so it never shifts.
+- Legibility with no background: the name is dark on the light page; check it over every section it
+  passes (Experience's objects, the bench, project images). If a spot makes it unreadable, tell Arthur
+  and offer options (a soft shadow, a tiny blur-free halo); **no bar** without his say.
+- Hover: a quiet change (opacity). Focus: the global `:focus-visible` ring.
 
 ## Remove
 
 - `src/projects/OriginLink.astro`, its use in `src/projects/ProjectPage.astro`, and the `.origin-link`,
   `.origin-leader`, `.origin-mark` rules in `src/projects/project.css`.
-- `backToHome` in `src/projects/text.ts` if unused (or move it to `src/shared/text.ts` as the link's
-  accessible description).
+- `backToHome` in `src/projects/text.ts` if unused.
 
-## The font
+## The language switch
 
-"A different font" is a type change (design-spec §5 lists one family in two widths plus a mono).
-**Ask Arthur which face before building.** If it is a new one:
+The i18n brief (progress.md, "Portuguese version + EN/PT switch", stage 2 not built) planned "a thin
+bar at the top that scrolls with the page". **Superseded by this decision:** the switch is a single
+floating element in the top-right corner, always visible, no bar. Whichever stage lands first builds
+`chrome.css`; the other reuses it. If the switch is not built yet, leave the right corner empty.
 
-- self-host a latin woff2 in `public/fonts/` (licence file next to it, like `OFL.txt`);
-- `@font-face` in `src/shared/styles/fonts.css`, `font-display: swap`;
-- preload it in `Base.astro` (it is on the first screen of every page; without the preload the swap
-  re-wraps the name and shifts it);
-- add it to design-spec §5 Type with its one job: the corner name.
+## Ask Arthur at the start of the stage
 
-## Open questions for Arthur
-
-- Which font.
-- The exact text: "Arthur Heberle", or two lines (small first name over a larger surname, as in the
-  reference), or initials on mobile.
-- The home hero's L-bracket origin mark and datum line (`src/home/hero/HeroDrawing.astro`, animated by
-  `heroSequence()` in `src/shared/motion.ts`): keep, or drop with the target.
-- The i18n stage 2 EN/PT bar uses the same top edge (see README): where the switch sits beside the name.
+- Whether the SVG file is final.
+- Desktop and mobile size (show two screenshots).
+- What happens to the home hero's L-bracket origin mark and datum line
+  (`src/home/hero/HeroDrawing.astro`, animated by `heroSequence()` in `src/shared/motion.ts`).
 
 ## Acceptance
 
-- [ ] One link to home on every page (home, EduBra, Agente H, Brasilore if it has a page), named by
-      the visible text; no target mark anywhere.
-- [ ] Tab order: skip link, corner name, page content.
-- [ ] Never overlaps readable text in scrolled screenshots at 390, 1024, 1440 (hero, bench, Experience's
-      sticky stage, changelog).
-- [ ] Font preloaded; CLS 0 on all pages.
-- [ ] JS off: the link works (it is plain HTML).
+- [ ] One link home on every page (home, EduBra, Agente H), named once ("Arthur Heberle, home");
+      no target mark anywhere.
+- [ ] Stays in the top-left corner while scrolling, no bar or strip behind it, at 390, 1024, 1440.
+- [ ] Readable over every section it passes; never hidden behind a 3D scene or a pinned story.
+- [ ] Tab order: skip link, name, page content.
+- [ ] CLS 0 on all pages; the SVG has its aspect ratio from first paint.
+- [ ] JS off: the link works.
 - [ ] `pnpm build` passes.

@@ -1967,3 +1967,8 @@ Stage 1 divergences from the plan:
 - **Collections not touched yet** (`getProjects/getExperience/getNotes/getChangelog` in `src/shared/i18n/content.ts` return the English ones for both languages; stage 2 adds the Portuguese). Notes are looked up by file id (`reading`, `working-on`), not by their shown label; the datasheet's languages row is keyed by `id`.
 - **Not extracted yet (stage 3):** the text inside the Experience objects (`Chalkboard`, `Clipboard`, `MeterChart`, `Report`, `Analyzer`, `Laptop`). The pages `/pt/` do not exist yet; `Base.astro` already sets `<html lang>` from the language, but has no `hreflang` links (stage 2).
 - Route bodies moved to `src/home/HomePage.astro` and `src/projects/ProjectRoute.astro`; `src/pages/*` are thin wrappers, `getStaticPaths` stays in the page.
+
+**Switch placement changed (Arthur, 2026-11-16):** the "thin bar at the top that scrolls with the page" is dropped. The EN/PT
+switch is one floating element in the **top-right** corner, the name SVG (`arthur-heberle.svg`) is in the **top-left**, and both
+stay **always visible while scrolling**, on a layer above the content, with **no bar or background strip**. Shared CSS and
+details in `TODO/02-corner-name.md`.

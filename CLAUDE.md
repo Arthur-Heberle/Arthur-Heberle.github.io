@@ -1,10 +1,31 @@
 # CLAUDE.md
 
 Personal portfolio for Arthur Gabriel Pellegrini Heberle. Static site, Astro, deployed
-to GitHub Pages at `https://arthur-heberle.github.io`.
+to GitHub Pages at `https://arthur-heberle.github.io`. English at `/`, Portuguese at `/pt/`
+(in progress).
 
-This file is loaded every session. Read it fully, then read only what the current step
+This file is loaded every session. Read it fully, then read only what the current task
 needs.
+
+---
+
+## What wins: Arthur's request
+
+**What Arthur asks for wins over every `.md` file in this repo, this one included.** The rules
+below, the design spec, the motion spec and the plans are defaults that keep the site consistent
+when nobody has said otherwise. When a request conflicts with one of them:
+
+1. Do what Arthur asked.
+2. Tell him in one line which rule it breaks and why the rule was there. Do not block, do not
+   ask permission twice, do not quietly "fix" his choice back.
+3. Update the doc that was overridden (design-spec, motion-spec, this file) so the next session
+   does not undo his decision.
+
+The one thing no request changes: **never invent facts about Arthur** (see below). That is about
+not lying on his behalf, not about style.
+
+When something Arthur says is unclear, say you did not understand and ask. Offer options with a
+recommendation; he decides.
 
 ---
 
@@ -13,87 +34,104 @@ needs.
 | File | When |
 |---|---|
 | `CLAUDE.md` | always |
-| `docs/progress.md` | always, first action of every session |
-| `docs/implementation-plan.md` | always, read only the current step |
+| `docs/progress.md` | always, first action of every session: find the brief and stage in progress |
+| `TODO/` | when it exists: the current brief (today the home page refactor), one file per stage |
 | `docs/design-spec.md` | before any visual or structural work |
-| `docs/motion-spec.md` | before any animation work (steps 7–13) |
+| `docs/motion-spec.md` | before any animation work |
 | `docs/content.md` | before any copy or content-collection work |
+| `docs/implementation-plan.md` | history only: v1 steps 01-14 are done |
 
-Do not read all docs every session. `progress.md` plus the current step is usually enough.
+`progress.md` is long. Grep its `###` headings and read only the table you need.
 
 ---
 
-## Workflow, non-negotiable
+## Workflow
 
-1. Read `docs/progress.md`. Find the first step not marked done.
-2. Do **that one step only**. Never batch steps, never work ahead.
-3. Run the step's acceptance checklist. Every box must pass.
-4. Run `pnpm build`. It must succeed before the step counts as done.
-5. Update `docs/progress.md`: mark the step done, add a one-line note on anything that
-   diverged from the plan.
-6. Commit with the step number in the message, e.g. `step 04: static home page`.
-7. Push to origin after every step implemented. 
-8. Stop and report. Do not start the next step in the same session unless asked.
+Work arrives as **briefs** from Arthur, split into **stages**. Each brief gets a table in
+`docs/progress.md` (and, for big ones, a folder like `TODO/`).
 
-If a step turns out to need something not in the plan, stop and say so rather than
-improvising. A wrong decision made silently costs more than a question.
+1. Read `docs/progress.md` and the brief. Find the first stage not marked done.
+2. **Ask Arthur for what the stage needs from him before building it**: texts, photos, roadmap
+   items, info lines, a font. He gives these at implementation time, not in advance.
+3. Do **that one stage only**, unless Arthur asks for more.
+4. Run the stage's acceptance checklist. Every box must pass.
+5. Run `pnpm build`. It must succeed before the stage counts as done.
+6. Update `docs/progress.md`: mark the stage done, one note on anything that diverged.
+7. Commit with the brief and stage in the message, e.g. `home-refactor: remove datasheet`.
+8. Push to origin.
+9. Stop and report, in Portuguese if Arthur wrote in Portuguese.
+
+If a stage needs something its plan does not cover, stop and ask rather than improvising.
 
 ---
 
 ## Where things live
 
-Code is split by domain, so a change to one project touches one folder.
+Code is split by domain, so a change to one section touches one folder.
 
 | Folder | Holds |
 |---|---|
-| `src/shared/` | `layouts/Base.astro`, `components/` (Fill, Rule, Tick), `motion.ts` (the one GSAP/Lenis authority), `styles/` (tokens, fonts, `global.css`, base, drawing, control) |
-| `src/home/<section>/` | one folder per home section (hero, spine, archive, changelog, contact): its components and its CSS |
-| `src/projects/` | `ProjectPage.astro` (the shared template) and `projects.ts` (which ids get a page) |
-| `src/projects/<id>/` | one folder per project page (`edubra/` today): its set-piece, its diagram, its CSS and helpers |
-| `src/content/`, `src/pages/`, `src/content.config.ts` | where Astro requires them: content collections, routes |
+| `src/shared/` | `layouts/Base.astro` (every page), `components/` (Glass, Rule, Tick), `motion.ts` (the one GSAP/Lenis authority), `styles/` (tokens, fonts, `global.css`, base, light, drawing, control), `fill.ts`, `text.ts` |
+| `src/shared/i18n/` | `lang.ts` (`getLang`, `localePath`), `content.ts` (collections by language), `Data.astro` + `runtime.ts` (words handed to scripts as JSON) |
+| `src/home/` | `HomePage.astro` (section order), `home.css` (12-column grid), one folder per section: `hero`, `spine`, `datasheet` (being removed), `bench` (Projects), `experience`, `changelog`, `contact`; coming: `roadmap`, `about` |
+| `src/projects/` | `ProjectPage.astro` (shared template), `ProjectRoute.astro`, `projects.ts` (which ids get a page), `project.css` |
+| `src/projects/<id>/` | one folder per project page (`edubra/`, `agente-h/`): set-piece, story script, CSS, `text.ts` |
+| `src/content/`, `src/pages/`, `src/content.config.ts` | where Astro requires them: collections, routes (`pages/*` are thin wrappers) |
+| `scripts/` | `check-fill.mjs` (runs inside `pnpm build`), `shots.mjs` (screenshots) |
+| `public/` | fonts, textures, project images; photos go in `public/images/` |
+| `TODO/` | the current brief, one file per stage |
 
 Every CSS file is pulled into one bundle by `src/shared/styles/global.css`, **in cascade
-order**. A new domain CSS file gets one `@import` line there, after the files it may
-override. Don't import CSS from components.
+order**. A new CSS file gets one `@import` line there, after the files it may override.
+Don't import CSS from components.
+
+**Text:** every shown string lives in a `text.ts` next to its component, `{ en, pt }`, read with
+`text[getLang(Astro)]`. `pt: en` marks what is not translated yet. Scripts do not import text;
+the page hands them their words through `Data.astro`.
 
 ---
 
-## Hard rules
+## Site chrome (Arthur, 2026-11-16)
 
-**Never invent facts.** `docs/content.md` contains `[FILL]` markers for things only
-Arthur knows: team sizes, student counts, exact roles. Never guess a number, never write
-a plausible-sounding placeholder into real content. Leave the marker visible and ask.
+- **Top left:** Arthur's name, an SVG he drew (`arthur-heberle.svg`), linking to the home page.
+  It replaces the old target mark (`OriginLink.astro`).
+- **Top right:** the EN/PT language switch.
+- Both are **always visible**: they stay on screen while the page scrolls, floating on a layer
+  above the content. **No bar and no background strip** behind them.
 
-**Never change the design tokens** in `src/shared/styles/tokens.css` without being asked. If a
-color or size feels wrong, say so; don't fix it unilaterally. The palette and type were
-chosen against a specific brief and one drifted value breaks the concept.
+---
 
-**Never add a section, page or feature** that isn't in `docs/design-spec.md` section 6 or
-9. The spec's rule is that adding one requires removing one, and that decision is
-Arthur's.
+## Defaults (Arthur can override any of these; see "What wins")
 
-**Never install a library** beyond the ones named in the plan (Astro, Tailwind v4, GSAP,
-Lenis). No UI kits, no component libraries, no animation helpers. Ask first.
+**Never invent facts.** Things only Arthur knows (texts, numbers, roles, goals, photo alt text,
+the info beside his photo) come from him. Never guess a number or write a plausible placeholder.
+Use a `[FILL]` marker and ask; `scripts/check-fill.mjs` fails the build on a marker in shown prose.
+*This one is not a style rule and is not overridden by a request for content: ask for the content.*
 
-**Never clone a template.** Reference repos are named in the design spec for their wiring
-only. Copying visual design from an "Awwwards-inspired" portfolio template would
-reintroduce exactly what this design rejects.
+**Design tokens** in `src/shared/styles/tokens.css` stay as they are unless Arthur asks. If a
+colour or size feels wrong, say so.
 
-**Use `gsap`, never `gsap-trial`.** GSAP has been 100% free since April 2025, all plugins
-included: ScrollTrigger, DrawSVG, SplitText, Flip. Some GSAP doc pages still describe
-DrawSVG and SplitText as paid Club plugins. That is outdated.
+**Sections and pages** follow `docs/design-spec.md` §6 and §9. Arthur adds or removes them; when he
+does, update §6.
 
-**Verify framework specifics against current docs** before scaffolding. Astro and
-Tailwind v4 integration details change between versions and this document may be behind.
-Check the official docs rather than relying on memory, particularly for the Tailwind v4
-Vite plugin setup and the Astro Pages deployment action.
+**Libraries:** Astro, Tailwind v4, GSAP, Lenis, and Playwright (dev only, for screenshots). Ask
+before adding another.
 
-**Every set-piece drawing is aria-hidden with one role=img description for the section.**
-Before a project page counts as done, check the accessibility tree: it contains no drawing
-text and no duplicates.
+**References are for structure, not visuals.** A site Arthur points at (today yudiganeko.com) informs
+layout and density; colours, type and the drawing language stay this site's own unless he says
+otherwise.
 
-**Animate only `transform`, `opacity` and `stroke-dashoffset`.** Never width, height,
-color, box-shadow, filter or blur. This is a performance constraint, not a preference.
+**Use `gsap`, never `gsap-trial`.** GSAP is free with all plugins (ScrollTrigger, DrawSVG,
+SplitText, Flip, CustomEase). Doc pages calling some of them paid Club plugins are outdated.
+
+**Verify framework specifics against current docs** (Astro, Tailwind v4, the Pages action) rather
+than memory.
+
+**Drawings are `aria-hidden`, with one `role="img"` description per drawing or section.** Check the
+accessibility tree: no drawing text, no duplicates.
+
+**Animate only `transform`, `opacity` and `stroke-dashoffset`.** Never width, height, colour,
+box-shadow, filter or blur. A performance constraint.
 
 ---
 
@@ -101,16 +139,14 @@ color, box-shadow, filter or blur. This is a performance constraint, not a prefe
 
 Six ranked principles: **direct > sharp > warm > confident > alive > unusual.**
 
-When two conflict inside one decision, the higher one wins. Example: if a hero animation
-wants the first screen and `direct` wants the contact link visible there, `direct` wins
-and the animation gives up the space. Full definitions in `docs/design-spec.md` section 2.
+When two conflict inside one decision and Arthur has not chosen, the higher one wins. Full
+definitions in `docs/design-spec.md` §2.
 
 ---
 
 ## The aesthetic that was rejected
 
-An earlier version of this design was cut for being the current signature of
-machine-generated web design. If you find yourself reaching for any of it, stop:
+An earlier version was cut for looking machine-generated. Do not reach for it unless Arthur asks:
 
 - cream ground near `#F4F1EA`, high-contrast serif display, terracotta accent near `#D97757`
 - broadsheet layout, dense newspaper columns, editorial footnotes
@@ -119,9 +155,10 @@ machine-generated web design. If you find yourself reaching for any of it, stop:
 - numbered section markers on content that isn't a sequence
 - uniform fade-and-slide-up on every section
 
-The actual direction is an **annotated technical drawing** that **draws itself as you
-scroll**, grounded in Arthur's own work: additive-manufacturing process planning,
-embedded hardware, energy measurement. Every visual decision should be traceable to that.
+The direction is an **annotated technical drawing** that **draws itself as you scroll**, grounded
+in Arthur's own work: additive-manufacturing process planning, embedded hardware, energy
+measurement. Since 2026-11 the home page is also deliberately **simpler**: less on screen, a photo,
+his name, short sections.
 
 ---
 
@@ -130,16 +167,22 @@ embedded hardware, energy measurement. Every visual decision should be traceable
 ```bash
 pnpm install
 pnpm dev            # local dev
-pnpm build          # must pass before any step is done
+pnpm build          # astro build + check-fill; must pass before any stage is done
 pnpm preview        # check the built output
+pnpm shots          # build, preview on :4399, screenshots to shots/ (gitignored)
+node scripts/shots.mjs [home|edubra|agente-h] [1440|1024|390] [--out name]
 ```
+
+Screenshots and accessibility checks run in headless Edge/Chromium (Playwright, CDP). Arthur's own
+browser is Brave; say when something was not checked there, nor in Firefox or Safari.
 
 ---
 
-## Quality floor, applies to every step
+## Quality floor, applies to every stage
 
 - Keyboard focus visible on everything interactive.
 - All content readable with JavaScript disabled.
-- `prefers-reduced-motion` respected from step 7 onward, not retrofitted.
-- No layout shift: every SVG gets `viewBox` plus `aspect-ratio`.
-- Total JS under 90KB gzip at the end.
+- `prefers-reduced-motion` respected: final states, no tweens.
+- No layout shift: every SVG gets `viewBox` plus `aspect-ratio`, every `<img>` its `width`/`height`.
+- No horizontal scroll at 390px.
+- Total JS under 90 KB gzip.
