@@ -1,8 +1,13 @@
 import type { Lang } from '../../shared/i18n/lang'
 
+// Home refactor stage 3 (Arthur, 2026-11-16): photo, "Hi! I'm", the name (the page's <h1>), the role
+// under it; identity and intro beside the photo. The old headline was removed at his request.
 const en = {
+  greeting: "Hi! I'm",
+  name: 'Arthur Heberle',
+  role: 'Computer Engineering Student',
+  photoAlt: 'Arthur Heberle',
   identity: ['Curitiba, Brasil', 'EU citizen', 'open to global remote'],
-  headline: "I make technical things make sense to people who didn't build them.",
   intro: 'Computer engineering at UTFPR, in Curitiba. Embedded systems, C++, and AI automation.',
 }
 

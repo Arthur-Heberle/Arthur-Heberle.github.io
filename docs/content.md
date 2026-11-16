@@ -59,6 +59,11 @@ I've spent two years explaining them to people who found them hard.
 
 ### Hero block, final
 
+**Replaced 2026-11-16 (home refactor stage 3, Arthur):** the display line is gone; the hero is the photo
+(alt "Arthur Heberle"), "Hi! I'm", "Arthur Heberle", "Computer Engineering Student", then the identity
+list and the supporting line below. Source: `src/home/hero/text.ts`. The spine paragraph was removed too.
+The block below is the history.
+
 Display line (the chosen opening line, above):
 
 > I make technical things make sense to people who didn't build them.

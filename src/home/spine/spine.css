@@ -2,7 +2,7 @@
  * its own — it's where leader lines are drawn — so it's named but never targeted by a
  * grid-area. Below 768px the margin collapses under the prose, in source order, which is
  * what makes each note land directly after its paragraph with no JS. A project page uses
- * this rail with one paragraph and one note; the home spine adds .rail-spine below. */
+ * this rail with one paragraph and one note (the home spine paragraph was removed, home refactor stage 3). */
 .rail {
   position: relative;
   display: grid;
@@ -21,26 +21,6 @@
     grid-template-columns: 1fr;
     grid-template-areas: 'prose' 'margin';
     row-gap: 1rem;
-  }
-}
-
-/* The home spine: one paragraph, no notes since the home refactor (2026-11-16). Below 768px it is the
- * page's single column; from 768px up it sits on the home page's 12-column grid (home.css), columns 1 to 7. */
-.rail-spine {
-  grid-template-columns: minmax(0, 1fr);
-  grid-template-areas: none;
-}
-.rail-spine .rail-prose {
-  margin: 0;
-  grid-area: auto;
-}
-@media (min-width: 768px) {
-  .rail-spine {
-    grid-template-columns: repeat(12, minmax(0, 1fr));
-    column-gap: var(--home-gap);
-  }
-  .rail-spine .rail-prose-1 {
-    grid-area: 1 / 1 / 2 / 8;
   }
 }
 

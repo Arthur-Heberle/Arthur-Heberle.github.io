@@ -43,7 +43,8 @@ Six words, ranked. When two conflict inside a single decision, the higher one wi
 This ranking is the tiebreak mechanism and it is the most useful thing in this document.
 
 **1. direct** — information order. First line says what he does, not a slogan. Contact
-reachable from the first screen. No "scroll to explore". Literal section names. Every
+reachable from the first screen (overridden on the home page by Arthur, 2026-11-16: the email left the
+hero; it stays in Contact). No "scroll to explore". Literal section names. Every
 archive row shows its date and his role without a click.
 
 **2. sharp** — contrast and tightness. Large display size, tight leading and tracking.
@@ -155,7 +156,7 @@ Google Fonts, woff2, latin subset, `font-display: swap`. Preload the display fac
 
 | Role | Size / leading | Notes |
 |---|---|---|
-| display | 56px / 1.0, tracking -0.02em | 40px below 768px |
+| display | 56px / 1.0, tracking -0.02em | 40px below 768px. The home hero name is 72px (48px below 768px), Arthur's choice 2026-11-16 |
 | h2 | 28px / 1.15 | |
 | h3 | 20px / 1.3 | |
 | body | 17px / 1.65 | measure capped at 68ch |
@@ -164,13 +165,14 @@ Google Fonts, woff2, latin subset, `font-display: swap`. Preload the display fac
 
 ### Layout
 
-- Everything left-aligned to a single origin. No centered text anywhere. Drawings align
+- Everything left-aligned to a single origin. No centered text anywhere, **except the home hero**,
+  centred like the reference (Arthur's override, home refactor stage 3, 2026-11-16). Drawings align
   to an origin; so does this page.
 - Spine column 68ch max. Margin column 200px. Gutter 32px, and the gutter is where
   leader lines are drawn.
 - Home page grid (Arthur, 2026-10-24), 768px and up: 12 columns, content at most 1280px, sides
-  `clamp(24px, 5vw, 80px)`, 24px gap, everything left-aligned. Hero line up to 10 columns, spine
-  paragraph 7 (no margin notes or datasheet since 2026-11-16); the bench and
+  `clamp(24px, 5vw, 80px)`, 24px gap, everything left-aligned. Hero: photo and name on columns 1 to 5 (photo at most 360px, 4:5), identity and
+  intro on 6 to 12 (since 2026-11-16; no spine, margin notes or datasheet); the bench and
   Experience use the full width. Below 768px it is the single column it was.
 - Radius (Arthur, 2026-10-24): panels and cards `--radius-panel` 10px; buttons and controls
   `--radius-control` 6px; physical objects in the drawings keep their own realistic radii.
@@ -186,13 +188,12 @@ Google Fonts, woff2, latin subset, `font-display: swap`. Preload the display fac
 
 ### Home page
 
-1. **Hero.** Display line, one supporting line, a quiet contact link top-right, and the
-   hero drawing sequence. Contact must be reachable here.
-2. **Spine.** One paragraph carrying the through-line, columns 1 to 7. **Its two margin notes
-   (reading, working on) and the datasheet that followed it were removed** (Arthur's brief, home
-   refactor stage 1, 2026-11-16); stage 3 decides what stays of the paragraph. The facts the datasheet
-   carried (languages, graduation, students helped, location, chess, guitar, the four features) are
-   listed in `TODO/01-remove-datasheet.md` and wait for Arthur to place them.
+1. **Hero** (Arthur's brief, home refactor stage 3, 2026-11-16, after yudiganeko.com). A 4:5 photo,
+   "Hi! I'm", his name (the page's `<h1>`, 72px) and "Computer Engineering Student" under it; the
+   identity list (Curitiba, EU citizen, open to global remote) and the intro line beside it, all centred.
+   The old display line ("I make technical things make sense…"), the email link and the spine paragraph
+   were removed at his request. The facts the datasheet carried (languages, graduation, students helped,
+   chess, guitar, the four features) are listed in `TODO/01-remove-datasheet.md` and wait for Arthur.
 3. **Projects (the bench) and Experience.** Replaces the archive list and its tag filters (Arthur's
    decision, 2026-10-01; §6's one-for-one rule is his call and he made it: one section out, two in).
    The bench is three objects on one work surface, each a link; Experience (Arthur's brief, 2026-10-02) is a
@@ -418,7 +419,7 @@ Four in v1. Each owns a section or a page and each must justify its cost.
 
 Self-playing on load, once per session, **under 1.6s total**. The origin marks and the
 first construction lines of the drawing assemble, the display line arrives per word, the
-rule begins its descent. Session-scoped via `sessionStorage`: a visitor on their third
+rule begins its descent. Since 2026-11-16 the words are the name's, and the hero photo fades in (opacity only). Session-scoped via `sessionStorage`: a visitor on their third
 visit should not pay this tax. The first screen must still read correctly with the
 sequence disabled.
 
