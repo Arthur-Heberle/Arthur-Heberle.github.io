@@ -125,8 +125,8 @@ below is subordinate to it.
 Six values. The two chromatic ones have specific jobs and never decorate.
 
 ```css
---ground:    #EAECEB;  /* page, cool pale gray, drafting stock — never cream */
---sheet:     #F6F7F6;  /* raised areas: archive rows, drawing panels */
+--ground:    #F6F7F6;  /* page, near white, cool — never cream (Arthur, 2026-11-16; was #EAECEB) */
+--sheet:     #FBFCFB;  /* raised areas: drawing panels, a step above the ground (was #F6F7F6) */
 --graphite:  #23262A;  /* all body text and drawing lines, cool near-black */
 --graphite-2:#666A6F;  /* secondary text, annotations, metadata */
 --line:      #C3C8C6;  /* hairlines and construction lines */

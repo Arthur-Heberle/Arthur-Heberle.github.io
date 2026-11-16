@@ -26,8 +26,8 @@
    * --measure appears only inside set-piece drawings, never in UI.
    * No pure black, no pure white, no gray outside this list.
    */
-  --color-ground: #eaeceb;      /* page: cool pale gray, drafting stock. NOT cream */
-  --color-sheet: #f6f7f6;       /* raised: archive rows, drawing panels */
+  --color-ground: #f6f7f6;      /* page: near white, cool (Arthur, 2026-11-16; was #eaeceb). NOT cream */
+  --color-sheet: #fbfcfb;       /* raised: drawing panels, a step above the ground (was #f6f7f6) */
   --color-graphite: #23262a;    /* body text and drawing lines: cool near-black */
   --color-graphite-2: #666a6f;  /* secondary text, annotations, metadata */
   --color-line: #c3c8c6;        /* hairlines and construction lines */

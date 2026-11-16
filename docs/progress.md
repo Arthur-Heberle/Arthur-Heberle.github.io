@@ -1987,3 +1987,9 @@ side margin (`clamp(24px, 5vw, 80px)`, 72px at 1440) but a fixed distance from t
 from 768px; 16px and 12px below. `--corner-inset` became `--corner-top`/`--corner-left`; the lane keeps its old width (side
 margin + name + 24px), so the content column is unchanged (hero text still starts at 200px at 1440). Checked in headless Edge
 at 1440, 1024 and 390, top and scrolled: no horizontal scroll.
+
+Lighter page (2026-11-16, Arthur's request, "deixe a página mais clara", option "near white"): `--color-ground` #eaeceb →
+#f6f7f6 (the old sheet), `--color-sheet` #f6f7f6 → #fbfcfb so panels still sit a step above the ground. Token change on
+Arthur's request; design-spec §5 updated. No other file hard-codes either value (the root prototypes `edubra-*.html` are not
+part of the site). `--graphite-2` on the new ground is 5.07:1 (the figure part 1 measured on the old sheet), higher on the new
+sheet; the corner name's halo follows the ground token. Checked in headless Edge at 1440, home and EduBra.
