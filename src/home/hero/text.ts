@@ -8,7 +8,8 @@ const en = {
   role: 'Computer Engineering Student',
   photoAlt: 'Arthur Heberle',
   identity: ['Curitiba, Brasil', 'EU citizen', 'open to global remote'],
-  intro: 'Computer engineering at UTFPR, in Curitiba. Embedded systems, C++, and AI automation.',
+  // two lines, broken after "Curitiba." (Arthur, 2026-11-16)
+  intro: ['Computer engineering at UTFPR, in Curitiba.', 'Embedded systems, C++, and AI automation.'],
 }
 
 export const text: Record<Lang, typeof en> = { en, pt: en }

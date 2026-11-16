@@ -51,14 +51,14 @@
   flex-direction: column;
   align-items: center;
   width: 100%;
-  max-width: 320px;
+  max-width: 260px;
 }
-/* The file is 604x1073 (width/height attributes); aspect-ratio crops it to a square (Arthur, 2026-11-16: shorter than the first 4:5). */
+/* The file is 604x1073 (width/height attributes); aspect-ratio crops it to a 4:5 portrait. */
 .hero-photo {
   display: block;
   width: 100%;
   height: auto;
-  aspect-ratio: 1 / 1;
+  aspect-ratio: 4 / 5;
   object-fit: cover;
   object-position: 50% 30%;
   border-radius: var(--radius-panel);
@@ -66,10 +66,15 @@
 .hero-greeting {
   margin: 1.5rem 0 0.25rem;
 }
-/* The display size, 56px (40px below 768px): Arthur asked for it smaller than the first 72/48 (2026-11-16). */
+/* Archivo 400, 40px (32px below 768px): Arthur asked for it smaller and thinner than the display face
+ * (2026-11-16, after 72/48 and 56/40 in Archivo Expanded 500). Archivo 400 is preloaded, so no swap shift. */
 .hero-name {
   margin: 0;
-  font-size: 2.5rem;
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 2rem;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
   text-wrap: balance;
 }
 .hero-role {
@@ -105,13 +110,13 @@
   .hero-id {
     grid-column: 1 / span 5;
     justify-self: center;
-    max-width: 360px; /* about the reference's photo size; bigger pushes the role line off the first screen */
+    max-width: 280px; /* Arthur, 2026-11-16: smaller than the reference's 360px */
   }
   .hero-info {
     grid-column: 6 / -1;
   }
   .hero-name {
-    font-size: 3.5rem;
+    font-size: 2.5rem;
   }
   .datum {
     width: calc((100% - 11 * var(--home-gap)) / 12 * 5 + 4 * var(--home-gap));

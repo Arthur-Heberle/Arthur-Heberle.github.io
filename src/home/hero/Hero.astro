@@ -29,7 +29,7 @@ const t = text[getLang(Astro)]
     <p class="hero-greeting text-body text-graphite-2">{t.greeting}</p>
     <!-- data-hero-display: the element motion.ts's heroSequence() splits into words, and that
          Base.astro's flash guard (hero-pending) hides until the sequence starts. -->
-    <h1 class="display hero-name" data-hero-display>{t.name}</h1>
+    <h1 class="hero-name" data-hero-display>{t.name}</h1>
     <p class="hero-role text-body text-graphite-2">{t.role}</p>
   </div>
 
@@ -38,6 +38,6 @@ const t = text[getLang(Astro)]
     <ul role="list" class="hero-identity text-h3 font-sans">
       {t.identity.map((item) => <li>{item}</li>)}
     </ul>
-    <p class="measure text-body text-graphite-2">{t.intro}</p>
+    <p class="measure text-body text-graphite-2">{t.intro[0]}<br />{t.intro[1]}</p>
   </div>
 </header>

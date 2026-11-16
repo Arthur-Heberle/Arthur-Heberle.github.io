@@ -156,7 +156,7 @@ Google Fonts, woff2, latin subset, `font-display: swap`. Preload the display fac
 
 | Role | Size / leading | Notes |
 |---|---|---|
-| display | 56px / 1.0, tracking -0.02em | 40px below 768px. The home hero name uses it too (Arthur, 2026-11-16, after first trying 72/48) |
+| display | 56px / 1.0, tracking -0.02em | 40px below 768px. The home hero name is not display: Archivo 400, 40px (32px below 768px), Arthur 2026-11-16 |
 | h2 | 28px / 1.15 | |
 | h3 | 20px / 1.3 | |
 | body | 17px / 1.65 | measure capped at 68ch |
@@ -171,7 +171,7 @@ Google Fonts, woff2, latin subset, `font-display: swap`. Preload the display fac
 - Spine column 68ch max. Margin column 200px. Gutter 32px, and the gutter is where
   leader lines are drawn.
 - Home page grid (Arthur, 2026-10-24), 768px and up: 12 columns, content at most 1280px, sides
-  `clamp(24px, 5vw, 80px)`, 24px gap, everything left-aligned. Hero: photo and name on columns 1 to 5 (photo at most 360px, square), identity and
+  `clamp(24px, 5vw, 80px)`, 24px gap, everything left-aligned. Hero: photo and name on columns 1 to 5 (photo 4:5, at most 280px wide), identity and
   intro on 6 to 12 (since 2026-11-16; no spine, margin notes or datasheet); the bench and
   Experience use the full width. Below 768px it is the single column it was.
 - Radius (Arthur, 2026-10-24): panels and cards `--radius-panel` 10px; buttons and controls
@@ -188,8 +188,8 @@ Google Fonts, woff2, latin subset, `font-display: swap`. Preload the display fac
 
 ### Home page
 
-1. **Hero** (Arthur's brief, home refactor stage 3, 2026-11-16, after yudiganeko.com). A square photo,
-   "Hi! I'm", his name (the page's `<h1>`, 56px) and "Computer Engineering Student" under it; the
+1. **Hero** (Arthur's brief, home refactor stage 3, 2026-11-16, after yudiganeko.com). A 4:5 photo (at most 280px wide),
+   "Hi! I'm", his name (the page's `<h1>`, Archivo 400, 40px) and "Computer Engineering Student" under it; the
    identity list (Curitiba, EU citizen, open to global remote) and the intro line beside it, all centred.
    The old display line ("I make technical things make sense…"), the email link and the spine paragraph
    were removed at his request. The facts the datasheet carried (languages, graduation, students helped,
