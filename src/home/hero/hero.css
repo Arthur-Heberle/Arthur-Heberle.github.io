@@ -53,12 +53,12 @@
   width: 100%;
   max-width: 320px;
 }
-/* The file is 604x1073 (width/height attributes); aspect-ratio crops it to a 4:5 portrait. */
+/* The file is 604x1073 (width/height attributes); aspect-ratio crops it to a square (Arthur, 2026-11-16: shorter than the first 4:5). */
 .hero-photo {
   display: block;
   width: 100%;
   height: auto;
-  aspect-ratio: 4 / 5;
+  aspect-ratio: 1 / 1;
   object-fit: cover;
   object-position: 50% 30%;
   border-radius: var(--radius-panel);
@@ -66,10 +66,10 @@
 .hero-greeting {
   margin: 1.5rem 0 0.25rem;
 }
-/* Larger than the 56/40 display size (§5 scale change, Arthur's brief); size lives here, tokens untouched. */
+/* The display size, 56px (40px below 768px): Arthur asked for it smaller than the first 72/48 (2026-11-16). */
 .hero-name {
   margin: 0;
-  font-size: 3rem;
+  font-size: 2.5rem;
   text-wrap: balance;
 }
 .hero-role {
@@ -111,7 +111,7 @@
     grid-column: 6 / -1;
   }
   .hero-name {
-    font-size: 4.5rem;
+    font-size: 3.5rem;
   }
   .datum {
     width: calc((100% - 11 * var(--home-gap)) / 12 * 5 + 4 * var(--home-gap));
