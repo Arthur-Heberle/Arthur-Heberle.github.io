@@ -97,7 +97,10 @@ margin note is named beside each one.
 > *(Paragraph 2 is gone, 2026-10-02: its languages, chess and guitar moved into the home
 > datasheet, "Typical characteristics" and "Known side effects".)*
 
-Marker order — the order the notes appear in the margin:
+*(Removed 2026-11-16, home refactor stage 1: the datasheet and both margin notes below. The
+paragraph now has no markers.)*
+
+Marker order — the order the notes appeared in the margin (history):
 
 | Marker | Note |
 |---|---|
@@ -110,6 +113,8 @@ himself. The archive proves the claims; the spine only has to state them.
 ---
 
 ## Margin notes — five, at the ceiling
+
+*(Removed from the home page 2026-11-16, with the datasheet. History only.)*
 
 Placeholders written in Arthur's voice, to be replaced with his own wording. Five is the
 maximum; a sixth dilutes the read.

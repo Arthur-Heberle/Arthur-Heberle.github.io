@@ -170,14 +170,14 @@ Google Fonts, woff2, latin subset, `font-display: swap`. Preload the display fac
   leader lines are drawn.
 - Home page grid (Arthur, 2026-10-24), 768px and up: 12 columns, content at most 1280px, sides
   `clamp(24px, 5vw, 80px)`, 24px gap, everything left-aligned. Hero line up to 10 columns, spine
-  paragraph 7, margin notes 4 (columns 9 to 12, leaders in column 8), datasheet 10 to 12; the bench and
+  paragraph 7 (no margin notes or datasheet since 2026-11-16); the bench and
   Experience use the full width. Below 768px it is the single column it was.
 - Radius (Arthur, 2026-10-24): panels and cards `--radius-panel` 10px; buttons and controls
   `--radius-control` 6px; physical objects in the drawings keep their own realistic radii.
   Technical-drawing strokes (dimension lines, leader lines, grids, the drawing rule, the title block)
   stay square.
 - Lines only where they mean something: dimensions, leaders, callouts, the title block, the timeline
-  axis. No decorative rules (the datasheet has none, its tables use spacing). Hairlines 0.5px `--line`.
+  axis. No decorative rules. Hairlines 0.5px `--line`.
   No rounded corners on single-sided borders.
 
 ---
@@ -188,13 +188,11 @@ Google Fonts, woff2, latin subset, `font-display: swap`. Preload the display fac
 
 1. **Hero.** Display line, one supporting line, a quiet contact link top-right, and the
    hero drawing sequence. Contact must be reachable here.
-2. **Spine with margins.** One paragraph carrying the through-line, with two numbered
-   annotation markers pulling to margin notes. Followed by a **datasheet** (Arthur's brief,
-   2026-10-02; the second paragraph and its three notes went out, the datasheet came in): a
-   full-width block styled as an electronic component datasheet. It is printed on a sheet of paper
-   (Arthur's brief, 2026-10-24): `--color-sheet`, lying on the page with a soft shadow thrown to the lower
-   right, turned -0.6deg from 768px up (only the background layer turns, the text does not) and flat below.
-   The corner title block keeps its thin rules.
+2. **Spine.** One paragraph carrying the through-line, columns 1 to 7. **Its two margin notes
+   (reading, working on) and the datasheet that followed it were removed** (Arthur's brief, home
+   refactor stage 1, 2026-11-16); stage 3 decides what stays of the paragraph. The facts the datasheet
+   carried (languages, graduation, students helped, location, chess, guitar, the four features) are
+   listed in `TODO/01-remove-datasheet.md` and wait for Arthur to place them.
 3. **Projects (the bench) and Experience.** Replaces the archive list and its tag filters (Arthur's
    decision, 2026-10-01; §6's one-for-one rule is his call and he made it: one section out, two in).
    The bench is three objects on one work surface, each a link; Experience (Arthur's brief, 2026-10-02) is a
@@ -287,6 +285,8 @@ decision and is currently buried at the bottom of the CV. Do not join these with
 dots; use spacing or thin rules.
 
 ### Margin notes, five, at the ceiling
+
+*(History: the home page has no margin notes since 2026-11-16. Project pages keep their one plain note.)*
 
 Arthur's own wording to be substituted; these are placeholders in his voice.
 

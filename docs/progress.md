@@ -1972,3 +1972,11 @@ Stage 1 divergences from the plan:
 switch is one floating element in the **top-right** corner, the name SVG (`arthur-heberle.svg`) is in the **top-left**, and both
 stay **always visible while scrolling**, on a layer above the content, with **no bar or background strip**. Shared CSS and
 details in `TODO/02-corner-name.md`.
+
+### Home page refactor (2026-11-16, Arthur's brief)
+
+Brief in `TODO/` (README plus one file per stage). Commit message `home-refactor: <stage>`.
+
+| Stage | Status | Notes |
+|---|---|---|
+| 1 Remove the datasheet and the margin notes | done | Deleted `src/home/datasheet/`, `src/content/notes/`, `spine.ts`, `noteDrawings.ts`, `NoteDrawing.astro`, the `notes` collection and `getNotes`. `MarginNote.astro` is now the plain project-page note only (leader + slot). The spine paragraph is one string (`before1` + `between`, copy verbatim) on columns 1 to 7. JS 82.0 → 78.5 KB gzip. Checked in headless Edge at 390/1024/1440: home order hero, spine, bench, experience, changelog, contact; no console errors, no horizontal scroll, no orphan `aria-*` ids; EduBra's note and leader still there (Agente H never had a project note). **CLS is not exactly 0** but identical to the build before this stage (home 0.0001-0.0003, a pre-existing shift on the `.feedback` link; EduBra up to 0.015 on its story hint), so nothing new. The brief's `grep "reading" src/content` still hits EduBra's prose ("reading it is still…"), unrelated. Removed facts (languages, graduation, students helped, location/EU/remote, chess/guitar, the four features) are in `TODO/01-remove-datasheet.md` and in git history before this commit. |

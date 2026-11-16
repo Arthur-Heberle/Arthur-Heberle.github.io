@@ -11,10 +11,6 @@ export async function getExperience(_lang: Lang) {
   return getCollection('experience')
 }
 
-export async function getNotes(_lang: Lang) {
-  return getCollection('notes')
-}
-
 export async function getChangelog(_lang: Lang) {
   return getCollection('changelog')
 }

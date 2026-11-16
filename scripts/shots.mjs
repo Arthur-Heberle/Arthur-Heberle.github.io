@@ -112,9 +112,7 @@ async function homeViewports(page, w) {
   const tag = (part) => `home-${w}-${part}`
   await page.evaluate(() => scrollTo({ top: 0, behavior: 'instant' }))
   await shot(page, tag('hero'))
-  if (await top(page, '[data-spine]', 80)) await shot(page, tag('spine'))
-  if (await top(page, '[data-datasheet]', 40)) await shot(page, tag('datasheet-a'))
-  if (await centre(page, '.ds-tables')) await shot(page, tag('datasheet-b'))
+  if (await top(page, '.rail-spine', 80)) await shot(page, tag('spine'))
   if (await top(page, '#projects-heading', 60)) await shot(page, tag('bench'), 1800)
   if (await top(page, '#experience-heading', 60)) await shot(page, tag('experience-top'))
   const blocks = await page.evaluate(() => document.querySelectorAll('.xp-block').length)

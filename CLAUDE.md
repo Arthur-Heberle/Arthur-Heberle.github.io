@@ -73,7 +73,7 @@ Code is split by domain, so a change to one section touches one folder.
 |---|---|
 | `src/shared/` | `layouts/Base.astro` (every page), `components/` (Glass, Rule, Tick), `motion.ts` (the one GSAP/Lenis authority), `styles/` (tokens, fonts, `global.css`, base, light, drawing, control), `fill.ts`, `text.ts` |
 | `src/shared/i18n/` | `lang.ts` (`getLang`, `localePath`), `content.ts` (collections by language), `Data.astro` + `runtime.ts` (words handed to scripts as JSON) |
-| `src/home/` | `HomePage.astro` (section order), `home.css` (12-column grid), one folder per section: `hero`, `spine`, `datasheet` (being removed), `bench` (Projects), `experience`, `changelog`, `contact`; coming: `roadmap`, `about` |
+| `src/home/` | `HomePage.astro` (section order), `home.css` (12-column grid), one folder per section: `hero`, `spine`, `bench` (Projects), `experience`, `changelog`, `contact`; coming: `roadmap`, `about` |
 | `src/projects/` | `ProjectPage.astro` (shared template), `ProjectRoute.astro`, `projects.ts` (which ids get a page), `project.css` |
 | `src/projects/<id>/` | one folder per project page (`edubra/`, `agente-h/`): set-piece, story script, CSS, `text.ts` |
 | `src/content/`, `src/pages/`, `src/content.config.ts` | where Astro requires them: collections, routes (`pages/*` are thin wrappers) |

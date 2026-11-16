@@ -73,14 +73,6 @@ const experience = defineCollection({
   }),
 })
 
-const notes = defineCollection({
-  loader: glob({ pattern: '*.md', base: './src/content/notes' }),
-  schema: z.object({
-    order: z.number().int().min(1).max(5), // five is the ceiling, per design-spec §7
-    label: z.string().min(1),
-  }),
-})
-
 const changelog = defineCollection({
   loader: file('src/content/changelog.yaml'),
   schema: z.object({
@@ -89,4 +81,4 @@ const changelog = defineCollection({
   }),
 })
 
-export const collections = { projects, experience, notes, changelog }
+export const collections = { projects, experience, changelog }

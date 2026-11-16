@@ -53,10 +53,11 @@ sections without Arthur's say.
 
 ## Acceptance
 
-- [ ] `grep -ri datasheet src` finds nothing; `grep -r "working-on\|reading" src/content` finds nothing.
-- [ ] Project pages unchanged: their margin note and leader still draw (EduBra, Agente H).
-- [ ] Home: hero, spine paragraph, bench, Experience, Changelog, Contact in that order; 160px above
+- [x] `grep -ri datasheet src` finds nothing; `grep -r "working-on\|reading" src/content` finds nothing.
+- [x] Project pages unchanged: their margin note and leader still draw (EduBra, Agente H).
+- [x] Home: hero, spine paragraph, bench, Experience, Changelog, Contact in that order; 160px above
       Projects (`.section-gap`).
-- [ ] No console errors, no horizontal scroll at 390/1024/1440, CLS 0.
-- [ ] AX tree: no orphan description ids (`aria-describedby` pointing at removed notes).
-- [ ] `pnpm build` passes; JS total smaller than before (record the figure).
+- [x] No console errors, no horizontal scroll at 390/1024/1440, CLS 0. (Done 2026-11-16: CLS 0.0001-0.0003,
+      identical to before the stage; see progress.md.)
+- [x] AX tree: no orphan description ids (`aria-describedby` pointing at removed notes).
+- [x] `pnpm build` passes; JS total smaller than before (record the figure). 82.0 → 78.5 KB gzip.

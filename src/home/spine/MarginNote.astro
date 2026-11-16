@@ -1,74 +1,27 @@
 ---
-// One margin note: its rendered body from the `notes` collection, headed by a callout balloon
-// (a back-link to the balloon in the spine's text) and the label in mono.
-// Without an `entry` it is a plain note: the slot's text, no label and no marker (a project
-// page's single note beside its intro, where a "1" would imply a sequence).
-// The leader lines from the text to the notes are one overlay drawn by spine.ts (the rail's
-// <svg class="spine-leaders">), which also places the notes beside their markers' lines.
-import { render } from 'astro:content'
-import type { CollectionEntry } from 'astro:content'
-import NoteDrawing from './NoteDrawing.astro'
-import { getLang } from '../../shared/i18n/lang'
-import { text } from './text'
-
-interface Props {
-  entry?: CollectionEntry<'notes'>
-  marker?: number
-  /** Position among the notes sharing one rail margin (docs/motion-spec.md's 60ms sibling
-   *  stagger, on top of the 200ms lag behind the paragraph). Defaults to 0 — a rail with
-   *  only one note omits this prop entirely. */
-  sibling?: number
-}
-const { entry, marker, sibling = 0 } = Astro.props
-const t = text[getLang(Astro)]
-const Content = entry ? (await render(entry)).Content : null
-// 0.2 + 0.06 * sibling, but toFixed keeps the rendered attribute clean: 0.2 + 0.06 * 2 is
-// 0.32000000000000006 in binary floating point.
-const delay = (0.2 + 0.06 * sibling).toFixed(2)
+// A plain margin note: the slot's text, no label and no marker (a project page's single note beside
+// its intro, where a "1" would imply a sequence). Its drawn leader runs into the rail's gutter;
+// motion.ts's tier1Leaders scrubs it. Revealed 200ms behind its paragraph (docs/motion-spec.md).
 ---
 
-<aside class="note" id={entry ? `note-${entry.id}` : undefined} data-anim data-delay={delay}>
-  {
-    !entry && (
-      // a project page's plain note: the drawn leader into its rail's gutter (motion.ts scrubs it)
-      <svg class="leader" viewBox="0 0 32 24" preserveAspectRatio="none" aria-hidden="true">
-        <path
-          class="leader-base"
-          d="M0 4 H18 L32 12"
-          fill="none"
-          stroke="var(--color-line)"
-          stroke-width="1"
-          vector-effect="non-scaling-stroke"
-        />
-        <path
-          class="leader-hi"
-          d="M0 4 H18 L32 12"
-          fill="none"
-          stroke="var(--color-signal)"
-          stroke-width="1"
-          vector-effect="non-scaling-stroke"
-        />
-      </svg>
-    )
-  }
+<aside class="note" data-anim data-delay="0.20">
+  <svg class="leader" viewBox="0 0 32 24" preserveAspectRatio="none" aria-hidden="true">
+    <path
+      class="leader-base"
+      d="M0 4 H18 L32 12"
+      fill="none"
+      stroke="var(--color-line)"
+      stroke-width="1"
+      vector-effect="non-scaling-stroke"></path>
+    <path
+      class="leader-hi"
+      d="M0 4 H18 L32 12"
+      fill="none"
+      stroke="var(--color-signal)"
+      stroke-width="1"
+      vector-effect="non-scaling-stroke"></path>
+  </svg>
   <div class="note-text text-small text-graphite-2">
-    {
-      entry && Content ? (
-        <>
-          <div class="note-head">
-            <a class="balloon" href={`#marker-${entry.id}`} aria-label={t.backTo(marker!)}>
-              {marker}
-            </a>
-            <span class="note-label">{entry.data.label}</span>
-          </div>
-          <div class="note-body" id={`note-text-${entry.id}`}>
-            <NoteDrawing kind={entry.id} />
-            <Content />
-          </div>
-        </>
-      ) : (
-        <slot />
-      )
-    }
+    <slot />
   </div>
 </aside>

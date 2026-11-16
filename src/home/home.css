@@ -3,7 +3,7 @@
  *
  * Content is at most 1280px wide with clamp(24px, 5vw, 80px) at the sides, 12 equal columns and a 24px
  * gap. Every section spans all 12 columns and places what it holds on the same tracks: a section that needs
- * columns of its own (the hero, the spine, the datasheet, the experience grid) repeats `repeat(12, ...)` and
+ * columns of its own (the hero, the spine, the experience grid) repeats `repeat(12, ...)` and
  * the same gap, so its tracks line up with the page's exactly. Everything is left-aligned.
  *
  * `.page-home` is on the home page's <main> only; project pages share `.page-main` and keep their rail. */
