@@ -35,6 +35,10 @@
 /* home: the project bench (borrows the EduBra and Agente H materials above) */
 @import "../../home/bench/bench.css";
 
+/* shared: the floating corner chrome (the name, later the language switch) and the lane it keeps
+ * clear; after the page layouts, whose widths it overrides */
+@import "./chrome.css";
+
 /* Lenis's required stylesheet, shipped by the package. Every rule in it is gated on the
  * `lenis` class Lenis puts on <html> at runtime, so it is inert with JS disabled. Last,
  * so Tailwind's preflight (pulled in by tokens.css) can't override it. */

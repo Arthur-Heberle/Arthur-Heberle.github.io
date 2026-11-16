@@ -1,0 +1,86 @@
+/* Site chrome (Arthur, 2026-11-16): the elements that float in the page's top corners and stay
+ * on screen while it scrolls. Only the elements themselves: no bar, no strip behind them.
+ * Top left: his name (HomeLink.astro). Top right: the EN/PT switch, once the i18n brief builds it.
+ *
+ * Nothing should run under the name (Arthur, same day):
+ * - from 1024px the content is a narrower, centred column and the name has its own lane down the
+ *   left side (`--name-lane`, mirrored on the right so the column stays centred);
+ * - below 1024px there is no room for a lane: the page starts below the name (`--name-clear` on
+ *   <body>), and text that scrolls under it is kept apart by the name's ground-coloured halo.
+ * Imported after the page layouts (home.css, drawing.css, project.css) because it overrides their widths. */
+/* The name sits right in the corner, a small fixed distance from the edges at every width (Arthur,
+ * 2026-11-16, after yudiganeko.com), not at the page's side margin. The lane keeps its earlier width
+ * (side margin + name + 24px), so the content column is unchanged. */
+:root {
+  --corner-top: 12px;
+  --corner-left: 16px;
+  --name-width: 80px;
+  --name-height: calc(var(--name-width) * 167 / 449);
+  --name-clear: calc(var(--corner-top) + var(--name-height));
+}
+@media (min-width: 768px) {
+  :root {
+    --corner-top: 16px;
+    --corner-left: 24px;
+    --name-width: 104px;
+  }
+}
+@media (min-width: 1024px) {
+  :root {
+    --name-lane: calc(clamp(24px, 5vw, 80px) + var(--name-width) + 24px);
+  }
+}
+
+.home-link {
+  position: fixed;
+  top: var(--corner-top);
+  left: var(--corner-left);
+  z-index: 50; /* above every section: the bench's 3D scene, Experience's sticky stage, the stories */
+  display: block;
+  width: var(--name-width);
+  aspect-ratio: 449 / 167;
+  color: var(--color-graphite);
+  transition: opacity var(--dur-feedback) var(--ease-out);
+}
+.home-link svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.home-link-name {
+  stroke: currentColor;
+}
+.home-link-halo {
+  stroke: var(--color-ground);
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.home-link:hover {
+  opacity: 0.7;
+}
+@media (prefers-reduced-motion: reduce) {
+  .home-link {
+    transition: none;
+  }
+}
+
+/* Below 1024px: the page starts under the name. */
+@media (max-width: 1023px) {
+  body {
+    padding-top: var(--name-clear);
+  }
+}
+
+/* From 1024px: the name's lane on both sides of every page. */
+@media (min-width: 1024px) {
+  .page-home {
+    --home-pad: max(clamp(24px, 5vw, 80px), var(--name-lane));
+  }
+  .page-main:not(.page-home) {
+    width: min(
+      calc(100% - 2 * var(--name-lane)),
+      calc(var(--container-measure) + var(--spacing-gutter) + var(--container-margin))
+    );
+  }
+}

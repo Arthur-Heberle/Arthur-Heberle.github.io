@@ -71,7 +71,7 @@ Code is split by domain, so a change to one section touches one folder.
 
 | Folder | Holds |
 |---|---|
-| `src/shared/` | `layouts/Base.astro` (every page), `components/` (Glass, Rule, Tick), `motion.ts` (the one GSAP/Lenis authority), `styles/` (tokens, fonts, `global.css`, base, light, drawing, control), `fill.ts`, `text.ts` |
+| `src/shared/` | `layouts/Base.astro` (every page), `components/` (Glass, Rule, Tick, HomeLink: the name in the corner), `motion.ts` (the one GSAP/Lenis authority), `styles/` (tokens, fonts, `global.css`, base, chrome (the floating corners), light, drawing, control), `fill.ts`, `text.ts` |
 | `src/shared/i18n/` | `lang.ts` (`getLang`, `localePath`), `content.ts` (collections by language), `Data.astro` + `runtime.ts` (words handed to scripts as JSON) |
 | `src/home/` | `HomePage.astro` (section order), `home.css` (12-column grid), one folder per section: `hero`, `spine`, `bench` (Projects), `experience`, `changelog`, `contact`; coming: `roadmap`, `about` |
 | `src/projects/` | `ProjectPage.astro` (shared template), `ProjectRoute.astro`, `projects.ts` (which ids get a page), `project.css` |
@@ -98,6 +98,9 @@ the page hands them their words through `Data.astro`.
 - **Top right:** the EN/PT language switch.
 - Both are **always visible**: they stay on screen while the page scrolls, floating on a layer
   above the content. **No bar and no background strip** behind them.
+- **Nothing runs under the name:** from 1024px every page's content is a narrower centred column and
+  the name has its own lane (`--name-lane` in `src/shared/styles/chrome.css`); below 1024px the page
+  starts under the name and the name has a ground-coloured halo. New layouts must respect the lane.
 
 ---
 

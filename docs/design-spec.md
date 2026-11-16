@@ -219,9 +219,12 @@ One per set-piece project, each carrying its own set-piece. Built over time, one
 time. Template (changed by Arthur, 2026-09-30): title and intro (with an optional margin
 note beside it), the set-piece, the project's own sections, "How we built it" (optional),
 "My part" (which replaced "What I did" and "Role and team"), "What I'd do differently", Links
-last. "What I'd do differently" is unusual and worth keeping. Every project page also opens with
-an **origin link** (a small circle-and-crosshair mark and "Arthur Heberle", one link home; a
-short leader draws out of the mark on hover and focus) and ends with a **title block** in the style
+last. "What I'd do differently" is unusual and worth keeping. The way home, on every page (home
+included), is **Arthur's name**, the SVG he drew, fixed in the top-left corner with no bar behind it
+(Arthur, 2026-11-16; it replaced the circle-and-crosshair "origin link" of 2026-09-30). From 1024px
+every page's content is a narrower centred column so the name keeps a lane of its own down the left
+(mirrored on the right); below 1024px the page starts under it and the name carries a ground-coloured halo. Every project
+page ends with a **title block** in the style
 of an engineering drawing (a thin-ruled box: "Arthur Heberle / index", then "<Project>, sheet NN of
 TT" in mono, NN being the project's place on the home bench and TT the number of projects; "sheet NN+1" links to the next project page when that entry has one). Arthur's decision,
 2026-09-30; it replaced a house-icon "Home" link the same day.

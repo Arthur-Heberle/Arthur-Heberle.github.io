@@ -62,5 +62,5 @@ Arthur Heberle  (larger than today's 56px)   info lines
 - [x] One `<h1>`; the photo's alt text is Arthur's.
 - [x] CLS 0 with the photo, cold cache (Lighthouse mobile and the layout-shift observer).
 - [x] Hero sequence: no flash on first visit, no animation on repeat visit or reduced motion.
-- [ ] Clear of the fixed corner name at every width. (Pending: stage 2 not built yet; the hero starts 48px down.)
+- [x] Clear of the fixed corner name at every width (checked after merging stage 2: 1440, 1024, 390).
 - [x] `pnpm build` passes.

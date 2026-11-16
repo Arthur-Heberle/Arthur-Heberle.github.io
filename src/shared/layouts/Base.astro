@@ -2,6 +2,7 @@
 import '../styles/global.css'
 import { HTML_LANG, getLang } from '../i18n/lang'
 import { text } from '../text'
+import HomeLink from '../components/HomeLink.astro'
 
 interface Props {
   title: string
@@ -82,6 +83,8 @@ const t = text[lang]
     <!-- Every page rendering this layout must give its main content element id="main":
          this is what the skip link lands on. -->
     <a class="skip" href="#main">{t.skip}</a>
+    <!-- the name, fixed top left on every page (chrome.css): the first stop after "skip" -->
+    <HomeLink />
     <slot />
     <!-- The single scroll authority (docs/motion-spec.md): one Lenis instance, one
          gsap.ticker hook, registered plugins, and the matchMedia scaffold steps 08-13
