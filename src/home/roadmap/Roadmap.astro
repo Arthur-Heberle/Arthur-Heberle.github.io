@@ -1,0 +1,153 @@
+---
+// The Roadmap (Arthur's brief, 2026-11-16): one horizontal timeline per thing he is studying or building, read
+// from src/content/roadmap/ (one YAML file each; that folder's README.md says how to add one). Each timeline is
+// a dotted baseline with a random wave weaving along it (wave.ts, seeded from the file name); the nodes sit on
+// the baseline, evenly spaced, each with a box (ticked when done in the YAML: Arthur's progress, not a form
+// control), a title and its date limit. Groups (the YAML's blocks) are bracketed under their nodes.
+//
+// Every node is a button that opens a popover with its explanation: the Popover API, so it opens, closes on Esc
+// and on a click outside, with JavaScript off too (shown in the middle of the window then). roadmap.ts, loaded
+// as the section nears the viewport, places the popover at its node and lets the wave follow the pointer.
+//
+// Each timeline is a horizontal scroller of its own when its nodes don't fit (phones): the page never scrolls
+// sideways. The drawing is aria-hidden; the counts and done states are said in text.
+import { getLang } from '../../shared/i18n/lang'
+import { getRoadmap } from '../../shared/i18n/content'
+import { text } from './text'
+import { dateLabel, yearOf } from './dates'
+import { wavePath } from './wave'
+
+const lang = getLang(Astro)
+const t = text[lang]
+const timelines = await getRoadmap(lang)
+
+// The drawing's own units: one node is SLOT wide, the band is BAND tall with the baseline at its middle.
+const SLOT = 176
+const BAND = 48
+const MID = BAND / 2
+
+const rows = timelines.map((timeline) => {
+  const nodes = timeline.data.groups.flatMap((g) => g.nodes)
+  const width = nodes.length * SLOT
+  let lastYear = 0
+  const groups = timeline.data.groups.map((group, gi) => ({
+    title: group.title,
+    span: group.nodes.length,
+    nodes: group.nodes.map((node, ni) => {
+      const year = yearOf(node.due)
+      const withYear = year !== lastYear
+      lastYear = year
+      return {
+        ...node,
+        id: `rm-${timeline.id}-${gi}-${ni}`,
+        short: dateLabel(node.due, node.start, t.months, withYear),
+        long: dateLabel(node.due, node.start, t.months, true),
+      }
+    }),
+  }))
+  return {
+    id: timeline.id,
+    title: timeline.data.title,
+    total: nodes.length,
+    done: nodes.filter((n) => n.done).length,
+    width,
+    // MID - 8: room for roadmap.ts to raise it 35% without leaving the band
+    wave: wavePath(timeline.id, width, MID, MID - 8),
+    groups,
+  }
+})
+---
+
+<section class="section-gap flex flex-col gap-8" aria-labelledby="roadmap-heading">
+  <h2 id="roadmap-heading" class="section-title" data-anim>{t.heading}</h2>
+  <div class="rm" data-roadmap>
+    {
+      rows.map((row) => (
+        <article class="rm-timeline" aria-labelledby={`${row.id}-title`} data-anim data-delay="0.06">
+          <header class="rm-head">
+            <h3 id={`${row.id}-title`} class="rm-title">
+              {row.title}
+            </h3>
+            <span class="rm-count font-mono" aria-hidden="true">
+              {row.done}/{row.total}
+            </span>
+            <span class="sr-only">{t.count(row.done, row.total)}</span>
+          </header>
+          <div class="rm-track" data-rm-track>
+            <div class="rm-line" style={`--n:${row.total}`} data-rm-line>
+              <svg
+                class="rm-draw"
+                viewBox={`0 0 ${row.width} ${BAND}`}
+                preserveAspectRatio="none"
+                aria-hidden="true"
+                focusable="false"
+              >
+                <line class="rm-base" x1="0" y1={MID} x2={row.width} y2={MID} />
+                <g class="rm-wave" data-rm-wave>
+                  <path d={row.wave} />
+                </g>
+              </svg>
+              <ol class="rm-groups" role="list">
+                {row.groups.map((group) => (
+                  <li class="rm-group" style={`--span:${group.span}`}>
+                    <p class="rm-group-label">{group.title}</p>
+                    <ol class="rm-nodes" role="list">
+                      {group.nodes.map((node) => (
+                        <li class="rm-node">
+                          <button
+                            type="button"
+                            class="rm-btn"
+                            popovertarget={node.id}
+                            aria-label={`${node.title}, ${t.due} ${node.long}, ${node.done ? t.done : t.notDone}`}
+                            data-done={node.done ? '' : undefined}
+                          >
+                            <span class="rm-box" aria-hidden="true">
+                              {node.done && (
+                                <svg viewBox="0 0 16 16" focusable="false">
+                                  <path d="M3.5 8.5 L6.8 11.5 L12.5 4.5" />
+                                </svg>
+                              )}
+                            </span>
+                            <span class="rm-node-title">{node.title}</span>
+                            <span class="rm-date font-mono">{node.short}</span>
+                          </button>
+                          <div popover id={node.id} class="rm-pop">
+                            <p class="rm-pop-title">{node.title}</p>
+                            <p class="rm-pop-meta">
+                              <span class="font-mono">
+                                {t.dueLabel} {node.long}
+                              </span>
+                              <span class="rm-pop-state">{node.done ? t.done : t.notDone}</span>
+                            </p>
+                            <p class="rm-pop-about">{node.about}</p>
+                          </div>
+                        </li>
+                      ))}
+                    </ol>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          </div>
+        </article>
+      ))
+    }
+  </div>
+</section>
+
+<script>
+  // The pointer-following wave and the popover placement load only as the roadmap nears the viewport
+  // (roadmap.ts is its own chunk). Until then, and without JS, popovers open in the middle of the window.
+  const roadmap = document.querySelector<HTMLElement>('[data-roadmap]')
+  if (roadmap) {
+    const near = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return
+        near.disconnect()
+        import('./roadmap').then((m) => m.initRoadmap(roadmap))
+      },
+      { rootMargin: '400px 0px' },
+    )
+    near.observe(roadmap)
+  }
+</script>

@@ -232,6 +232,28 @@ above the set-piece, and the system diagram below the cells carries how it works
 
 ---
 
+## Roadmap
+
+One YAML file per timeline in `src/content/roadmap/` (its `README.md` explains adding a timeline or a node
+and marking one done). Content is Arthur's, from his `timeline.md` (2026-11-16), copied verbatim. The French
+nodes had no dates; at his request ("create some dates until 10 Dec") they were spread from Nov 18 to Dec 10,
+2026: change them in `french.yaml` whenever he wants. The Bible, mentioned as an example, is not in yet.
+
+```yaml
+title: string
+order: number            # smallest first
+groups:
+  - title: string        # bracketed under its nodes
+    nodes:
+      - title: string
+        due: 2026-12-15  # or 2027-01
+        start: 2026-12-07  # optional, makes a range
+        done: false
+        about: string    # the popover's text
+```
+
+---
+
 ## Changelog
 
 ```yaml

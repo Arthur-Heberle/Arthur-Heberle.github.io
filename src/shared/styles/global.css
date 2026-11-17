@@ -34,6 +34,8 @@
 @import "../../projects/agente-h/story.css";
 /* home: the project bench (borrows the EduBra and Agente H materials above) */
 @import "../../home/bench/bench.css";
+/* home: the roadmap (horizontal timelines, their popovers) */
+@import "../../home/roadmap/roadmap.css";
 
 /* shared: the floating corner chrome (the name, later the language switch) and the lane it keeps
  * clear; after the page layouts, whose widths it overrides */

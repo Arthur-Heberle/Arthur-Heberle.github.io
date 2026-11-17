@@ -1,0 +1,30 @@
+# One file is one timeline on the home page's Roadmap. See README.md in this folder.
+title: Agente H
+order: 4
+groups:
+  - title: Configure Meta API
+    nodes:
+      - title: WhatsApp integration
+        start: 2026-11-23
+        due: 2026-12-06
+        done: false
+        about: Configure the Meta API so Agente H sends and receives WhatsApp messages.
+  - title: Storage systems and catalog automation
+    nodes:
+      - title: Learn storage systems
+        start: 2026-12-07
+        due: 2026-12-20
+        done: false
+        about: Study storage systems to build automations that keep the product catalog up to date.
+  - title: Update n8n workflows
+    nodes:
+      - title: Workflow update
+        due: 2027-01
+        done: false
+        about: "Align the n8n workflows with the new Agente H version: Meta API, database and catalog update."
+  - title: Improve UI/UX
+    nodes:
+      - title: Usability
+        due: 2027-02
+        done: false
+        about: Make the software easier to use.

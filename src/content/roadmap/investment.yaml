@@ -1,0 +1,43 @@
+# One file is one timeline on the home page's Roadmap. See README.md in this folder.
+title: Investment
+order: 3
+groups:
+  - title: Basics to learn
+    nodes:
+      - title: Core concepts
+        start: 2026-11-23
+        due: 2026-11-29
+        done: false
+        about: Inflation (IPCA), Selic rate, CDI, compound interest, liquidity, and the trade-off between risk and return.
+      - title: Emergency fund and investor profile
+        start: 2026-11-30
+        due: 2026-12-06
+        done: false
+        about: "Why the emergency fund comes first (low risk, daily liquidity) and the three investor profiles: conservative, moderate, aggressive."
+      - title: Tesouro Direto
+        start: 2026-12-07
+        due: 2026-12-13
+        done: false
+        about: "Government bonds: Tesouro Selic, Tesouro IPCA+ and Tesouro Prefixado, and when to use each."
+      - title: Bank fixed income
+        start: 2026-12-14
+        due: 2026-12-20
+        done: false
+        about: CDB, LCI and LCA, how they are quoted (% of CDI) and the FGC guarantee.
+      - title: Variable income
+        start: 2027-01-04
+        due: 2027-01-10
+        done: false
+        about: Stocks, FIIs (real-estate funds) and ETFs, volatility and long-term thinking.
+      - title: Costs, taxes and diversification
+        start: 2027-01-11
+        due: 2027-01-17
+        done: false
+        about: Income tax and IOF, broker and fund fees, and how to split money across asset classes.
+  - title: First steps
+    nodes:
+      - title: Practice
+        start: 2027-01-18
+        due: 2027-01-31
+        done: false
+        about: Open an account at a broker, use the Tesouro Direto simulator and track everything in a spreadsheet.

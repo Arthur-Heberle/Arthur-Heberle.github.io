@@ -81,4 +81,37 @@ const changelog = defineCollection({
   }),
 })
 
-export const collections = { projects, experience, changelog }
+// The home page's Roadmap (src/home/roadmap/): one YAML file per timeline in src/content/roadmap/, so a new
+// timeline is a new file (that folder's README.md says how). A date is "YYYY-MM-DD" or "YYYY-MM"; YAML reads
+// an unquoted full date as a Date, so one is turned back into its string here.
+const roadmapDate = z.preprocess(
+  (value) => (value instanceof Date ? value.toISOString().slice(0, 10) : value),
+  z.string().regex(/^\d{4}-\d{2}(-\d{2})?$/),
+)
+const roadmap = defineCollection({
+  loader: glob({ pattern: '*.yaml', base: './src/content/roadmap' }),
+  schema: z.object({
+    title: z.string().min(1),
+    order: z.number().default(99),
+    groups: z
+      .array(
+        z.object({
+          title: z.string().min(1),
+          nodes: z
+            .array(
+              z.object({
+                title: z.string().min(1),
+                start: roadmapDate.optional(), // makes the date a range
+                due: roadmapDate, // the date limit
+                done: z.boolean().default(false),
+                about: z.string().min(1), // the popup's explanation
+              }),
+            )
+            .min(1),
+        }),
+      )
+      .min(1),
+  }),
+})
+
+export const collections = { projects, experience, changelog, roadmap }
