@@ -1,7 +1,8 @@
 // Reads src/content/roadmap.md (Arthur's roadmap, written by hand) into the `roadmap` collection
 // (content.config.ts). The file's own comment explains the format; in short:
 //   # Timeline              one timeline (a # with no items under it, like the top "# Roadmap", is skipped)
-//   ## Group                a sub-group of the timeline
+//   ## Group                a sub-group of the timeline (a subtheme on the site)
+//   > text                  the group's one-line explanation (optional, right under its "##")
 //   - **Title** — about. *Done* | *Done, Oct 2026* | *Doing, target Nov 2026* | *Next, Dec 2026*
 // HTML comments are ignored. Any other line starting with "-", or an item outside a timeline and group, stops
 // the build with its line number, so a typo never reaches the site.
@@ -11,7 +12,7 @@ const ITEM =
   /^- \*\*(.+?)\*\*\s*[—–-]\s*(.*?)\s*\*(Done|Doing|Next)(?:,\s*(?:target\s+)?([A-Z][a-z]{2})\s+(\d{4}))?\*\s*$/
 
 export type RoadmapItem = { title: string; about: string; status: 'done' | 'doing' | 'next'; month?: string }
-export type RoadmapGroup = { title: string; items: RoadmapItem[] }
+export type RoadmapGroup = { title: string; about?: string; items: RoadmapItem[] }
 export type RoadmapTimeline = { id: string; order: number; title: string; groups: RoadmapGroup[] }
 
 const slug = (text: string) =>
@@ -45,6 +46,10 @@ export function parseRoadmap(source: string, file = 'src/content/roadmap.md'): R
       timeline = { id: slug(title), order: timelines.length, title, groups: [] }
       timelines.push(timeline)
       group = undefined
+    } else if (line.startsWith('>')) {
+      if (!group) fail(n, 'a ">" explanation outside a "##" group', line)
+      if (group!.about) fail(n, 'a second ">" explanation for the same group', line)
+      group!.about = line.slice(1).trim()
     } else if (line.startsWith('-')) {
       const m = ITEM.exec(line)
       if (!m) fail(n, 'expected "- **Title** — text. *Done*", "*Doing, target Nov 2026*" or "*Next, Dec 2026*"', line)

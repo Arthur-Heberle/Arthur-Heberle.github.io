@@ -1,15 +1,10 @@
 ---
-// The Roadmap (Arthur's briefs, 2026-11-16 and 2026-11-17): one timeline per thing he is studying or building,
-// read from src/content/roadmap.md (parsed by src/content/parseRoadmap.ts; the file's own comment says how to
-// edit it). Each item is a rounded pill with its status (Next, Doing, Done) and its month under it; a timeline's
-// sub-groups stack, each a wrapping row of pills under a small label. Nothing scrolls sideways.
-//
-// The line runs behind the pills: each item carries the stretch from its centre to the next item, hidden under
-// the pills at both ends. Up to the timeline's last Done item the stretch is a wave (a long repeated path in a
-// clipping SVG, so roadmap.ts can draw it once and ripple it with a transform); after it, a straight dotted line.
-//
-// A pill is a button that opens a popover with the item's text (Popover API: works without JavaScript, centred
-// in the window then; roadmap.ts places it at the pill). Drawings are aria-hidden; status is in each pill's name.
+// The Roadmap (Arthur's briefs, 2026-11-16 and 2026-11-17): what he is studying and building, read from
+// src/content/roadmap.md (parsed by src/content/parseRoadmap.ts; the file's own comment says how to edit it).
+// Since the second 2026-11-17 brief: one bordered box (fixed height, scrolls inside, full screen button), the
+// themes side by side as columns (stacked below a container width), each a list of subthemes. A subtheme is a
+// <details>: its summary shows the name, its one-line explanation and "N of M"; opened, its topics with status and
+// month. Works without JavaScript; roadmap.ts only adds "Expand all" and full screen.
 import { getLang } from '../../shared/i18n/lang'
 import { getRoadmap } from '../../shared/i18n/content'
 import { text } from './text'
@@ -19,112 +14,114 @@ const lang = getLang(Astro)
 const t = text[lang]
 const timelines = await getRoadmap(lang)
 
-// The wave: wavelength 24px (roadmap.ts ripples it by exactly one), 3px high, centred in a 12px-tall SVG, long
-// enough (840px) to cover the widest stretch plus one wavelength.
-const WAVE = `M0 6 q6 -6 12 0${' t12 0'.repeat(69)}`
+const doneIn = (items: { status: string }[]) => items.filter((i) => i.status === 'done').length
 
-const rows = timelines.map((timeline) => {
+const themes = timelines.map((timeline) => {
   const all = timeline.data.groups.flatMap((g) => g.items)
-  const lastDone = all.map((i) => i.status).lastIndexOf('done')
-  let index = 0
-  const groups = timeline.data.groups.map((group, gi) => ({
+  const groups = timeline.data.groups.map((group) => ({
     title: group.title,
-    items: group.items.map((item, ii) => {
-      const at = index++
-      const last = ii === group.items.length - 1
+    about: group.about,
+    total: group.items.length,
+    done: doneIn(group.items),
+    items: group.items.map((item) => {
       const date = item.month ? monthLabel(item.month, t.months) : undefined
-      const when = date ? (item.status === 'doing' ? `${t.target} ${date}` : date) : undefined
-      return {
-        ...item,
-        id: `rm-${timeline.id}-${gi}-${ii}`,
-        date,
-        when,
-        // the stretch to the next item: none after a group's last item
-        seg: last ? null : at < lastDone ? 'wave' : 'dots',
-        label: [item.title, t.status[item.status], when].filter(Boolean).join(', '),
-      }
+      return { ...item, when: date ? (item.status === 'doing' ? `${t.target} ${date}` : date) : undefined }
     }),
   }))
-  const done = all.filter((i) => i.status === 'done').length
-  return { id: timeline.id, title: timeline.data.title, total: all.length, done, groups }
+  return { id: timeline.id, title: timeline.data.title, total: all.length, done: doneIn(all), groups }
 })
 ---
 
 <section class="section-gap flex flex-col gap-8" aria-labelledby="roadmap-heading">
   <h2 id="roadmap-heading" class="section-title" data-anim>{t.heading}</h2>
-  <div class="rm" data-roadmap>
-    {
-      rows.map((row) => (
-        <article class="rm-timeline" aria-labelledby={`${row.id}-title`} data-rm-timeline data-anim data-delay="0.06">
-          <header class="rm-head">
-            <h3 id={`${row.id}-title`} class="rm-title">
-              {row.title}
-            </h3>
-            <span class="rm-count">
-              {`${row.done} ${t.of} ${row.total}`}
-              <span class="sr-only">{t.doneSuffix}</span>
-            </span>
-            <span class="rm-bar" aria-hidden="true">
-              <span class="rm-bar-fill" style={`transform:scaleX(${row.total ? row.done / row.total : 0})`} />
-            </span>
-          </header>
-          {row.groups.map((group) => (
-            <div class="rm-group">
-              <p class="rm-group-label">{group.title}</p>
-              <ol class="rm-items" role="list">
-                {group.items.map((item) => (
-                  <li class="rm-item" data-rm-item>
-                    <span class="rm-pin">
-                      {item.seg === 'wave' && (
-                        <svg class="rm-seg" aria-hidden="true" focusable="false">
-                          <path d={WAVE} pathLength="1" data-rm-wave />
-                        </svg>
-                      )}
-                      {item.seg === 'dots' && (
-                        <svg class="rm-seg" aria-hidden="true" focusable="false">
-                          <line x1="1" y1="6" x2="100%" y2="6" />
-                        </svg>
-                      )}
-                      <button
-                        type="button"
-                        class="rm-pill"
-                        data-status={item.status}
-                        popovertarget={item.id}
-                        aria-label={item.label}
-                      >
-                        {item.status === 'done' && (
-                          <span class="rm-tick" aria-hidden="true">
-                            ✓
-                          </span>
-                        )}
-                        {item.status === 'doing' && <span class="rm-dot" aria-hidden="true" />}
-                        <span>{item.title}</span>
-                      </button>
-                    </span>
-                    {item.date && <span class="rm-date font-mono">{item.date}</span>}
-                    <div popover id={item.id} class="rm-pop">
-                      <p class="rm-pop-title">{item.title}</p>
-                      <p class="rm-pop-meta">
-                        <span>{t.statusLabel[item.status]}</span>
-                        {item.when && <span class="font-mono">{item.when}</span>}
-                      </p>
-                      <p class="rm-pop-about">{item.about}</p>
-                    </div>
-                  </li>
-                ))}
-              </ol>
-            </div>
-          ))}
-        </article>
-      ))
-    }
+  <div class="rm-box" tabindex="0" role="region" aria-label={t.boxLabel} data-roadmap data-lenis-prevent data-anim>
+    <div class="rm-tools">
+      <button
+        type="button"
+        class="rm-expand"
+        hidden
+        data-rm-expand
+        data-expand={t.expandAll}
+        data-collapse={t.collapseAll}
+      >
+        <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M5 6l3-3 3 3M5 10l3 3 3-3" /></svg>
+        <span data-rm-expand-label>{t.expandAll}</span>
+      </button>
+      <button
+        type="button"
+        class="rm-full"
+        hidden
+        aria-label={t.fullscreen}
+        data-rm-full
+        data-enter={t.fullscreen}
+        data-exit={t.exitFullscreen}
+      >
+        <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+          <path class="rm-full-in" d="M2 6V2h4M10 2h4v4M14 10v4h-4M6 14H2v-4" />
+          <path class="rm-full-out" d="M6 2v4H2M14 6h-4V2M10 14v-4h4M2 10h4v4" />
+        </svg>
+      </button>
+    </div>
+    <div class="rm-cols">
+      {
+        themes.map((theme) => (
+          <article class="rm-theme" aria-labelledby={`${theme.id}-title`}>
+            <header class="rm-head">
+              <h3 id={`${theme.id}-title`} class="rm-title">
+                {theme.title}
+              </h3>
+              <span class="rm-count">
+                {`${theme.done} ${t.of} ${theme.total}`}
+                <span class="sr-only">{t.doneSuffix}</span>
+              </span>
+              <span class="rm-bar" aria-hidden="true">
+                <span class="rm-bar-fill" style={`transform:scaleX(${theme.total ? theme.done / theme.total : 0})`} />
+              </span>
+            </header>
+            {theme.groups.map((group) => (
+              <details class="rm-sub" data-rm-sub>
+                <summary class="rm-sum">
+                  <span class="rm-sum-text">
+                    <span class="rm-sum-title">{group.title}</span>
+                    {group.about && <span class="rm-sum-about">{group.about}</span>}
+                  </span>
+                  <span class="rm-count rm-sum-count">
+                    {`${group.done} ${t.of} ${group.total}`}
+                    <span class="sr-only">{t.doneSuffix}</span>
+                  </span>
+                  <svg class="rm-chev" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                    <path d="M6 3l5 5-5 5" />
+                  </svg>
+                </summary>
+                <ol class="rm-topics" role="list">
+                  {group.items.map((item) => (
+                    <li class="rm-topic" data-status={item.status}>
+                      <span class="rm-mark" aria-hidden="true">
+                        {item.status === 'done' && '✓'}
+                      </span>
+                      <div class="rm-topic-body">
+                        <p class="rm-topic-title">
+                          <span class="sr-only">{`${t.status[item.status]}: `}</span>
+                          {item.title}
+                        </p>
+                        {item.when && <p class="rm-topic-when font-mono">{item.when}</p>}
+                        <p class="rm-topic-about">{item.about}</p>
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+              </details>
+            ))}
+          </article>
+        ))
+      }
+    </div>
   </div>
 </section>
 
 <script>
-  // Drawing the waves, rippling them and placing the popovers load only as the roadmap nears the viewport
-  // (roadmap.ts is its own chunk). Until then, and without JS, the waves are drawn and still, and popovers
-  // open in the middle of the window.
+  // "Expand all" and full screen load only as the roadmap nears the viewport (roadmap.ts is its own chunk).
+  // Without JS both buttons stay hidden and each subtheme still opens on its own.
   const roadmap = document.querySelector<HTMLElement>('[data-roadmap]')
   if (roadmap) {
     const near = new IntersectionObserver(

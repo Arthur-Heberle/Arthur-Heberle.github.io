@@ -2017,3 +2017,17 @@ a 64x3 bar. Sub-groups stacked with a small label (Arthur's pick). **No horizont
 Checked in headless Edge at 1440 and 390 (and reduced motion at 1440): no page or element horizontal scroll, pills
 always above the line, draw-in and ripple run, popover at its pill and Esc closes, no console errors, CLS 0 at 390
 and 0.000016 at 1440 (the bench labels, as before). JS 78.0 KB gzip. Not checked: Brave, Firefox, Safari.
+
+Roadmap: columns and subthemes (2026-11-17, Arthur's brief, reference `src/home/roadmap/image.png`). Title "My
+Roadmap to study and TODOs". The section is one bordered box, **fixed height with inner scroll** (`data-lenis-prevent`
+so the wheel scrolls the box, not the page) and a **full screen** button (Fullscreen API, hidden where unsupported),
+plus **Expand all / Collapse all** (Arthur's three picks). Themes side by side: French | Agente H | RP3 (`#` order in
+`roadmap.md` changed to match), three columns from an 880px box (container query; 1440 yes, 1024 and 390 stacked).
+Subthemes are `<details>`, closed by default, with a one-line explanation from a new `> text` line under each `##`
+(parser + schema; a stray `>` fails the build). **Regrouped by me** (Arthur asked me to decide): French "Verbs and
+tenses" (pronominal verbs/imperative moved in), "Pronouns and determiners", "Building sentences"; Agente H
+"Dashboard", "Sales intelligence", "Integrations" (instead of "Working today"/"Next"); RP3 unchanged. Explanations are
+my drafts summarising the items, his to rewrite. Item texts, statuses and dates unchanged. Pills, wave, dotted line
+and popovers removed; `roadmap.ts` no longer uses GSAP. Checked in headless Edge at 1440/1024/390, JS on and off:
+no horizontal scroll, click/Enter/Space toggle, Expand all, full screen in and out, no console errors; JS off both
+buttons hidden and subthemes still open. JS 77 KB gzip. Not checked: Brave, Firefox, Safari.

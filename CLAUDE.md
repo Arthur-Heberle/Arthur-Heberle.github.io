@@ -73,7 +73,7 @@ Code is split by domain, so a change to one section touches one folder.
 |---|---|
 | `src/shared/` | `layouts/Base.astro` (every page), `components/` (Glass, Rule, Tick, HomeLink: the name in the corner), `motion.ts` (the one GSAP/Lenis authority), `styles/` (tokens, fonts, `global.css`, base, chrome (the floating corners), light, drawing, control), `fill.ts`, `text.ts` |
 | `src/shared/i18n/` | `lang.ts` (`getLang`, `localePath`), `content.ts` (collections by language), `Data.astro` + `runtime.ts` (words handed to scripts as JSON) |
-| `src/home/` | `HomePage.astro` (section order), `home.css` (12-column grid), one folder per section: `hero`, `spine`, `bench` (Projects), `roadmap` (timelines, parsed from `src/content/roadmap.md`), `experience`, `changelog`, `contact`; coming: `about` |
+| `src/home/` | `HomePage.astro` (section order), `home.css` (12-column grid), one folder per section: `hero`, `spine`, `bench` (Projects), `roadmap` (themes > subthemes > topics, parsed from `src/content/roadmap.md`), `experience`, `changelog`, `contact`; coming: `about` |
 | `src/projects/` | `ProjectPage.astro` (shared template), `ProjectRoute.astro`, `projects.ts` (which ids get a page), `project.css` |
 | `src/projects/<id>/` | one folder per project page (`edubra/`, `agente-h/`): set-piece, story script, CSS, `text.ts` |
 | `src/content/`, `src/pages/`, `src/content.config.ts` | where Astro requires them: collections, routes (`pages/*` are thin wrappers) |

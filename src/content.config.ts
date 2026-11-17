@@ -94,11 +94,12 @@ const roadmap = defineCollection({
       .array(
         z.object({
           title: z.string().min(1),
+          about: z.string().min(1).optional(), // the subtheme's one-line explanation
           items: z
             .array(
               z.object({
                 title: z.string().min(1),
-                about: z.string().min(1), // the popover's text
+                about: z.string().min(1), // the topic's text, under its title
                 status: z.enum(['done', 'doing', 'next']),
                 month: month.optional(), // finished (done) or target month; a done item may have none
               }),

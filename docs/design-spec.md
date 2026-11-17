@@ -205,16 +205,18 @@ Google Fonts, woff2, latin subset, `font-display: swap`. Preload the display fac
    the block in the middle band of the viewport is active, its object slides in, and its action plays the
    first time. The page always scrolls normally. Below 900px the entries stack: period bar, object, details.
    The section breaks out of the reading rail at 900px and up, over the page rule.
-3b. **Roadmap** (Arthur's briefs, 2026-11-16 and 2026-11-17; added between Projects and Experience on his
-   request, overriding "adding one requires removing one"). One timeline per thing he is studying or building
-   (RP3, Agente H, French), parsed from `src/content/roadmap.md` on every build. Header: name, "N of M" and a
-   thin progress bar. Sub-groups stack, each a small grey label over a wrapping row of rounded pills (radius
-   999px) with the month under each in mono: Next white with a graphite-2 border, Doing white with a signal
-   border and dot, Done `#e4f1e8` with `#1e5a36` text and a check (Arthur's literal colours, local to
-   `roadmap.css`). The line runs behind the pills: a wave up to the last Done item (draws once on entering
-   view, ripples on hover by sliding a repeated path inside a clip), a dotted line after. No horizontal
-   scrolling. A pill opens a popover with the item's text. The earlier designs (a vertical axis; then
-   scrolling wavy timelines with checkboxes) were replaced on his request.
+3b. **Roadmap**, titled "My Roadmap to study and TODOs" (Arthur's briefs, 2026-11-16 and 2026-11-17; added
+   between Projects and Experience on his request, overriding "adding one requires removing one"). Parsed from
+   `src/content/roadmap.md` on every build. One bordered box (16px radius, sheet colour) of fixed height
+   (`min(640px, 80vh)`) that scrolls inside, with "Expand all / Collapse all" at the top and a full screen
+   button in its corner (both need JS and are hidden without it). Inside, the themes **side by side** in the
+   file's order (French, Agente H, RP3), three columns once the box is 880px wide, stacked below. Each theme:
+   name, "N of M", a thin bar; then its subthemes as `<details>` (name, a one-line explanation, "N of M", a
+   chevron), closed by default. Opened, a subtheme lists its topics: a status mark (empty ring Next, signal
+   ring and dot Doing, `#e4f1e8`/`#1e5a36` check Done, Arthur's colours local to `roadmap.css`), title, month
+   in mono, the item's text under it. **The wave and dotted line, the pills and the popovers were removed on
+   his request (2026-11-17)**: this section no longer "draws itself". Earlier designs (a vertical axis; scrolling
+   wavy timelines; pill rows) were replaced on his request.
 4. **Changelog.** Three most recent entries, then "show all".
 5. **Contact.** The last leader line of the drawing extends off the spine and terminates
    at his email. The only thing the drawing points at.

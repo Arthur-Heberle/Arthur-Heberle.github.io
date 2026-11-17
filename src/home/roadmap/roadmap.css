@@ -1,25 +1,119 @@
-/* The Roadmap (Roadmap.astro): per timeline a header (name, "N of M", a thin bar), then its sub-groups, each a
- * wrapping row of status pills with the month under each. The line runs behind the pills (a stretch per item,
- * .rm-seg): a wave up to the last Done item, a dotted line after. Nothing scrolls sideways. Only transform,
- * opacity and stroke-dashoffset change (hover lift here; draw and ripple in roadmap.ts). */
+/* The Roadmap (Roadmap.astro): one bordered box, fixed height, scrolling inside (Arthur, 2026-11-17, after
+ * src/home/roadmap/image.png). Top: "Expand all" and a full screen button. Then the themes as columns (three
+ * side by side once the box is 880px wide, stacked below), each a header (name, "N of M", a thin bar) and its
+ * subthemes as <details>: name, explanation, count and a chevron; opened, the topics with a status mark.
+ * Only transform and opacity change. */
 
-.rm {
-  /* Arthur's colours for a Done pill (2026-11-17), local to the roadmap rather than global tokens */
+.rm-box {
+  /* Arthur's colours for Done (2026-11-17), local to the roadmap rather than global tokens */
   --rm-done-bg: #e4f1e8;
   --rm-done-ink: #1e5a36;
-  --rm-gap: 32px;
-  display: flex;
-  flex-direction: column;
-  gap: 64px;
+  position: relative;
+  container-type: inline-size;
+  max-height: min(640px, 80vh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 20px 20px 28px;
+  border: var(--hairline) solid var(--color-line);
+  border-radius: 16px;
+  background: var(--color-sheet);
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-line) transparent;
+}
+.rm-box:focus-visible {
+  outline-offset: 3px;
+}
+.rm-box:fullscreen {
+  max-height: none;
+  padding: 40px clamp(20px, 5vw, 80px);
+  border: 0;
+  border-radius: 0;
+  background: var(--color-ground);
 }
 
-/* ---------- header ---------- */
+/* ---------- the two buttons ---------- */
+.rm-tools {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  min-height: 36px;
+  margin-bottom: 24px;
+}
+.rm-expand,
+.rm-full {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: var(--hairline) solid var(--color-line);
+  background: #fff;
+  color: var(--color-graphite);
+  font: inherit;
+  font-size: var(--text-small);
+  cursor: pointer;
+}
+.rm-expand[hidden],
+.rm-full[hidden] {
+  display: none;
+}
+.rm-expand {
+  gap: 8px;
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 999px;
+}
+.rm-full {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+}
+.rm-expand svg,
+.rm-full svg {
+  width: 16px;
+  height: 16px;
+  aspect-ratio: 1;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.rm-full .rm-full-out,
+.rm-full[data-on] .rm-full-in {
+  display: none;
+}
+.rm-full[data-on] .rm-full-out {
+  display: inline;
+}
+
+/* ---------- columns ---------- */
+.rm-cols {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 40px;
+}
+@container (min-width: 880px) {
+  .rm-cols {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0;
+  }
+  .rm-theme {
+    padding: 0 20px;
+  }
+  .rm-theme + .rm-theme {
+    border-left: var(--hairline) solid var(--color-line);
+  }
+}
+
+/* ---------- a theme's header ---------- */
 .rm-head {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 8px 14px;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 .rm-title {
   margin: 0;
@@ -31,6 +125,7 @@
 .rm-count {
   font-size: var(--text-small);
   color: var(--color-graphite-2);
+  white-space: nowrap;
 }
 .rm-bar {
   position: relative;
@@ -48,180 +143,154 @@
   transform-origin: left center;
 }
 
-/* ---------- a sub-group: its label, then its pills, wrapping ---------- */
-.rm-group + .rm-group {
-  margin-top: 28px;
+/* ---------- a subtheme ---------- */
+.rm-sub {
+  border: var(--hairline) solid var(--color-line);
+  border-radius: 12px;
+  background: #fff;
 }
-.rm-group-label {
-  margin: 0 0 12px;
-  font-size: var(--text-small);
-  color: var(--color-graphite-2);
+.rm-sub + .rm-sub {
+  margin-top: 12px;
 }
-/* clip: an item's stretch reaches one gap past it, which at the end of a row would otherwise poke out of the
- * column (and at 390px make the page scroll sideways). The margin keeps focus rings whole. */
-.rm-items {
+.rm-sum {
   display: flex;
-  flex-wrap: wrap;
   align-items: flex-start;
-  gap: 24px var(--rm-gap);
-  margin: 0;
-  padding: 0;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 12px;
   list-style: none;
-  overflow: clip;
-  overflow-clip-margin: 6px;
+  cursor: pointer;
 }
-
-.rm-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  max-width: 100%;
-}
-/* the pill and the stretch of line behind it */
-.rm-pin {
-  position: relative;
-  display: flex;
-  width: 100%;
-}
-.rm-seg {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: calc(50% + var(--rm-gap) + 12px); /* into the next pill, which covers the end */
-  height: 12px;
-  margin-top: -6px;
-  overflow: hidden; /* the clip the wave ripples inside */
-  pointer-events: none;
-}
-/* roadmap.ts: a row's last item has no next item beside it */
-.rm-item[data-row-end] .rm-seg {
+.rm-sum::-webkit-details-marker {
   display: none;
 }
-.rm-seg path,
-.rm-seg line {
+.rm-sum:focus-visible {
+  outline-offset: 2px;
+}
+.rm-sum-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.rm-sum-title {
+  font-size: var(--text-body);
+  line-height: 1.3;
+}
+.rm-sum-about {
+  font-size: var(--text-small);
+  line-height: var(--text-small--line-height);
+  color: var(--color-graphite-2);
+}
+.rm-sum-count {
+  padding-top: 2px;
+}
+.rm-chev {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  aspect-ratio: 1;
+  margin-top: 3px;
   fill: none;
-  stroke-linecap: round;
-}
-.rm-seg path {
   stroke: var(--color-graphite);
-  stroke-width: 1;
-}
-.rm-seg line {
-  stroke: var(--color-graphite-2);
   stroke-width: 1.5;
-  stroke-dasharray: 0.1 6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.rm-sub[open] .rm-chev {
+  transform: rotate(90deg);
 }
 
-/* ---------- the pill ---------- */
-.rm-pill {
-  position: relative;
-  z-index: 1; /* over the stretches of line */
+/* ---------- its topics ---------- */
+.rm-topics {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 0;
+  padding: 4px 16px 16px;
+  border-top: var(--hairline) solid var(--color-line);
+  padding-top: 14px;
+  list-style: none;
+}
+.rm-topic {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.rm-mark {
+  flex: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
-  width: 100%;
-  padding: 6px 14px;
-  border: 1px solid var(--color-graphite-2);
-  border-radius: 999px;
-  background: #fff;
-  color: var(--color-graphite);
-  font: inherit;
-  font-size: var(--text-small);
-  line-height: 1.3;
-  text-align: center;
-  cursor: pointer;
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  border: 1.5px solid var(--color-graphite-2);
+  border-radius: 50%;
+  font-size: 0.6875rem;
+  line-height: 1;
 }
-.rm-pill[data-status='doing'] {
+.rm-topic[data-status='doing'] .rm-mark {
   border-color: var(--color-signal);
 }
-.rm-pill[data-status='done'] {
-  border-color: var(--rm-done-bg);
-  background: var(--rm-done-bg);
-  color: var(--rm-done-ink);
-}
-.rm-dot {
-  flex: none;
+.rm-topic[data-status='doing'] .rm-mark::after {
+  content: '';
   width: 6px;
   height: 6px;
   border-radius: 50%;
   background: var(--color-signal);
 }
-.rm-tick {
-  flex: none;
-  font-size: 0.8125rem;
-  line-height: 1;
+.rm-topic[data-status='done'] .rm-mark {
+  border-color: var(--rm-done-bg);
+  background: var(--rm-done-bg);
+  color: var(--rm-done-ink);
 }
-.rm-pill:focus-visible {
-  outline-offset: 2px;
+.rm-topic-body {
+  min-width: 0;
 }
-.rm-date {
+.rm-topic-body p {
+  margin: 0;
+}
+.rm-topic-title {
+  font-size: var(--text-small);
+  line-height: 1.4;
+}
+.rm-topic[data-status='done'] .rm-topic-title {
+  color: var(--rm-done-ink);
+}
+.rm-topic-when {
+  margin-top: 2px !important;
   font-size: var(--text-dimension);
   letter-spacing: var(--text-dimension--letter-spacing);
   color: var(--color-graphite-2);
 }
-@media (prefers-reduced-motion: no-preference) {
-  .rm-pill {
-    transition: transform var(--dur-feedback) var(--ease-out);
-  }
-  .rm-pill:hover,
-  .rm-pill:focus-visible,
-  .rm-pill[aria-expanded='true'] {
-    transform: translateY(-2px);
-  }
-}
-
-/* ---------- the popup. Without roadmap.ts it is the browser's popover, centred in the window; roadmap.ts adds
- * data-placed and sets top/left so it opens at its pill. ---------- */
-.rm-pop {
-  width: min(320px, calc(100vw - 32px));
-  margin: auto;
-  padding: 16px 18px;
-  border: var(--hairline) solid var(--color-graphite-2);
-  border-radius: var(--radius-panel);
-  background: var(--color-sheet);
-  color: var(--color-graphite);
-  box-shadow: 0 8px 24px rgb(35 38 42 / 0.12);
-}
-.rm-pop[data-placed] {
-  inset: auto;
-  margin: 0;
-}
-.rm-pop::backdrop {
-  background: transparent;
-}
-.rm-pop p {
-  margin: 0;
-}
-.rm-pop-title {
-  font-size: var(--text-body);
-  line-height: 1.35;
-}
-.rm-pop-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 12px;
+.rm-topic-about {
   margin-top: 4px !important;
-  font-size: var(--text-dimension);
-  letter-spacing: var(--text-dimension--letter-spacing);
-  color: var(--color-graphite-2);
-}
-.rm-pop-about {
-  margin-top: 10px !important;
   font-size: var(--text-small);
   line-height: var(--text-small--line-height);
+  color: var(--color-graphite-2);
 }
+
 @media (prefers-reduced-motion: no-preference) {
-  .rm-pop {
-    transition:
-      opacity var(--dur-feedback) var(--ease-out),
-      display var(--dur-feedback) allow-discrete,
-      overlay var(--dur-feedback) allow-discrete;
+  .rm-chev {
+    transition: transform var(--dur-feedback) var(--ease-out);
   }
-  @starting-style {
-    .rm-pop:popover-open {
-      opacity: 0;
-    }
+  .rm-sub[open] .rm-topics {
+    animation: rm-open var(--dur-feedback) var(--ease-out);
+  }
+  .rm-expand,
+  .rm-full {
+    transition: transform var(--dur-feedback) var(--ease-out);
+  }
+  .rm-expand:hover,
+  .rm-full:hover {
+    transform: translateY(-1px);
+  }
+}
+@keyframes rm-open {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
   }
 }
