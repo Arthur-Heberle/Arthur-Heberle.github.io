@@ -1,46 +1,43 @@
-// The roadmap's behaviour, loaded as the section nears the viewport (Roadmap.astro). Three things:
-//  - the wave follows the pointer a little: sideways and in height, transform only, eased back on leave
-//    (not under reduced motion, not on touch, where there is no hover);
-//  - a node's popover opens at its node instead of the middle of the window, and follows it on scroll;
-//  - a timeline that scrolls sideways fades at the edge that has more.
+// The roadmap's behaviour, loaded as the section nears the viewport (Roadmap.astro):
+//  - each row's last item loses its stretch of line (nothing beside it to reach);
+//  - a timeline's waves draw themselves once when it enters view (stroke-dashoffset), and ripple gently while
+//    the pointer is over it (the repeated path slides by one wavelength, on a loop, inside its clipping SVG);
+//    reduced motion: drawn and still;
+//  - a pill's popover opens at the pill instead of the middle of the window, and follows it on scroll.
 import { gsap } from 'gsap'
 
-const GAP = 10 // px between a node and its popover
+const WAVELENGTH = 24 // px, the wave's period in Roadmap.astro
+const GAP = 10 // px between a pill and its popover
 const EDGE = 16 // px a popover keeps from the window's edges
 
-function place(pop: HTMLElement, button: HTMLElement) {
-  const box = button.querySelector<HTMLElement>('.rm-box') ?? button
-  const anchor = box.getBoundingClientRect()
-  const node = button.getBoundingClientRect()
+function place(pop: HTMLElement, pill: HTMLElement) {
+  const at = pill.getBoundingClientRect()
   pop.setAttribute('data-placed', '')
   const vw = document.documentElement.clientWidth
   // before it opens (beforetoggle) it has no box yet: its CSS width, and a height of 0 until the next frame
   const w = pop.offsetWidth || Math.min(320, vw - 32)
   const h = pop.offsetHeight
   const vh = window.innerHeight
-  const centre = anchor.left + anchor.width / 2
-  const left = Math.min(Math.max(centre - w / 2, EDGE), vw - w - EDGE)
-  // under the node's text if it fits, else above its box
-  let top = node.bottom + GAP
-  if (top + h > vh - EDGE) top = Math.max(anchor.top - GAP - h, EDGE)
+  const left = Math.min(Math.max(at.left + at.width / 2 - w / 2, EDGE), vw - w - EDGE)
+  let top = at.bottom + GAP + 18 // under the pill and its month
+  if (top + h > vh - EDGE) top = Math.max(at.top - GAP - h, EDGE)
   pop.style.left = `${Math.round(left)}px`
   pop.style.top = `${Math.round(top)}px`
 }
 
 function popovers(root: HTMLElement) {
-  let open: { pop: HTMLElement; button: HTMLElement } | null = null
+  let open: { pop: HTMLElement; pill: HTMLElement } | null = null
   const follow = () => {
-    if (open) place(open.pop, open.button)
+    if (open) place(open.pop, open.pill)
   }
   root.querySelectorAll<HTMLElement>('.rm-pop').forEach((pop) => {
-    const button = root.querySelector<HTMLElement>(`[popovertarget="${pop.id}"]`)
-    if (!button) return
+    const pill = root.querySelector<HTMLElement>(`[popovertarget="${pop.id}"]`)
+    if (!pill) return
     pop.addEventListener('beforetoggle', (event) => {
       if ((event as ToggleEvent).newState === 'open') {
-        open = { pop, button }
-        // measured before it paints, so it never shows in the middle first
-        requestAnimationFrame(follow)
-        place(pop, button)
+        open = { pop, pill }
+        place(pop, pill)
+        requestAnimationFrame(follow) // again, now that it has a height
       } else if (open?.pop === pop) {
         open = null
       }
@@ -48,58 +45,82 @@ function popovers(root: HTMLElement) {
   })
   window.addEventListener('scroll', follow, { passive: true })
   window.addEventListener('resize', follow)
-  root.querySelectorAll<HTMLElement>('[data-rm-track]').forEach((track) =>
-    track.addEventListener('scroll', follow, { passive: true }),
-  )
 }
 
-function edges(root: HTMLElement) {
-  root.querySelectorAll<HTMLElement>('[data-rm-track]').forEach((track) => {
-    const update = () => {
-      const more = track.scrollLeft + track.clientWidth < track.scrollWidth - 2
-      const less = track.scrollLeft > 2
-      track.toggleAttribute('data-more', more)
-      track.toggleAttribute('data-less', less)
-    }
-    update()
-    track.addEventListener('scroll', update, { passive: true })
-    new ResizeObserver(update).observe(track)
-  })
+function rowEnds(root: HTMLElement) {
+  const lists = [...root.querySelectorAll<HTMLElement>('.rm-items')]
+  const mark = () =>
+    lists.forEach((list) => {
+      const items = [...list.querySelectorAll<HTMLElement>('[data-rm-item]')]
+      items.forEach((item, i) => {
+        const next = items[i + 1]
+        item.toggleAttribute('data-row-end', !!next && next.offsetTop !== item.offsetTop)
+      })
+    })
+  mark()
+  const ro = new ResizeObserver(mark)
+  lists.forEach((list) => ro.observe(list))
 }
 
 function waves(root: HTMLElement) {
   const mm = gsap.matchMedia()
-  mm.add('(hover: hover) and (prefers-reduced-motion: no-preference)', () => {
+  mm.add('(prefers-reduced-motion: no-preference)', () => {
     const off: Array<() => void> = []
-    root.querySelectorAll<HTMLElement>('[data-rm-line]').forEach((line) => {
-      const wave = line.querySelector<SVGGElement>('[data-rm-wave]')
-      if (!wave) return
-      gsap.set(wave, { transformOrigin: '50% 50%' })
-      const toX = gsap.quickTo(wave, 'x', { duration: 0.9, ease: 'power3.out' })
-      const toY = gsap.quickTo(wave, 'scaleY', { duration: 0.9, ease: 'power3.out' })
-      // the viewBox is wider than a screen pixel by this much, so the shift is a few px whatever the width
-      const units = () => {
-        const svg = line.querySelector('svg')!
-        return svg.viewBox.baseVal.width / Math.max(svg.getBoundingClientRect().width, 1)
-      }
-      const move = (event: PointerEvent) => {
+    root.querySelectorAll<HTMLElement>('[data-rm-timeline]').forEach((timeline) => {
+      const paths = [...timeline.querySelectorAll<SVGPathElement>('[data-rm-wave]')]
+      if (!paths.length) return
+
+      // draw: pathLength is 1 and the path is longer than its clip, so each one is revealed only across the
+      // part that shows (its SVG's width over the path's length), then left whole for the ripple
+      gsap.set(paths, { strokeDasharray: '1 1', strokeDashoffset: 1 })
+      const draw = new IntersectionObserver(
+        ([entry]) => {
+          if (!entry.isIntersecting) return
+          draw.disconnect()
+          paths.forEach((path, i) => {
+            const shown = Math.min((path.ownerSVGElement?.clientWidth ?? 0) / path.getTotalLength(), 1)
+            gsap.to(path, {
+              strokeDashoffset: 1 - shown,
+              duration: 0.7,
+              delay: i * 0.25,
+              ease: 'power1.inOut',
+              onComplete: () => gsap.set(path, { strokeDashoffset: 0 }),
+            })
+          })
+        },
+        { threshold: 0.4 },
+      )
+      draw.observe(timeline)
+
+      // ripple: slide one wavelength on a loop while hovered; on leave, finish the current cycle and stop at
+      // the start (the same picture, since the wave repeats every wavelength)
+      let hovering = false
+      const loop = gsap.to(paths, {
+        x: -WAVELENGTH,
+        duration: 1.6,
+        ease: 'none',
+        repeat: -1,
+        paused: true,
+        onRepeat: () => {
+          if (!hovering) loop.pause(0)
+        },
+      })
+      const enter = (event: PointerEvent) => {
         if (event.pointerType !== 'mouse') return
-        // against the visible part of the timeline (its scroller), not its full width
-        const rect = (line.parentElement ?? line).getBoundingClientRect()
-        const r = Math.min(Math.max((event.clientX - rect.left) / rect.width, 0), 1) - 0.5 // -0.5 .. 0.5
-        const near = 1 - Math.min(Math.abs((event.clientY - rect.top - 24) / 120), 1) // 1 on the line
-        toX(-r * 28 * units())
-        toY(1 + 0.35 * near)
+        hovering = true
+        if (loop.paused()) loop.play()
       }
       const leave = () => {
-        toX(0)
-        toY(1)
+        hovering = false
       }
-      line.addEventListener('pointermove', move)
-      line.addEventListener('pointerleave', leave)
+      timeline.addEventListener('pointerenter', enter)
+      timeline.addEventListener('pointerleave', leave)
       off.push(() => {
-        line.removeEventListener('pointermove', move)
-        line.removeEventListener('pointerleave', leave)
+        draw.disconnect()
+        loop.kill()
+        gsap.set(paths, { clearProps: 'all' })
+        timeline.removeEventListener('pointerenter', enter)
+        timeline.removeEventListener('pointerleave', leave)
       })
     })
     return () => off.forEach((f) => f())
@@ -107,7 +128,7 @@ function waves(root: HTMLElement) {
 }
 
 export function initRoadmap(root: HTMLElement) {
+  rowEnds(root)
   popovers(root)
-  edges(root)
   waves(root)
 }

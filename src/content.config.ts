@@ -1,6 +1,8 @@
 import { defineCollection } from 'astro:content'
 import { z } from 'astro/zod'
 import { file, glob } from 'astro/loaders'
+import { readFileSync } from 'node:fs'
+import { parseRoadmap } from './content/parseRoadmap'
 
 const tag = z.enum(['code', 'hardware', 'teaching', 'ai', 'energy'])
 
@@ -81,30 +83,24 @@ const changelog = defineCollection({
   }),
 })
 
-// The home page's Roadmap (src/home/roadmap/): one YAML file per timeline in src/content/roadmap/, so a new
-// timeline is a new file (that folder's README.md says how). A date is "YYYY-MM-DD" or "YYYY-MM"; YAML reads
-// an unquoted full date as a Date, so one is turned back into its string here.
-const roadmapDate = z.preprocess(
-  (value) => (value instanceof Date ? value.toISOString().slice(0, 10) : value),
-  z.string().regex(/^\d{4}-\d{2}(-\d{2})?$/),
-)
+// The home page's Roadmap (src/home/roadmap/): read from src/content/roadmap.md, Arthur's hand-written file, by
+// parseRoadmap.ts on every build (a malformed item line fails the build with its line number).
 const roadmap = defineCollection({
-  loader: glob({ pattern: '*.yaml', base: './src/content/roadmap' }),
+  loader: async () => parseRoadmap(readFileSync('src/content/roadmap.md', 'utf8')),
   schema: z.object({
+    order: z.number(),
     title: z.string().min(1),
-    order: z.number().default(99),
     groups: z
       .array(
         z.object({
           title: z.string().min(1),
-          nodes: z
+          items: z
             .array(
               z.object({
                 title: z.string().min(1),
-                start: roadmapDate.optional(), // makes the date a range
-                due: roadmapDate, // the date limit
-                done: z.boolean().default(false),
-                about: z.string().min(1), // the popup's explanation
+                about: z.string().min(1), // the popover's text
+                status: z.enum(['done', 'doing', 'next']),
+                month: month.optional(), // finished (done) or target month; a done item may have none
               }),
             )
             .min(1),

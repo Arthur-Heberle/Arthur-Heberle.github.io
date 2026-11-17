@@ -205,15 +205,16 @@ Google Fonts, woff2, latin subset, `font-display: swap`. Preload the display fac
    the block in the middle band of the viewport is active, its object slides in, and its action plays the
    first time. The page always scrolls normally. Below 900px the entries stack: period bar, object, details.
    The section breaks out of the reading rail at 900px and up, over the page rule.
-3b. **Roadmap** (Arthur's brief, home refactor stage 4, 2026-11-16; added between Projects and Experience on his
-   request, overriding "adding one requires removing one"). One horizontal timeline per thing he is studying
-   or building (French, RP3, Investment, Agente H), from `src/content/roadmap/*.yaml`, one file each. Each is
-   a dotted baseline with a seeded random wave along it (the wave shifts and swells a little under the
-   pointer, transform only), nodes evenly spaced on the line with a box (ticked when done in the YAML; not
-   a form control), title and date limit, and the YAML's groups bracketed under their nodes. A node is a
-   button that opens a small popover at the node with its explanation (Popover API, works without JS). A
-   timeline wider than the column scrolls sideways inside itself. The earlier vertical, yudiganeko-style
-   design in the first draft of `TODO/04-roadmap.md` was replaced by this one on his request.
+3b. **Roadmap** (Arthur's briefs, 2026-11-16 and 2026-11-17; added between Projects and Experience on his
+   request, overriding "adding one requires removing one"). One timeline per thing he is studying or building
+   (RP3, Agente H, French), parsed from `src/content/roadmap.md` on every build. Header: name, "N of M" and a
+   thin progress bar. Sub-groups stack, each a small grey label over a wrapping row of rounded pills (radius
+   999px) with the month under each in mono: Next white with a graphite-2 border, Doing white with a signal
+   border and dot, Done `#e4f1e8` with `#1e5a36` text and a check (Arthur's literal colours, local to
+   `roadmap.css`). The line runs behind the pills: a wave up to the last Done item (draws once on entering
+   view, ripples on hover by sliding a repeated path inside a clip), a dotted line after. No horizontal
+   scrolling. A pill opens a popover with the item's text. The earlier designs (a vertical axis; then
+   scrolling wavy timelines with checkboxes) were replaced on his request.
 4. **Changelog.** Three most recent entries, then "show all".
 5. **Contact.** The last leader line of the drawing extends off the spine and terminates
    at his email. The only thing the drawing points at.

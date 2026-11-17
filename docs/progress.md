@@ -2002,3 +2002,18 @@ sheet; the corner name's halo follows the ground token. Checked in headless Edge
 | Stage | Status | Notes |
 |---|---|---|
 | 4 Roadmap | done | **Redesigned by Arthur** before building: not the vertical yudiganeko-style axis of the first `TODO/04-roadmap.md` (rewritten) but **one horizontal timeline per subject** (French, RP3, Investment, Agente H), a dotted baseline with a seeded random wave (`wave.ts`), nodes evenly spaced with a box (done from the YAML, not clickable), title and date limit, groups bracketed under their nodes; hover moves the wave (GSAP `quickTo`, x + scaleY only, mouse only, not under reduced motion) and lifts the node; click opens a **Popover API** popup placed at the node by `roadmap.ts` (centred, still working, without JS). Data: **one YAML per timeline** in `src/content/roadmap/` with a `README.md` on adding one (Arthur asked for a structure that is easy to extend); content verbatim from his `timeline.md`; **French dates created on his request** (Nov 18 to Dec 10, 2026). Section added between Projects and Experience (overrides design-spec §6 "adding one requires removing one"; §6 updated). Checked in headless Edge at 1440/1024/390: order Projects > Roadmap > Experience, counts 0/18, 0/3, 0/7, 0/4, no page horizontal scroll (timelines scroll inside), popover at its node, Esc closes, Enter opens, AX names "title, due date, not done", JS off readable and popovers open. CLS 0 at 390; 0.000016/0.000028 at 1440/1024, all from the bench labels' font swap (stage 3 note). JS 78.0 KB gzip. Not checked: Brave, Firefox, Safari. |
+
+Roadmap: pills and status (2026-11-17, Arthur's brief). **Source is now `src/content/roadmap.md`** (his `timeline.md`,
+moved), parsed by `src/content/parseRoadmap.ts` (statuses `*Done*`, `*Doing, target Mon YYYY*`, `*Next, Mon YYYY*`;
+a bad item line fails the build with its line number); the YAML files and their README are deleted, Investment is
+gone, dates are month and year. Square boxes became **pills** (999px radius): Next white/graphite-2, Doing
+white/signal border + dot (two on the page), Done `#e4f1e8`/`#1e5a36` with a check; his two colours live in
+`roadmap.css` as `--rm-done-bg`/`--rm-done-ink`, not as global tokens. The line runs behind the pills as one
+stretch per item: a wave up to the last Done item (only Agente H's "Working today" today), dotted after; the wave
+draws once by `stroke-dashoffset` when its timeline enters view and ripples on hover by sliding a repeated path one
+wavelength inside its clipping SVG (no `d` rewrites); reduced motion and no JS: drawn and still. Header "N of M" +
+a 64x3 bar. Sub-groups stacked with a small label (Arthur's pick). **No horizontal scroll**: rows wrap, and
+`roadmap.ts` hides the stretch after each row's last pill. `wave.ts` and the scroller are gone; popovers kept.
+Checked in headless Edge at 1440 and 390 (and reduced motion at 1440): no page or element horizontal scroll, pills
+always above the line, draw-in and ripple run, popover at its pill and Esc closes, no console errors, CLS 0 at 390
+and 0.000016 at 1440 (the bench labels, as before). JS 78.0 KB gzip. Not checked: Brave, Firefox, Safari.

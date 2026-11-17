@@ -234,23 +234,12 @@ above the set-piece, and the system diagram below the cells carries how it works
 
 ## Roadmap
 
-One YAML file per timeline in `src/content/roadmap/` (its `README.md` explains adding a timeline or a node
-and marking one done). Content is Arthur's, from his `timeline.md` (2026-11-16), copied verbatim. The French
-nodes had no dates; at his request ("create some dates until 10 Dec") they were spread from Nov 18 to Dec 10,
-2026: change them in `french.yaml` whenever he wants. The Bible, mentioned as an example, is not in yet.
-
-```yaml
-title: string
-order: number            # smallest first
-groups:
-  - title: string        # bracketed under its nodes
-    nodes:
-      - title: string
-        due: 2026-12-15  # or 2027-01
-        start: 2026-12-07  # optional, makes a range
-        done: false
-        about: string    # the popover's text
-```
+Source: `src/content/roadmap.md`, Arthur's file (it was `timeline.md`), parsed on every build by
+`src/content/parseRoadmap.ts`; its own comment says how to edit it. `# Timeline`, `## Group`, then one line
+per item: `- **Title** — one line. *Status*`, where the status is `*Done*` / `*Done, Oct 2026*`,
+`*Doing, target Nov 2026*` or `*Next, Dec 2026*`. Months only. HTML comments and other lines are not shown;
+a malformed item line fails the build with its line number. The one-line text shows in the item's popover.
+Investment was removed (2026-11-17).
 
 ---
 
