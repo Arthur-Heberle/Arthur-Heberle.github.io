@@ -4,9 +4,9 @@ import type { Lang } from '../../shared/i18n/lang'
 const en = {
   heading: 'About me',
   paragraphs: [
-    'I speak Portuguese (native), English (advanced), Italian (intermediate) and a little French.',
-    'I play chess, mostly fast games.',
-    'I play guitar and sing, badly, on purpose.',
+    'I speak Portuguese (native), English (advanced), Italian (intermediate) and learing French.',
+    'There is many hobbies that i enjoy doing: playing chess, play the guitar, and mostly do motocross.',
+    'Born in the interior of Santa Catarina, Brazil, with a dream of traveling the entire world to discover the beauty that it has.',
   ],
   photoAlt: 'Arthur Heberle',
 }

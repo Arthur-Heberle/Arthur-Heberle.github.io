@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EduBra: how it works (3D hardware, 2D software)</title>
+<style>
+  /* Reference prototype for Claude Code. Rule of the section: physical things are 3D (CSS 3D, same
+     technique as the device box), software stays a 2D drawing. render(p) is a pure function of scroll
+     progress p, so it ports to one GSAP timeline with ScrollTrigger { pin: true, scrub: 0.8 }. */
+  :root{--ground:#eaeceb;--graphite:#23262a;--graphite-2:#606469;--line:#6b7075;--pin:#1f4f66;--cap:#e8b93a;--paper:#f2efe8;
+    --tilt:45deg;--wood-tex:url("data:image/webp;base64,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")}
+  html,body{margin:0;background:var(--ground);color:var(--graphite);font-family:Archivo,system-ui,-apple-system,"Segoe UI",sans-serif}
+  .spacer{height:70vh;display:grid;place-items:center;color:var(--graphite-2);font-size:15px}
+
+  .story{position:relative;height:620vh}
+  .stage{position:sticky;top:0;height:100vh;max-width:1180px;margin:0 auto;padding:28px 24px;box-sizing:border-box;
+    display:flex;flex-direction:column;justify-content:center;gap:12px}
+  .head{display:flex;align-items:center;gap:32px;flex-wrap:wrap}
+  h2{font-weight:500;font-size:28px;line-height:1.15;margin:0}
+  .caps{position:relative;flex:1;min-width:320px;height:44px}
+  .cap{position:absolute;left:0;top:0;right:0;display:flex;gap:12px;align-items:baseline;opacity:0;margin:0}
+  .cap b{font:500 13px "IBM Plex Mono",ui-monospace,monospace;color:var(--pin)}
+  .cap strong{font-weight:600;font-size:17px}
+  .cap span{font-size:15px;color:var(--graphite-2)}
+  .ticks{display:flex;gap:6px}
+  .ticks i{width:22px;height:3px;background:#c3c8c6}
+  .ticks i.on{background:var(--pin)}
+
+  /* one fixed 1060x570 canvas, scaled as a whole so the 2D wires and the 3D parts share coordinates */
+  .fit{position:relative;width:100%}
+  .canvas{position:absolute;left:0;top:0;width:1060px;height:570px;transform-origin:0 0}
+  #story-svg{position:absolute;left:0;top:0;overflow:visible}
+  .scene{position:absolute;inset:0;pointer-events:none}
+
+  /* ---------- 2D drawing language ---------- */
+  .ln{fill:none;stroke:var(--line);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+  .dash{stroke-dasharray:5 5}
+  .doc,.card{fill:var(--paper)}
+  .card.on{stroke:var(--pin);stroke-width:2}
+  .mono{font-family:"IBM Plex Mono",ui-monospace,monospace}
+  .s11{font-size:11px}.s12{font-size:12px}.s15{font-size:15px}.s18{font-size:18px}.s44{font-size:44px;font-weight:500}
+  .t14{font-size:14px}.t15{font-size:15px}
+  text{fill:var(--graphite)} .dim{fill:var(--graphite-2)} .mid{text-anchor:middle}
+  .chip{fill:var(--paper)} .fill-pin{fill:var(--pin)} .fill-cap{fill:var(--cap)} .fill-line{fill:var(--line)}
+  .wave{fill:none;stroke:var(--pin);stroke-width:2;stroke-linecap:round}
+  .playhead{stroke:#b3261e;stroke-width:2}
+  .wv{stroke:var(--pin);stroke-width:2}
+  .wf.on{stroke:var(--pin)}
+  .ch text{font:500 20px "IBM Plex Mono",ui-monospace,monospace;text-anchor:middle}
+  .ch.done text{fill:var(--graphite-2)}
+  .cursor{fill:none;stroke:var(--pin);stroke-width:2}
+  #bigletter{fill:var(--pin)}
+
+  /* ---------- 3D: hardware on a table, one camera angle for all three ---------- */
+  .obj{position:absolute;perspective:900px;perspective-origin:50% 20%}
+  .table{position:absolute;bottom:0;transform-style:preserve-3d;transform-origin:50% 100%;transform:rotateX(var(--tilt))}
+  .cub{position:absolute;transform-style:preserve-3d}
+  .cub>.top{position:absolute;inset:0;transform-style:preserve-3d}
+  .cub>.front{position:absolute;left:0;right:0;transform-origin:50% 0}
+  .anchor{position:absolute;width:2px;height:2px;margin:-1px 0 0 -1px}
+
+  /* Raspberry Pi 4 */
+  .pcb>.top{background:linear-gradient(160deg,#23834b,#18693a);border-radius:6px;
+    box-shadow:inset 0 0 0 1px rgb(255 255 255 / .06)}
+  .pcb>.front{background:#0f4a28;border-radius:0 0 3px 3px}
+  .hole{position:absolute;width:11px;height:11px;margin:-5.5px;border-radius:50%;background:var(--ground);box-shadow:0 0 0 2.5px #c9a24a}
+  .silk{position:absolute;font:600 8px/1 Archivo,system-ui,sans-serif;color:#e9f2ea;letter-spacing:.04em;white-space:nowrap}
+  .silver>.top{background:linear-gradient(135deg,#eef0f2,#b9bdc2)}
+  .silver>.front{background:linear-gradient(#a8adb2,#8d9297)}
+  .black>.top{background:#222326}
+  .black>.front{background:#111214}
+  .gpio>.top{background:#1c1d1f;display:grid;grid-template-columns:repeat(20,1fr);grid-template-rows:repeat(2,1fr);padding:3px 2px;box-sizing:border-box;gap:2px 3px}
+  .gpio>.top i{background:#caa64e;border-radius:1px}
+  .led{position:absolute;width:5px;height:7px;border-radius:1px}
+  .led.pwr{background:#e2483e;box-shadow:0 0 6px 2px rgb(226 72 62 / .55)}
+  .led.act{background:#1e5a33}
+  .led.act.on{background:#8dff9f;box-shadow:0 0 8px 3px rgb(120 255 150 / .65)}
+
+  /* Braille cell block, same wood as the device box */
+  .woodblk>.top{background:#dbc59f var(--wood-tex) 0 0/256px 256px;border-radius:3px}
+  .woodblk>.front{background:#dbc59f var(--wood-tex) 0 0/256px 256px}
+  .woodblk>.front::after{content:"";position:absolute;inset:0;background:rgb(70 48 22 / .30)}
+  .bhole{position:absolute;width:28px;height:28px;margin:-14px;border-radius:50%;background:#c2a375;
+    box-shadow:inset 0 0 0 1.5px #6b4f2e,inset 0 3px 4px rgb(70 48 22 / .45);transform-style:preserve-3d}
+  .bpin{position:absolute;inset:3px;transform-style:preserve-3d}
+  .bpin>i{position:absolute;inset:0;border-radius:50%;opacity:0}
+  .bpin .s{background:#173b4c}
+  .bpin .h{background:radial-gradient(circle at 38% 32%,#2c6683,#1f4f66 62%)}
+
+  /* speaker */
+  .spkbox>.top{background:#3a3b3e;border-radius:3px}
+  .spkbox>.front{background:#2a2b2d;display:grid;place-items:center}
+  .cone{width:68px;height:68px;border-radius:50%;background:radial-gradient(circle,#1b1c1e 52%,#3b3c40 54%,#2e2f32 68%,#46474b 70%,#2e2f32 76%)}
+  .dust{position:absolute;left:50%;top:50%;width:22px;height:22px;margin:-11px;border-radius:50%;
+    background:radial-gradient(circle at 38% 34%,#5a5c61,#2a2b2e 70%)}
+
+  /* reduced motion and small screens: no pin, no scrub; final state as a static diagram */
+  .static .story{height:auto}
+  .static .stage{position:static;height:auto;padding:48px 24px}
+  .static .caps{height:auto;display:flex;flex-direction:column;gap:10px}
+  .static .cap{position:static;opacity:1;display:grid;grid-template-columns:18px 104px 1fr}
+  .static .cap strong{white-space:nowrap}
+  .static .ticks{display:none}
+  .static .frame{overflow-x:auto}
+</style>
+</head>
+<body>
+<div class="spacer">↓ scroll: the page above (device, try a word) goes here</div>
+
+<section class="story" aria-labelledby="how">
+  <div class="stage">
+    <div class="head">
+      <h2 id="how">How it works</h2>
+      <div class="caps">
+        <p class="cap"><b>1</b><strong>Send a file</strong><span>A .txt, .docx or .pdf goes into a small web page.</span></p>
+        <p class="cap"><b>2</b><strong>Over Wi-Fi</strong><span>The text, split into words, travels to the Raspberry Pi.</span></p>
+        <p class="cap"><b>3</b><strong>Audio first</strong><span>The Pi makes one audio file per word before it starts.</span></p>
+        <p class="cap"><b>4</b><strong>Read</strong><span>It speaks each word, then raises the pins letter by letter.</span></p>
+      </div>
+      <div class="ticks" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+    </div>
+    <div class="frame" role="img" aria-label="A file is uploaded to a web page, split into the words hello and world, sent over Wi-Fi to a Raspberry Pi 4, which creates hello.mp3 and world.mp3, then reads the text: it plays each word, then raises the six pins for each letter while the speaker says it.">
+      <div class="fit"><div class="canvas">
+        <svg id="story-svg" viewBox="0 -10 1060 570" width="1060" height="570" aria-hidden="true">
+  <!-- 2D: software. The web page, the text, the words, the audio files, the wires. -->
+  <g id="browser">
+    <rect class="ln draw" x="40" y="110" width="300" height="300" rx="4"/>
+    <path class="ln fade" d="M40 138H340"/>
+    <text class="mono s12 fade" x="56" y="129">localhost:8000</text>
+    <rect class="ln dash fade" x="64" y="158" width="252" height="108" rx="3"/>
+    <text class="t14 dim fade mid" x="190" y="206">drop a file</text>
+    <text class="mono s11 dim fade mid" x="190" y="229">.txt   .docx   .pdf</text>
+    <rect class="ln fade" x="64" y="280" width="252" height="6" rx="1"/>
+    <rect id="bar" x="0" y="0" width="252" height="6" rx="1" class="fill-pin" transform="translate(64 280) scale(0 1)"/>
+    <text id="rawtext" class="mono s18" x="64" y="324" opacity="0">hello world</text>
+    <text class="mono s12 fade" x="64" y="379">interval  0.5 s</text>
+    <g id="runbtn" class="fade"><rect x="246" y="358" width="70" height="30" rx="3" class="fill-cap"/><text class="t14 mid" x="281" y="378">Run</text></g>
+  </g>
+  <g id="file" opacity="0">
+    <path class="ln doc" d="M0 0H30L44 14V56H0Z M30 0V14H44"/><path class="ln" d="M8 24H36M8 32H36M8 40H26"/>
+    <text class="mono s11" x="22" y="72" text-anchor="middle">hello.txt</text>
+  </g>
+  <path id="arc" class="ln draw" d="M340 255 C 380 150, 430 150, 470 235"/>
+  <g id="wifi" class="fade" transform="translate(405 150)">
+    <path class="ln wf" d="M-16 -2 A 22 22 0 0 1 16 -2"/><path class="ln wf" d="M-10 5 A 14 14 0 0 1 10 5"/><circle r="2.4" cy="11" class="fill-line"/>
+  </g>
+  <g id="card0" opacity="0"><rect class="ln card" x="478" y="36" width="112" height="84" rx="3"/><text class="mono s12" x="490" y="56">hello.mp3</text>
+    <path class="wave" d="M490.0 82.6V97.4M493.5 78.7V101.3M497.0 78.8V101.2M500.6 81.7V98.3M504.1 84.9V95.1M507.6 85.9V94.1M511.1 84.2V95.8M514.6 80.3V99.7M518.2 76.9V103.1M521.7 76.4V103.6M525.2 80.1V99.9M528.7 85.1V94.9M532.2 77.9V102.1M535.8 73.4V106.6M539.3 73.2V106.8M542.8 77.2V102.8M546.3 82.9V97.1M549.8 84.4V95.6M553.4 82.8V97.2M556.9 84.3V95.7M560.4 84.8V95.2M563.9 83.3V96.7M567.4 84.9V95.1M571.0 82.6V97.4M574.5 77.0V103.0M578.0 73.3V106.7"/><path id="play0" class="playhead" d="M490 70V110" opacity="0"/></g>
+  <g id="card1" opacity="0"><rect class="ln card" x="598" y="36" width="112" height="84" rx="3"/><text class="mono s12" x="610" y="56">world.mp3</text>
+    <path class="wave" d="M610.0 72.6V107.4M613.5 76.3V103.7M617.0 82.3V97.7M620.6 84.2V95.8M624.1 81.6V98.4M627.6 82.5V97.5M631.1 85.3V94.7M634.6 84.5V95.5M638.2 85.1V94.9M641.7 83.3V96.7M645.2 78.1V101.9M648.7 74.3V105.7M652.2 74.2V105.8M655.8 78.5V101.5M659.3 85.7V94.3M662.8 79.2V100.8M666.3 75.1V104.9M669.8 75.2V104.8M673.4 78.8V101.2M676.9 83.5V96.5M680.4 85.5V94.5M683.9 85.6V94.4M687.4 83.8V96.2M691.0 81.0V99.0M694.5 80.4V99.6M698.0 83.4V96.6"/><path id="play1" class="playhead" d="M610 70V110" opacity="0"/></g>
+  <text id="bank" class="mono s11 dim" x="478" y="146" opacity="0">a.mp3 … z.mp3  recorded in advance</text>
+  <path id="w-cell" class="ln draw" d="M690 180 C 770 180, 760 200, 820 200"/>
+  <path id="w-spk" class="ln draw" d="M640 336 C 640 420, 760 420, 857 420"/>
+  <text class="t15 fade mid" x="597" y="372">Raspberry Pi 4</text>
+  <text class="t15 fade mid" x="895" y="322">six servos</text>
+  <text class="t15 fade mid" x="895" y="497">speaker</text>
+  <text id="bigletter" class="mono s44" x="1000" y="216" opacity="0">h</text>
+  <g id="waves" opacity="0"><path class="ln wv" d="M8 -22 A 30 30 0 0 1 8 22"/><path class="ln wv" d="M20 -32 A 44 44 0 0 1 20 32"/></g>
+  <g id="tape" opacity="0">
+    <text class="mono s11 dim" x="415" y="500">reading</text>
+    <rect class="ln" x="415" y="505" width="350" height="40" rx="3"/>
+    <g class="ch" data-i="0"><text x="440" y="531">h</text></g><g class="ch" data-i="1"><text x="470" y="531">e</text></g><g class="ch" data-i="2"><text x="500" y="531">l</text></g><g class="ch" data-i="3"><text x="530" y="531">l</text></g><g class="ch" data-i="4"><text x="560" y="531">o</text></g><g class="ch" data-i="5"><text x="590" y="531">&#160;</text></g><g class="ch" data-i="6"><text x="620" y="531">w</text></g><g class="ch" data-i="7"><text x="650" y="531">o</text></g><g class="ch" data-i="8"><text x="680" y="531">r</text></g><g class="ch" data-i="9"><text x="710" y="531">l</text></g><g class="ch" data-i="10"><text x="740" y="531">d</text></g>
+    <rect id="cursor" x="428" y="509" width="24" height="32" rx="3" class="cursor"/>
+  </g>
+  <g id="chip0" opacity="0"><rect x="-34" y="-14" width="68" height="28" rx="3" class="fill-pin"/><text class="mono s15 chip mid" y="5">hello</text></g>
+  <g id="chip1" opacity="0"><rect x="-36" y="-14" width="72" height="28" rx="3" class="fill-pin"/><text class="mono s15 chip mid" y="5">world</text></g>
+  <circle id="dotRun" r="5" class="fill-pin" opacity="0"/><circle id="dotCell" r="5" class="fill-pin" opacity="0"/><circle id="dotSpk" r="5" class="fill-pin" opacity="0"/>
+</svg>
+        <div class="scene" aria-hidden="true">
+    <div class="obj" id="o-pi"  style="left:462px;top:165px;width:270px;height:190px"><div class="table" id="t-pi" style="width:250px;height:160px;left:10px"></div></div>
+    <div class="obj" id="o-cell" style="left:820px;top:136px;width:150px;height:170px"><div class="table" id="t-cell" style="width:120px;height:170px;left:15px"></div></div>
+    <div class="obj" id="o-spk" style="left:835px;top:350px;width:120px;height:130px"><div class="table" id="t-spk" style="width:86px;height:56px;left:17px"></div></div>
+  </div>
+      </div></div>
+    </div>
+  </div>
+</section>
+
+<div class="spacer">the text sections of the page continue here</div>
+
+<script>
+(() => {
+  const STATIC = matchMedia('(prefers-reduced-motion: reduce), (max-width: 767px)').matches;
+  if (STATIC) document.documentElement.classList.add('static');
+  const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+  const clamp = v => Math.min(1, Math.max(0, v));
+  const seg = (p, a, b) => clamp((p - a) / (b - a));
+  const ease = t => 1 - Math.pow(1 - t, 3);
+  const inout = t => -(Math.cos(Math.PI * t) - 1) / 2;
+  const lerp = (a, b, t) => a + (b - a) * t;
+
+  // ---------- build the 3D parts ----------
+  // cuboid on a table-local plane: x,y = position on the table, w,d = footprint, h = height
+  function cub(parent, { x, y, w, d, h, cls = '' }) {
+    const c = document.createElement('div'); c.className = 'cub ' + cls;
+    Object.assign(c.style, { left: x + 'px', top: y + 'px', width: w + 'px', height: d + 'px' });
+    const top = document.createElement('div'); top.className = 'top'; top.style.transform = `translateZ(${h}px)`;
+    const front = document.createElement('div'); front.className = 'front';
+    Object.assign(front.style, { top: d + 'px', height: h + 'px', transform: `translateZ(${h}px) rotateX(-90deg)` });
+    c.append(front, top); parent.appendChild(c); return { el: c, top, front };
+  }
+  const anchor = (parent, x, y, id) => { const a = document.createElement('i'); a.className = 'anchor'; a.id = id;
+    Object.assign(a.style, { left: x + 'px', top: y + 'px' }); parent.appendChild(a); return a; };
+
+  // Raspberry Pi 4: board 240x160 (85x56 mm at ~2.85 px/mm), ports on the right edge, GPIO along the far edge
+  const pcb = cub($('#t-pi'), { x: 0, y: 0, w: 240, d: 160, h: 3, cls: 'pcb' }), P = pcb.top;
+  [[10, 10], [178, 10], [10, 150], [178, 150]].forEach(([x, y]) => { const h = document.createElement('i'); h.className = 'hole'; h.style.left = x + 'px'; h.style.top = y + 'px'; P.appendChild(h); });
+  const gpio = cub(P, { x: 24, y: 4, w: 144, d: 15, h: 9, cls: 'gpio' });
+  gpio.top.innerHTML = '<i></i>'.repeat(40);
+  cub(P, { x: 86, y: 58, w: 46, d: 46, h: 4, cls: 'silver' });                 // SoC heat spreader
+  cub(P, { x: 144, y: 60, w: 30, d: 42, h: 3, cls: 'black' });                 // RAM
+  cub(P, { x: 200, y: 4,   w: 48, d: 48, h: 24, cls: 'silver' });              // Ethernet
+  cub(P, { x: 200, y: 58,  w: 48, d: 44, h: 28, cls: 'silver' });              // USB 3 pair
+  cub(P, { x: 200, y: 108, w: 48, d: 44, h: 28, cls: 'silver' });              // USB 2 pair
+  cub(P, { x: 16, y: 146, w: 18, d: 16, h: 6, cls: 'silver' });                // USB-C power
+  cub(P, { x: 50, y: 148, w: 14, d: 13, h: 5, cls: 'silver' });                // micro-HDMI
+  cub(P, { x: 76, y: 148, w: 14, d: 13, h: 5, cls: 'silver' });                // micro-HDMI
+  const jack = cub(P, { x: 108, y: 144, w: 15, d: 18, h: 11, cls: 'black' });  // 3.5 mm audio
+  const silk = document.createElement('span'); silk.className = 'silk'; silk.textContent = 'Raspberry Pi 4 Model B';
+  Object.assign(silk.style, { left: '30px', top: '118px' }); P.appendChild(silk);
+  const pwr = document.createElement('i'); pwr.className = 'led pwr'; Object.assign(pwr.style, { left: '4px', top: '28px' });
+  const act = document.createElement('i'); act.className = 'led act'; Object.assign(act.style, { left: '4px', top: '40px' });
+  P.append(pwr, act);
+  anchor(gpio.top, 144, 7, 'a-gpio'); anchor(jack.front, 7.5, 5.5, 'a-jack'); anchor(P, 0, 82, 'a-pi-in');
+
+  // Braille cell: wood block with six holes; pins are stacked discs that rise
+  const blk = cub($('#t-cell'), { x: 0, y: 0, w: 120, d: 170, h: 26, cls: 'woodblk' });
+  const pins = {};
+  [1, 2, 3, 4, 5, 6].forEach(n => {
+    const hl = document.createElement('div'); hl.className = 'bhole';
+    Object.assign(hl.style, { left: (n <= 3 ? 36 : 84) + 'px', top: (45 + ((n - 1) % 3) * 40) + 'px' });
+    hl.innerHTML = '<span class="bpin"><i class="s"></i><i class="s"></i><i class="h"></i></span>';
+    blk.top.appendChild(hl); pins[n] = [...hl.querySelectorAll('.bpin i')];
+  });
+  anchor(blk.top, 0, 85, 'a-cell');
+
+  // speaker: a small box standing on the table, cone facing the viewer
+  const spk = cub($('#t-spk'), { x: 0, y: 0, w: 86, d: 56, h: 86, cls: 'spkbox' });
+  spk.front.innerHTML = '<div class="cone"></div><div class="dust"></div>';
+  anchor(spk.front, 0, 43, 'a-spk-in'); anchor(spk.front, 86, 43, 'a-spk-out');
+  const dust = spk.front.querySelector('.dust');
+
+  // ---------- fit the canvas, then hang the 2D wires on the 3D anchors ----------
+  const fit = $('.fit'), canvas = $('.canvas');
+  let k = 1;
+  function layout() {
+    const avail = STATIC ? Infinity : innerHeight - 150;
+    k = Math.min(fit.clientWidth / 1060, avail / 570);
+    if (STATIC) k = Math.max(k, 0.72);
+    canvas.style.transform = `scale(${k})`;
+    fit.style.height = 570 * k + 'px'; fit.style.width = STATIC ? 1060 * k + 'px' : '100%';
+  }
+  function pt(id) {
+    const r = document.getElementById(id).getBoundingClientRect(), c = canvas.getBoundingClientRect();
+    return { x: (r.left + r.width / 2 - c.left) / k, y: (r.top + r.height / 2 - c.top) / k - 10 };
+  }
+  let draws = [], waves = [];
+  function wire() {
+    $$('.obj').forEach(o => { o.style.transform = 'none'; o.style.opacity = 1; });   // measure at rest
+    const inP = pt('a-pi-in'), g = pt('a-gpio'), c = pt('a-cell'), j = pt('a-jack'), si = pt('a-spk-in'), so = pt('a-spk-out');
+    $('#arc').setAttribute('d', `M340 255 C 380 150, ${inP.x - 70} 150, ${inP.x} ${inP.y}`);
+    $('#w-cell').setAttribute('d', `M${g.x} ${g.y} C ${g.x + 70} ${g.y}, ${c.x - 60} ${c.y}, ${c.x} ${c.y}`);
+    $('#w-spk').setAttribute('d', `M${j.x} ${j.y} C ${j.x} ${si.y}, ${si.x - 110} ${si.y}, ${si.x} ${si.y}`);
+    $('#waves').setAttribute('transform', `translate(${so.x + 4} ${so.y})`);
+    draws = $$('.draw').map(el => { const L = el.getTotalLength(); el.style.strokeDasharray = L; return [el, L]; });
+    waves = $$('.wave').map(el => { const L = el.getTotalLength(); el.style.strokeDasharray = L; return [el, L]; });
+  }
+
+  // ---------- the story ----------
+  const TEXT = 'hello world';
+  const BRAILLE = {a:[1],b:[1,2],c:[1,4],d:[1,4,5],e:[1,5],f:[1,2,4],g:[1,2,4,5],h:[1,2,5],i:[2,4],j:[2,4,5],k:[1,3],
+    l:[1,2,3],m:[1,3,4],n:[1,3,4,5],o:[1,3,5],p:[1,2,3,4],q:[1,2,3,4,5],r:[1,2,3,5],s:[2,3,4],t:[2,3,4,5],u:[1,3,6],
+    v:[1,2,3,6],w:[2,4,5,6],x:[1,3,4,6],y:[1,3,4,5,6],z:[1,3,5,6]};
+  const ITEMS = [{w:0,from:0,to:4}, ...[0,1,2,3,4].map(i=>({c:i})), {w:1,from:6,to:10}, ...[6,7,8,9,10].map(i=>({c:i}))];
+  const cx = i => 440 + i * 30;
+  const T = { draw:[0,.07], file:[.06,.11], bar:[.10,.14], text:[.14,.16], split:[.17,.22],
+    fly0:[.22,.31], fly1:[.27,.36], land0:[.31,.37], land1:[.36,.41],
+    card0:[.34,.37], wave0:[.36,.42], card1:[.39,.42], wave1:[.42,.47], bank:[.45,.49],
+    run:[.50,.53], runDot:[.51,.55], tape:[.53,.56], read:[.56,1] };
+  const SCENES = [[.02,.22],[.22,.36],[.36,.50],[.50,1.2]];
+  const DROP = [['#o-pi', 0, .05], ['#o-cell', .012, .062], ['#o-spk', .024, .074]];
+  const at = (path, t) => path.getPointAtLength(clamp(t) * path.getTotalLength());
+  const card = [$('#card0'), $('#card1')], cardC = [[534, 78], [654, 78]], chip = [$('#chip0'), $('#chip1')];
+  const chipStart = [[98, 318], [178, 318]];
+  const chars = $$('.ch'), caps = $$('.cap'), ticks = $$('.ticks i');
+  const PIN_H = 8;
+
+  function render(p) {
+    // 0. software draws itself; the hardware comes down onto the table
+    const d = ease(seg(p, ...T.draw));
+    draws.forEach(([el, L]) => el.style.strokeDashoffset = L * (1 - d));
+    $$('.fade').forEach(el => el.style.opacity = d);
+    DROP.forEach(([sel, a, b]) => { const t = ease(seg(p, a, b)); const o = $(sel);
+      o.style.opacity = t; o.style.transform = `translateY(${-36 * (1 - t)}px)`; });
+
+    // 1. upload
+    const f = ease(seg(p, ...T.file));
+    $('#file').setAttribute('transform', `translate(${lerp(40, 168, f)} ${lerp(4, 180, f)})`);
+    $('#file').style.opacity = p < T.file[0] ? 0 : 1 - seg(p, .13, .145);
+    $('#bar').setAttribute('transform', `translate(64 280) scale(${ease(seg(p, ...T.bar))} 1)`);
+    $('#rawtext').style.opacity = seg(p, ...T.text) * (1 - seg(p, .17, .185));
+
+    // 2. over Wi-Fi, 3. into audio files
+    const arc = $('#arc');
+    chip.forEach((c, k2) => {
+      const split = ease(seg(p, ...T.split)), fly = inout(seg(p, ...(k2 ? T.fly1 : T.fly0))), land = ease(seg(p, ...(k2 ? T.land1 : T.land0)));
+      let x, y;
+      if (fly === 0) { x = chipStart[k2][0] + (k2 ? 8 * split : -2 * split); y = chipStart[k2][1]; }
+      else if (land === 0) { const a = at(arc, fly); const m = Math.min(1, fly * 4); x = lerp(chipStart[k2][0], a.x, m); y = lerp(chipStart[k2][1], a.y, m); }
+      else { const a = at(arc, 1); x = lerp(a.x, cardC[k2][0], land); y = lerp(a.y, cardC[k2][1], land); }
+      c.setAttribute('transform', `translate(${x} ${y})`);
+      c.style.opacity = seg(p, .17, .18) * (1 - seg(p, ...(k2 ? [.39, .42] : [.35, .38])));
+      const cr = seg(p, ...(k2 ? T.card1 : T.card0));
+      card[k2].style.opacity = cr; card[k2].setAttribute('transform', `translate(0 ${6 * (1 - ease(cr))})`);
+    });
+    waves.forEach(([el, L], i) => el.style.strokeDashoffset = L * (1 - seg(p, ...(i ? T.wave1 : T.wave0))));
+    $('#bank').style.opacity = seg(p, ...T.bank);
+    const flying = p > T.fly0[0] && p < T.land1[1];
+    $$('.wf').forEach(el => el.classList.toggle('on', flying || (p > T.runDot[0] && p < T.runDot[1])));
+
+    // 4. Run, then the read loop
+    const press = seg(p, ...T.run), dip = press < .5 ? press * 2 : (1 - press) * 2;
+    $('#runbtn').setAttribute('transform', `translate(0 ${2.5 * dip})`);
+    const rd = seg(p, ...T.runDot), pr = at(arc, rd), dr = $('#dotRun');
+    dr.setAttribute('transform', `translate(${pr.x} ${pr.y})`); dr.style.opacity = rd > 0 && rd < 1 ? 1 : 0;
+    $('#tape').style.opacity = seg(p, ...T.tape);
+
+    const r = seg(p, ...T.read), started = p >= T.read[0];
+    const n = ITEMS.length, idx = Math.min(n - 1, Math.floor(r * n)), q = r >= 1 ? 1 : (r * n) % 1;
+    const it = started ? ITEMS[idx] : null;
+    const span = it => it.w !== undefined ? [it.from, it.to] : [it.c, it.c];
+    const prev = started && idx > 0 ? span(ITEMS[idx - 1]) : span(ITEMS[0]), cur = it ? span(it) : span(ITEMS[0]);
+    const kk = ease(clamp(q / .25));
+    const x0 = lerp(cx(prev[0]) - 12, cx(cur[0]) - 12, started ? kk : 1), x1 = lerp(cx(prev[1]) + 12, cx(cur[1]) + 12, started ? kk : 1);
+    $('#cursor').setAttribute('x', x0); $('#cursor').setAttribute('width', x1 - x0);
+    chars.forEach(c => c.classList.toggle('done', started && +c.dataset.i < cur[0]));
+    [0, 1].forEach(w => { const on = it && it.w === w; card[w].querySelector('rect').classList.toggle('on', on);
+      const ph = $('#play' + w); ph.style.opacity = on ? 1 : 0; ph.setAttribute('transform', `translate(${on ? 88 * q : 0} 0)`); });
+
+    const letter = it && it.c !== undefined ? TEXT[it.c] : null, dots = letter ? BRAILLE[letter] : [];
+    const up = ease(clamp(q / .15));                               // pins rise at the start of each letter
+    Object.entries(pins).forEach(([nn, [s1, s2, h]]) => {
+      const u = dots.includes(+nn) ? up : 0;
+      [s1, s2, h].forEach((el, i) => { el.style.opacity = u > 0 ? 1 : 0; el.style.transform = `translateZ(${PIN_H * u * [.35, .7, 1][i]}px)`; });
+    });
+    const big = $('#bigletter'); big.textContent = letter || ''; big.style.opacity = letter ? 1 : 0;
+
+    const dc = $('#dotCell'), ds = $('#dotSpk');
+    if (letter) { const pc = at($('#w-cell'), q / .5); dc.setAttribute('transform', `translate(${pc.x} ${pc.y})`); dc.style.opacity = q < .5 ? 1 : 0; } else dc.style.opacity = 0;
+    if (it) { const ps = at($('#w-spk'), q / .6); ds.setAttribute('transform', `translate(${ps.x} ${ps.y})`); ds.style.opacity = q < .6 ? 1 : 0; } else ds.style.opacity = 0;
+    const sounding = it && q > .45;
+    $('#waves').style.opacity = sounding ? (it.w !== undefined ? 1 : .55) : 0;
+    dust.style.transform = `scale(${sounding ? 1 + .12 * Math.sin((q - .45) / .55 * Math.PI) : 1})`;   // the cone pushes
+
+    // the Pi's green ACT LED: flickers while it writes the audio files and at each step of the loop
+    const writing = p > .36 && p < .47 && Math.floor(p * 500) % 2 === 0;
+    const stepping = it && q < .3;
+    act.classList.toggle('on', !!(writing || stepping));
+
+    caps.forEach((c, i) => { if (STATIC) return; const [a, b] = SCENES[i];
+      c.style.opacity = i === 0 ? (p < b ? clamp((b - p) / .015) : 0) : clamp(Math.min((p - a) / .015 + 1, (b - p) / .015)); });
+    ticks.forEach((t, i) => t.classList.toggle('on', p >= SCENES[i][0] - .02 && p < SCENES[i][1]));
+  }
+
+  const story = $('.story');
+  let queued = false;
+  function update() {
+    queued = false;
+    if (STATIC) return render(1);
+    const r = story.getBoundingClientRect(), total = story.offsetHeight - innerHeight;
+    render(clamp(-r.top / total));
+  }
+  function relayout() { layout(); wire(); update(); }
+  addEventListener('scroll', () => { if (!queued) { queued = true; requestAnimationFrame(update); } }, { passive: true });
+  addEventListener('resize', relayout);
+  relayout();
+})();
+</script>
+</body>
+</html>
