@@ -191,6 +191,9 @@ Google Fonts, woff2, latin subset, `font-display: swap`. Preload the display fac
 1. **Hero** (Arthur's brief, home refactor stage 3, 2026-11-16, after yudiganeko.com). A 4:5 photo (at most 240px wide, 220px on phones; 2026-11-18),
    "Hi! I'm", his name (the page's `<h1>`, Archivo 400, 34px, 28px on phones, with a blinking text caret one space after it) and "Computer Engineering Student" under it; the
    identity list (Curitiba, EU citizen, open to global remote) and the intro line beside it, all centred.
+   Behind it, from 768px (Arthur, 2026-11-18): a faint world map in dots on the ground (no outline, no panel);
+   dots near the mouse darken, and hovering an identity line lights its place (Curitiba, Italy, the whole world).
+   The hero text gets a ground-coloured halo over it. Motion in motion-spec "Hero map".
    The old display line ("I make technical things make sense…"), the email link and the spine paragraph
    were removed at his request. The facts the datasheet carried (languages, graduation, students helped,
    chess, guitar, the four features) are listed in `TODO/01-remove-datasheet.md` and wait for Arthur.

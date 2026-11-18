@@ -124,6 +124,74 @@
   margin: 0;
 }
 
+/* The dotted world map behind the hero (Arthur, 2026-11-18): dots only, on the page's ground, no outline or
+ * panel. It fills the hero's box (the content column, so never the corner name's lane), fitted by height, and
+ * sits under the photo and the text. motion.ts moves the spotlight's mask and fades the region layers. */
+.hero-map {
+  position: absolute;
+  /* from just above the content (the hero's pt-30 is the space under the corner name), to its bottom */
+  inset: 4rem 0 0;
+  z-index: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.hero-map svg {
+  display: block;
+  height: 100%;
+  width: auto;
+  max-width: 100%;
+  overflow: visible;
+}
+.hero-id,
+.hero-info {
+  position: relative;
+  z-index: 1;
+}
+/* a ground-coloured halo, so the text stays clean over the dots (static, nothing animates it) */
+.hero-id p,
+.hero-name,
+.hero-info ul,
+.hero-info p {
+  text-shadow:
+    0 0 3px var(--color-ground),
+    0 0 8px var(--color-ground),
+    0 0 14px var(--color-ground);
+}
+/* each dot is a zero-length segment: the round cap draws it, stroke-width is its diameter (grid units) */
+.hero-map svg {
+  fill: none;
+  stroke-linecap: round;
+  stroke-width: 0.6;
+}
+.hm-base {
+  stroke: var(--color-line);
+  opacity: 0.55;
+}
+.hm-spot {
+  stroke: var(--color-graphite);
+  opacity: 0;
+}
+.hm-region {
+  stroke: var(--color-signal);
+  opacity: 0;
+}
+.hm-big {
+  stroke-width: 0.95;
+}
+/* the whole world lit: grey, and lighter than the regions, so the text over it stays readable */
+.hm-world {
+  stroke: var(--color-graphite-2);
+  stroke-opacity: 0.55;
+}
+/* Below 768px the stacked hero leaves the map only peeking out behind the photo, and touch has no hover */
+@media (max-width: 767px) {
+  .hero-map {
+    display: none;
+  }
+}
+
 /* 768px and up: photo and name on the left, the info on the right, centred vertically on the photo.
  * Arthur, 2026-11-18: both sides pulled toward the page's centre, so the two sit as a pair in the middle
  * (content-width columns, centred, a fixed gap) instead of on the 12-column grid's columns 1-5 and 6-12. */

@@ -3,6 +3,7 @@
 // the name and the role under it; the identity list and the intro line beside it. Centred text is
 // Arthur's override of design-spec §5. The name is the page's single <h1>.
 import HeroDrawing from './HeroDrawing.astro'
+import HeroMap from './HeroMap.astro'
 import { getLang } from '../../shared/i18n/lang'
 import { text } from './text'
 
@@ -12,6 +13,7 @@ const t = text[getLang(Astro)]
 <!-- relative: the hero drawing (origin mark, datum) positions against this header. -->
 <header class="hero relative pb-8 pt-30">
   <HeroDrawing />
+  <HeroMap />
 
   <div class="hero-id">
     <!-- width/height are the file's real size; CSS crops it to 4:5, so the box is known from first paint -->
@@ -37,7 +39,7 @@ const t = text[getLang(Astro)]
   <div class="hero-info">
     <!-- a real list, so a screen reader doesn't read the three facts as one run-on phrase -->
     <ul role="list" class="hero-identity text-h3 font-sans">
-      {t.identity.map((item) => <li>{item}</li>)}
+      {t.identity.map((item, i) => <li data-map-line={t.identityRegion[i]}>{item}</li>)}
     </ul>
     <p class="measure text-body text-graphite-2">{t.intro[0]}<br />{t.intro[1]}</p>
   </div>

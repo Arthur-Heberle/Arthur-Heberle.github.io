@@ -489,9 +489,92 @@ function photoTilt(): () => void {
   return () => offs.forEach((off) => off())
 }
 
+/** The hero's dotted world map (HeroMap.astro; motion-spec "Hero map"). Mouse only.
+ *  Spotlight: a soft mask follows the cursor over the hero (transform of the mask's circle) and shows a darker
+ *  copy of the dots under it; the layer fades in on enter and out on leave (opacity). Skipped when `still`.
+ *  Regions: hovering an identity line fades its layer in (Curitiba, Italy, the whole world); `still` (reduced
+ *  motion) switches it with no tween. Returns the cleanup for gsap.matchMedia. */
+const SPOT_OPACITY = 0.6
+function heroMap(still: boolean): () => void {
+  const hero = document.querySelector<HTMLElement>('.hero')
+  const svg = hero?.querySelector<SVGSVGElement>('.hero-map svg')
+  if (!hero || !svg) return () => {}
+  const offs: (() => void)[] = []
+  const on = (el: EventTarget, type: string, fn: (e: PointerEvent) => void) => {
+    el.addEventListener(type, fn as EventListener)
+    offs.push(() => el.removeEventListener(type, fn as EventListener))
+  }
+  const fade = (el: Element, opacity: number, duration: number) =>
+    still ? gsap.set(el, { opacity }) : gsap.to(el, { opacity, duration, ease: 'power2.out', overwrite: true })
+
+  const spot = svg.querySelector<SVGCircleElement>('[data-map-spot]')
+  const spotLayer = svg.querySelector<SVGGElement>('[data-map-spot-layer]')
+  if (!still && spot && spotLayer) {
+    const vb = svg.viewBox.baseVal
+    // The circle lives inside a <mask>, which is never rendered itself, so GSAP can't measure it as an SVG
+    // target (getBBox). Tween a plain point and write the circle's transform attribute from it.
+    const pos = { x: -999, y: -999 }
+    const place = () => spot.setAttribute('transform', `translate(${pos.x} ${pos.y})`)
+    const sx = gsap.quickTo(pos, 'x', { duration: 0.35, ease: 'power3.out', onUpdate: place })
+    const sy = gsap.quickTo(pos, 'y', { duration: 0.35, ease: 'power3.out', onUpdate: place })
+    let entered = false
+    // The SVG is letterboxed inside .hero-map (preserveAspectRatio meet): map the cursor through its own box
+    const toMap = (e: PointerEvent) => {
+      const r = svg.getBoundingClientRect()
+      const scale = Math.min(r.width / vb.width, r.height / vb.height)
+      const ox = r.left + (r.width - vb.width * scale) / 2
+      const oy = r.top + (r.height - vb.height * scale) / 2
+      return [(e.clientX - ox) / scale, (e.clientY - oy) / scale]
+    }
+    on(hero, 'pointermove', (e) => {
+      if (e.pointerType !== 'mouse') return
+      const [x, y] = toMap(e)
+      if (!entered) {
+        // first move after entering: jump there instead of sliding in from the last exit
+        sx(x, x)
+        sy(y, y)
+        fade(spotLayer, SPOT_OPACITY, 0.4)
+        entered = true
+      }
+      sx(x)
+      sy(y)
+    })
+    on(hero, 'pointerleave', () => {
+      entered = false
+      fade(spotLayer, 0, 0.5)
+    })
+    offs.push(() => {
+      gsap.killTweensOf([pos, spotLayer])
+      spot.removeAttribute('transform')
+      gsap.set(spotLayer, { clearProps: 'opacity' })
+    })
+  }
+
+  const regions = gsap.utils.toArray<SVGElement>('[data-map-region]', svg)
+  for (const line of gsap.utils.toArray<HTMLElement>('[data-map-line]', hero)) {
+    const region = regions.find((r) => r.dataset.mapRegion === line.dataset.mapLine)
+    if (!region) continue
+    on(line, 'pointerenter', (e) => e.pointerType === 'mouse' && fade(region, 1, 0.35))
+    on(line, 'pointerleave', () => fade(region, 0, 0.5))
+  }
+  offs.push(() => {
+    gsap.killTweensOf(regions)
+    gsap.set(regions, { clearProps: 'opacity' })
+  })
+  return () => offs.forEach((off) => off())
+}
+
 const mm = gsap.matchMedia()
 
-mm.add('(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)', () => photoTilt())
+mm.add('(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)', () => {
+  const offTilt = photoTilt()
+  const offMap = heroMap(false)
+  return () => {
+    offTilt()
+    offMap()
+  }
+})
+mm.add('(hover: hover) and (pointer: fine) and (prefers-reduced-motion: reduce)', () => heroMap(true))
 
 mm.add('(min-width: 768px) and (prefers-reduced-motion: no-preference)', () => {
   // EduBra's "How it works" story: autoplays once when 40% visible (no pin, no scrub)

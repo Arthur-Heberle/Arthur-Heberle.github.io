@@ -224,6 +224,19 @@ quickTo does not tween the `scale` shorthand), back to 1 on leave; the tilt keep
 `(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)`: touch, reduced motion and
 no JS keep a flat photo. Transform only.
 
+## Hero map
+
+Arthur, 2026-11-18. A world map in dots (NTag/dotted-map, run at build time in `src/home/hero/worldMap.ts`;
+`HeroMap.astro`) sits behind the hero on the page's own ground: dots only, no outline, no panel. `heroMap()` in
+`src/shared/motion.ts`, mouse only:
+- **Spotlight:** a darker copy of the dots is seen through a soft radial mask; the mask's circle follows the cursor
+  over the hero (its `transform` attribute, written from a `quickTo`'d point, 0.35s `power3.out`); the layer fades
+  in to 0.6 on the first move and out on leave (opacity). Not under reduced motion.
+- **Regions:** hovering an identity line (`data-map-line`) fades in its layer (`data-map-region`): "Curitiba,
+  Brasil" a few dots around Curitiba, "EU citizen" Italy, both in `--color-signal`; "open to global remote" every
+  dot, in grey. 0.35s in, 0.5s out; under reduced motion they switch with no tween.
+Hidden below 768px. Without JS: the faint base dots only. Transform and opacity only.
+
 ---
 
 ## Pinning

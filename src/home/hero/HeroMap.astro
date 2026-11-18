@@ -1,0 +1,42 @@
+---
+// The hero's dotted world map (Arthur, 2026-11-18): dots only, no outline, no panel, on the page's own ground.
+// Built at build time (worldMap.ts). Every dot is a zero-length segment with a round cap, so a whole layer is
+// one <path> (about 10 bytes a dot instead of a <circle> each). Layers, all copies of one dot set:
+//   base    every dot, faint, always there (the only layer without JS);
+//   spot    the dots again, darker, seen through a soft mask that motion.ts moves to the cursor (transform only);
+//   regions what an identity line lights while it is hovered: Curitiba, Italy, the whole world (opacity only).
+import { getLang } from '../../shared/i18n/lang'
+import { text } from './text'
+import { worldMap, type Dot } from './worldMap'
+
+const t = text[getLang(Astro)]
+const { width, height, dots } = worldMap()
+const SPOT = 14 // spotlight radius in grid units
+const path = (ds: Dot[]) => ds.map((d) => `M${d.x} ${d.y}h0`).join('')
+const regions = (['cwb', 'eu'] as const).map((r) => ({ r, d: path(dots.filter((d) => d.region === r)) }))
+---
+
+<div class="hero-map" role="img" aria-label={t.mapLabel}>
+  <svg
+    viewBox={`0 0 ${width} ${height}`}
+    style={`aspect-ratio: ${width} / ${height}`}
+    aria-hidden="true"
+    focusable="false"
+  >
+    <defs>
+      <path id="hm-dots" d={path(dots)} />
+      <radialGradient id="hm-spot-fade">
+        <stop offset="0" stop-color="#fff" />
+        <stop offset="0.45" stop-color="#fff" stop-opacity="0.6" />
+        <stop offset="1" stop-color="#fff" stop-opacity="0" />
+      </radialGradient>
+      <mask id="hm-spot" maskUnits="userSpaceOnUse" x="0" y="0" width={width} height={height}>
+        <circle r={SPOT} fill="url(#hm-spot-fade)" data-map-spot />
+      </mask>
+    </defs>
+    <use href="#hm-dots" class="hm-base" />
+    <g class="hm-spot" mask="url(#hm-spot)" data-map-spot-layer><use href="#hm-dots" /></g>
+    <use href="#hm-dots" class="hm-region hm-world" data-map-region="world" />
+    {regions.map(({ r, d }) => <path class="hm-region hm-big" data-map-region={r} d={d} />)}
+  </svg>
+</div>

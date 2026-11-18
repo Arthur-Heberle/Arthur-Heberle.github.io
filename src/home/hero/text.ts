@@ -8,6 +8,9 @@ const en = {
   role: 'Computer Engineering Student',
   photoAlt: 'Arthur Heberle',
   identity: ['Curitiba, Brasil', 'EU citizen', 'open to global remote'],
+  // the region each identity line lights on the hero map, in the same order (Arthur, 2026-11-18)
+  identityRegion: ['cwb', 'eu', 'world'],
+  mapLabel: 'World map drawn in dots',
   // two lines, broken after "Curitiba." (Arthur, 2026-11-16)
   intro: ['Computer engineering at UTFPR, in Curitiba.', 'Embedded systems, C++, and AI automation.'],
 }
