@@ -208,6 +208,11 @@ The display line and the contact link must be present and readable if this never
 `SplitText` on the display line only, split **per word, not per character**. Per
 character is everywhere now and reads as a default.
 
+## Hero caret
+
+Arthur, 2026-11-18. A text caret blinks after the name in the hero: `.hero-name::after` in
+`src/home/hero/hero.css`, a CSS opacity blink in hard steps (1.06s), no GSAP. Steady under reduced motion.
+
 ## Photo tilt
 
 Arthur, 2026-11-18. The hero photo and the About photo (`data-tilt`) tilt in 3D under the mouse: the corner

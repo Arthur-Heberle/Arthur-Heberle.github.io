@@ -77,6 +77,30 @@
   letter-spacing: -0.02em;
   text-wrap: balance;
 }
+/* A text caret blinking after the name (Arthur, 2026-11-18). A pseudo-element: not in the accessibility
+ * tree, untouched by SplitText, readable page without JS. The negative right margin cancels its width so
+ * the name stays centred. Opacity only, in hard steps like a real caret; reduced motion: steady. */
+.hero-name::after {
+  content: '';
+  display: inline-block;
+  width: 0.06em;
+  height: 0.9em;
+  margin-left: 0.08em;
+  margin-right: -0.14em;
+  vertical-align: -0.1em;
+  background: currentColor;
+  animation: hero-caret 1.06s steps(1, end) infinite;
+}
+@keyframes hero-caret {
+  50% {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-name::after {
+    animation: none;
+  }
+}
 .hero-role {
   margin: 0.5rem 0 0;
 }
