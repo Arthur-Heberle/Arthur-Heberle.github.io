@@ -171,7 +171,7 @@ Google Fonts, woff2, latin subset, `font-display: swap`. Preload the display fac
 - Spine column 68ch max. Margin column 200px. Gutter 32px, and the gutter is where
   leader lines are drawn.
 - Home page grid (Arthur, 2026-10-24), 768px and up: 12 columns, content at most 1280px, sides
-  `clamp(24px, 5vw, 80px)`, 24px gap, everything left-aligned. Hero (Arthur, 2026-11-18): photo and name, then identity and intro, as a content-width pair centred on the page with a `clamp(48px, 7vw, 112px)` gap, not on the 12 columns (photo 4:5, at most 240px wide, 220px below 768px); before that: identity and
+  `clamp(24px, 5vw, 80px)`, 24px gap, everything left-aligned. Hero (Arthur, 2026-11-18): photo and name, then identity and intro, as a content-width pair centred on the page with a `clamp(64px, 9vw, 144px)` gap, not on the 12 columns (photo 4:5, at most 240px wide, 220px below 768px); before that: identity and
   intro on 6 to 12 (since 2026-11-16; no spine, margin notes or datasheet); the bench and
   Experience use the full width. Below 768px it is the single column it was.
 - Radius (Arthur, 2026-10-24): panels and cards `--radius-panel` 10px; buttons and controls

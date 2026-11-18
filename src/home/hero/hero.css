@@ -132,7 +132,7 @@
     display: grid;
     grid-template-columns: auto auto;
     justify-content: center;
-    column-gap: clamp(48px, 7vw, 112px);
+    column-gap: clamp(64px, 9vw, 144px); /* Arthur, 2026-11-18: a little more (was clamp(48px, 7vw, 112px)) */
     align-items: center;
   }
   .hero-id {
