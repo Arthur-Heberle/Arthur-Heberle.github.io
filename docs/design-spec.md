@@ -217,6 +217,10 @@ Google Fonts, woff2, latin subset, `font-display: swap`. Preload the display fac
    in mono, the item's text under it. **The wave and dotted line, the pills and the popovers were removed on
    his request (2026-11-17)**: this section no longer "draws itself". Earlier designs (a vertical axis; scrolling
    wavy timelines; pill rows) were replaced on his request.
+3c. **About me** (home refactor stage 5, Arthur 2026-11-18): between Roadmap and Experience. Three one-line
+   paragraphs (languages, chess, guitar: the facts the stage-1 datasheet held) on the left, a landscape photo
+   (`public/images/arthur-about.jpeg`, 400px wide, `--radius-panel`) on the right from 768px; stacked below
+   (text, then photo). Like the hero photo, it tilts toward the mouse (motion-spec "Photo tilt").
 4. **Changelog.** Three most recent entries, then "show all".
 5. **Contact.** The last leader line of the drawing extends off the spine and terminates
    at his email. The only thing the drawing points at.

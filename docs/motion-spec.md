@@ -208,6 +208,15 @@ The display line and the contact link must be present and readable if this never
 `SplitText` on the display line only, split **per word, not per character**. Per
 character is everywhere now and reads as a default.
 
+## Photo tilt
+
+Arthur, 2026-11-18. The hero photo and the About photo (`data-tilt`) tilt in 3D under the mouse: the corner
+under the cursor is **pressed in** (recedes), the opposite one comes forward; back to flat on leave.
+`rotationX`/`rotationY` up to 8 degrees with `transformPerspective: 700`, `gsap.quickTo` at 0.5s `power3.out`.
+`photoTilt()` in `src/shared/motion.ts`, run only under
+`(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)`: touch, reduced motion and
+no JS keep a flat photo. Transform only.
+
 ---
 
 ## Pinning

@@ -1,0 +1,33 @@
+/* Home refactor stage 5 (Arthur, 2026-11-18): About me. A short block of one-line paragraphs, the photo
+ * beside it from 768px; below, text then photo. */
+.about-body {
+  display: grid;
+  gap: 2rem;
+  margin-top: 2rem;
+}
+.about-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.about-text p {
+  margin: 0;
+}
+/* width/height attributes give the box before the file loads; landscape (1089x792), full width below 768px, 400px beside the text above. */
+.about-photo {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--radius-panel);
+}
+@media (min-width: 768px) {
+  .about-body {
+    grid-template-columns: minmax(0, 1fr) 400px;
+    align-items: center;
+    gap: var(--spacing-gutter);
+  }
+  .about-photo {
+    max-width: 400px;
+  }
+}

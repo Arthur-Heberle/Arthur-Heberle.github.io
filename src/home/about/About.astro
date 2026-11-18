@@ -1,0 +1,28 @@
+---
+// About me (home refactor stage 5, Arthur 2026-11-18): a few one-line paragraphs and a photo,
+// between Roadmap and Experience. No motion beyond the shared data-anim reveal.
+import { getLang } from '../../shared/i18n/lang'
+import { text } from './text'
+
+const t = text[getLang(Astro)]
+---
+
+<section class="section-gap" aria-labelledby="about-heading">
+  <h2 id="about-heading" class="section-title" data-anim>{t.heading}</h2>
+  <div class="about-body" data-anim>
+    <div class="about-text">
+      {t.paragraphs.map((p) => <p class="measure text-body">{p}</p>)}
+    </div>
+    <!-- width/height are the file's real size, so the box is known before it loads (no layout shift) -->
+    <img
+      class="about-photo"
+      src="/images/arthur-about.jpeg"
+      width="1089"
+      height="792"
+      alt={t.photoAlt}
+      loading="lazy"
+      decoding="async"
+      data-tilt
+    />
+  </div>
+</section>

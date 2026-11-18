@@ -434,7 +434,49 @@ function heroSequence(withDrawing: boolean) {
   clearHeroPending()
 }
 
+/** Photo tilt (Arthur, 2026-11-18): the hero and About photos tilt in 3D under the mouse, the corner
+ *  under the cursor pressed in and the opposite one coming forward; back to flat on leave. Transform only
+ *  (rotationX/Y with a perspective). Run only for a fine pointer that hovers and without reduced motion,
+ *  so touch and reduced motion keep a flat photo. Returns the cleanup for gsap.matchMedia. */
+const TILT_MAX = 8 // degrees at the photo's edge
+function photoTilt(): () => void {
+  const offs: (() => void)[] = []
+  for (const el of gsap.utils.toArray<HTMLElement>('[data-tilt]')) {
+    gsap.set(el, { transformPerspective: 700 })
+    const rx = gsap.quickTo(el, 'rotationX', { duration: 0.5, ease: 'power3.out' })
+    const ry = gsap.quickTo(el, 'rotationY', { duration: 0.5, ease: 'power3.out' })
+    // measured on enter, while flat, so the tilt never feeds back into its own measurement
+    let rect = el.getBoundingClientRect()
+    const enter = () => (rect = el.getBoundingClientRect())
+    const move = (e: PointerEvent) => {
+      if (e.pointerType !== 'mouse') return
+      const nx = ((e.clientX - rect.left) / rect.width) * 2 - 1 // -1 left, 1 right
+      const ny = ((e.clientY - rect.top) / rect.height) * 2 - 1 // -1 top, 1 bottom
+      // rotateY > 0 sends the right edge away, rotateX > 0 sends the top edge away: the cursor's corner recedes
+      ry(gsap.utils.clamp(-1, 1, nx) * TILT_MAX)
+      rx(gsap.utils.clamp(-1, 1, -ny) * TILT_MAX)
+    }
+    const leave = () => {
+      rx(0)
+      ry(0)
+    }
+    el.addEventListener('pointerenter', enter)
+    el.addEventListener('pointermove', move)
+    el.addEventListener('pointerleave', leave)
+    offs.push(() => {
+      el.removeEventListener('pointerenter', enter)
+      el.removeEventListener('pointermove', move)
+      el.removeEventListener('pointerleave', leave)
+      gsap.killTweensOf(el, 'rotationX,rotationY')
+      gsap.set(el, { clearProps: 'transform' })
+    })
+  }
+  return () => offs.forEach((off) => off())
+}
+
 const mm = gsap.matchMedia()
+
+mm.add('(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)', () => photoTilt())
 
 mm.add('(min-width: 768px) and (prefers-reduced-motion: no-preference)', () => {
   // EduBra's "How it works" story: autoplays once when 40% visible (no pin, no scrub)

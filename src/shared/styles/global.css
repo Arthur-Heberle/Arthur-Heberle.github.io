@@ -36,6 +36,8 @@
 @import "../../home/bench/bench.css";
 /* home: the roadmap (horizontal timelines, their popovers) */
 @import "../../home/roadmap/roadmap.css";
+/* home: About me */
+@import "../../home/about/about.css";
 
 /* shared: the floating corner chrome (the name, later the language switch) and the lane it keeps
  * clear; after the page layouts, whose widths it overrides */
