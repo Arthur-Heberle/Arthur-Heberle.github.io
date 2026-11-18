@@ -51,7 +51,6 @@
   flex-direction: column;
   align-items: center;
   width: 100%;
-  max-width: 260px;
 }
 /* The file is 604x1073 (width/height attributes); aspect-ratio crops it to a 4:5 portrait. */
 .hero-photo {
@@ -62,6 +61,9 @@
   object-fit: cover;
   object-position: 50% 30%;
   border-radius: var(--radius-panel);
+  /* Arthur, 2026-11-18: smaller (was 260px / 280px). The cap is on the photo, not its column, so the role
+   * line under it keeps one line. */
+  max-width: 220px;
 }
 .hero-greeting {
   margin: 1.5rem 0 0.25rem;
@@ -72,21 +74,21 @@
   margin: 0;
   font-family: var(--font-sans);
   font-weight: 400;
-  font-size: 2rem;
+  font-size: 1.75rem; /* Arthur, 2026-11-18: smaller (was 32px; 40px from 768px, now 34px) */
   line-height: 1.1;
   letter-spacing: -0.02em;
   text-wrap: balance;
 }
-/* A text caret blinking after the name (Arthur, 2026-11-18). A pseudo-element: not in the accessibility
- * tree, untouched by SplitText, readable page without JS. The negative right margin cancels its width so
- * the name stays centred. Opacity only, in hard steps like a real caret; reduced motion: steady. */
+/* A text caret blinking after the name (Arthur, 2026-11-18), a space's width after it (0.28em, Archivo's
+ * space). A pseudo-element: not in the accessibility tree, untouched by SplitText, readable page without
+ * JS. The negative right margin cancels gap + caret so the name stays centred. Opacity only, in hard steps like a real caret; reduced motion: steady. */
 .hero-name::after {
   content: '';
   display: inline-block;
   width: 0.06em;
   height: 0.9em;
-  margin-left: 0.08em;
-  margin-right: -0.14em;
+  margin-left: 0.28em;
+  margin-right: -0.34em;
   vertical-align: -0.1em;
   background: currentColor;
   animation: hero-caret 1.06s steps(1, end) infinite;
@@ -122,25 +124,25 @@
   margin: 0;
 }
 
-/* On the home page's 12-column grid (home.css, 768px and up): photo and name on columns 1 to 5, the
- * info on 6 to 12, centred vertically on the photo like the reference. */
+/* 768px and up: photo and name on the left, the info on the right, centred vertically on the photo.
+ * Arthur, 2026-11-18: both sides pulled toward the page's centre, so the two sit as a pair in the middle
+ * (content-width columns, centred, a fixed gap) instead of on the 12-column grid's columns 1-5 and 6-12. */
 @media (min-width: 768px) {
   .hero {
     display: grid;
-    grid-template-columns: repeat(12, minmax(0, 1fr));
-    column-gap: var(--home-gap);
+    grid-template-columns: auto auto;
+    justify-content: center;
+    column-gap: clamp(48px, 7vw, 112px);
     align-items: center;
   }
   .hero-id {
-    grid-column: 1 / span 5;
     justify-self: center;
-    max-width: 280px; /* Arthur, 2026-11-16: smaller than the reference's 360px */
   }
-  .hero-info {
-    grid-column: 6 / -1;
+  .hero-photo {
+    max-width: 240px;
   }
   .hero-name {
-    font-size: 2.5rem;
+    font-size: 2.125rem;
   }
   .datum {
     width: calc((100% - 11 * var(--home-gap)) / 12 * 5 + 4 * var(--home-gap));
