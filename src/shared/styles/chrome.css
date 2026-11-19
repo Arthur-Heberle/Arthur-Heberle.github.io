@@ -1,6 +1,6 @@
 /* Site chrome (Arthur, 2026-11-16): the elements that float in the page's top corners and stay
  * on screen while it scrolls. Only the elements themselves: no bar, no strip behind them.
- * Top left: his name (HomeLink.astro). Top right: the EN/PT switch, once the i18n brief builds it.
+ * Top left: his name (HomeLink.astro). Top right: the EN/PT switch (LangSwitch.astro).
  *
  * Nothing should run under the name (Arthur, same day):
  * - from 1024px the content is a narrower, centred column and the name has its own lane down the
@@ -64,6 +64,49 @@
   .home-link {
     transition: none;
   }
+}
+
+/* The EN/PT switch (LangSwitch.astro): mirrors the name, the same distance from the top and from the right edge, and
+ * centred on the name's height. Two labels and an underline under the current one: no bar, no fill. Its halo is the
+ * ground colour (a static text-shadow, nothing animated), as the hero text has over the map. 44px tall targets. */
+.lang-switch {
+  position: fixed;
+  top: calc(var(--corner-top) + var(--name-height) / 2 - 22px);
+  right: var(--corner-left);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+}
+.lang-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 0.5rem;
+  font-family: var(--font-sans);
+  font-size: var(--text-small);
+  font-weight: 500;
+  line-height: 1;
+  color: var(--color-graphite-2);
+  text-decoration: none;
+  text-shadow:
+    0 0 3px var(--color-ground),
+    0 0 3px var(--color-ground),
+    0 0 3px var(--color-ground);
+}
+.lang-on {
+  color: var(--color-graphite);
+  /* the underline sits under the two letters, not the whole target */
+  background: linear-gradient(var(--color-graphite), var(--color-graphite)) center calc(50% + 0.85em) / 1.4em 1.5px no-repeat;
+}
+.lang-item:hover {
+  color: var(--color-graphite);
+}
+
+/* A section's heading, reached by the language switch or a link, stops a little below the top of the screen. */
+main h2[id] {
+  scroll-margin-top: 3rem;
 }
 
 /* Below 1024px: the page starts under the name. */

@@ -15,7 +15,15 @@ import { join } from 'node:path'
 
 const PORT = 4399
 const BASE = `http://localhost:${PORT}`
-const PAGES = { home: '/', edubra: '/projects/edubra/', 'agente-h': '/projects/agente-h/' }
+// `pt-` pages are the Portuguese versions (same selectors, so the same viewport shots)
+const PAGES = {
+  home: '/',
+  edubra: '/projects/edubra/',
+  'agente-h': '/projects/agente-h/',
+  'pt-home': '/pt/',
+  'pt-edubra': '/pt/projects/edubra/',
+  'pt-agente-h': '/pt/projects/agente-h/',
+}
 const WIDTHS = { 1440: 900, 1024: 768, 390: 844 }
 
 const args = process.argv.slice(2)
@@ -108,8 +116,8 @@ async function shot(page, name, wait = 700) {
   console.log('  ', name)
 }
 
-async function homeViewports(page, w) {
-  const tag = (part) => `home-${w}-${part}`
+async function homeViewports(page, w, name = 'home') {
+  const tag = (part) => `${name}-${w}-${part}`
   await page.evaluate(() => scrollTo({ top: 0, behavior: 'instant' }))
   await shot(page, tag('hero'))
   if (await top(page, '.rail-spine', 80)) await shot(page, tag('spine'))
@@ -157,7 +165,8 @@ try {
       console.log('  ', `${name}-${w}-full`)
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)
       if (overflow > 0) console.log(`   horizontal overflow: ${overflow}px`)
-      if (name === 'home') await homeViewports(page, w)
+      const kind = name.replace(/^pt-/, '')
+      if (kind === 'home') await homeViewports(page, w, name)
       else await projectViewports(page, name, w)
       await ctx.close()
     }

@@ -1988,6 +1988,33 @@ build, no console errors, no horizontal scroll at 1280, `html lang` right, every
 again; Agente H announcements). JS 79.9 KB gzip. `astro check` shows 6 errors that are not from this work (`node:fs` types in
 `content.config.ts`, `worldMap.ts`).
 
+**Stage 3, the text inside the drawings (2026-11-19): done.** Arthur's review: the EduBra demo word stays "hello world" in Portuguese (my "oi mundo" proposal was not taken; `chipWidths` back to 68/72); the three Agente H questions are good.
+Experience objects: their words moved to `home/experience/text.ts` (`objects`): chalkboard (Cálculo II/III; the maths stays), spreadsheet
+(Mês, Base, Depois, Econ., Total, Dados), chart (Consumo, kWh; base, depois, economia), report (RELATÓRIO DE M&V), analyzer LCD
+(TENSÃO, CORRENTE, POTÊNCIA, ENERGIA, with decimal commas). The laptop's UML names and C++ stay English (code). **EduBra story:**
+demo word "hello world" (as in English), the chips' start positions are now derived from the word (`CHIP_START` in `story.ts`, reproduces the English 98 and 178), voice `pt-BR`.
+**Agente H:** product names from `AGENT-H/catalogo_moveis.csv` with the size left off, as the English names do ("Guarda-Roupa Lugano",
+"Cama Queen Serenno", "Cadeira Escritório Berlim": the last so its chip fits the 170px card); three Portuguese customer questions
+(my proposal: "um sofá de 3 lugares" with the typo "lugars" matched to "Lugares", "algo para dormir", "vocês vendem carros?"), the
+classification words, the drawing's labels. **`LABELS_PT` in `map.ts` is a new label table**: a search in the page (widths and
+heights measured with `getBBox`, with the same rule as the English table) that found a place for the 17 labels of each question;
+checked again in the built page: 0 collisions for all three questions in both languages, chips inside the card. Decimal marks:
+`2,5`, `0,2 s`, `1.536`, `R$ 2.490`.
+**Stage 4, the switch (2026-11-19): done.**
+`src/shared/components/LangSwitch.astro`, rendered by `Base.astro` after `HomeLink`; styles in `chrome.css`. Top right, mirrors the
+name (same distance from the top and the right edge, centred on its height), always on screen, no bar or fill: "EN" and "PT" in
+Archivo 500 14px, the current one in graphite with a 1.5px underline (a background gradient), the other graphite-2 and a link to
+`altPath(pathname)`; 44px targets; a ground-coloured static `text-shadow` halo. Names for a screen reader: "English" / "Português" in
+their own `lang`, the current one "..., current language". With JS the link adds the `#id` of the last `main h2[id]` above 40% of the
+screen on hover, focus and click (headings have the same ids in both languages), so it opens at the same section; at the top it adds
+nothing; without JS it is a plain link. `data-astro-prefetch="hover"` on it. `main h2[id]` gets `scroll-margin-top: 3rem`.
+Checked in headless Edge (not Brave): corner position and stays while scrolled at 1440 and 390 in both languages, no horizontal scroll,
+no console errors, the link target for home and both project pages, section kept (Experience on the home page; the Links heading on
+EduBra opens at the last heading that is above 40%, since that page cannot scroll to the bottom), tab order skip, name, switch, 2px
+focus ring, accessibility tree of the nav, JS off. design-spec §3 and §6, content.md and CLAUDE.md updated. JS 80.0 KB gzip (the switch's
+script is about 0.3 KB). `scripts/shots.mjs` has `pt-home`, `pt-edubra`, `pt-agente-h`. Not checked: Brave, Firefox, Safari, a real touch device.
+Stage 5 (the full check, Lighthouse, shots read by eye at 1024) is still to do.
+
 ### Home page refactor (2026-11-16, Arthur's brief)
 
 Brief in `TODO/` (README plus one file per stage). Commit message `home-refactor: <stage>`.

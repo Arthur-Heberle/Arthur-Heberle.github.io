@@ -5,7 +5,7 @@
 // lands on the map (map.ts), the closest products that follow from it, the reply and the classification.
 // No API is called; the real search runs on the server. The words are text.ts; what does not change with the
 // language (the question's key, its classification and whether it is a lead) is here.
-import { HULL_AT, LABELS_EN, PRODUCT_AT } from './map'
+import { HULL_AT, LABELS_EN, LABELS_PT, PRODUCT_AT } from './map'
 import type { At, Hull, Prod, QKey } from './map'
 import type { Lang } from '../../shared/i18n/lang'
 import { text } from './text'
@@ -44,7 +44,7 @@ export function hullsFor(lang: Lang): Hull[] {
 }
 
 /** Where every label goes, per question. A label's place depends on the length of its text, so each language
- *  has its own table (Portuguese gets one in stage 3). */
-export function labelsFor(_lang: Lang): Record<QKey, Record<string, At>> {
-  return LABELS_EN
+ *  has its own table. */
+export function labelsFor(lang: Lang): Record<QKey, Record<string, At>> {
+  return lang === 'pt' ? LABELS_PT : LABELS_EN
 }

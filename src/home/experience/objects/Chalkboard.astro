@@ -11,6 +11,10 @@
 // cross-out, the boxes and the check are drawn. The tray, chalk and eraser are still.
 import Cub from '../../../projects/edubra/Cub.astro'
 import Cable from './Cable.astro'
+import { getLang } from '../../../shared/i18n/lang'
+import { text } from '../text'
+
+const o = text[getLang(Astro)].objects.chalk
 
 // y = 3x² on 0 ≤ x ≤ 2, drawn on the 150 x 96 face: x = 0 at 12, 17 units a step; the baseline is at 52 and the
 // curve reaches 36 up at x = 2 (a quadratic Bézier with its control point on the baseline is exactly a parabola)
@@ -49,8 +53,8 @@ const chalk = [
             </g>
             <path class="ch-swipe" d="M49 18 Q60 15 72 19 M48 27 Q61 23 73 28 M50 36 Q61 33 72 37" />
 
-            <g transform="rotate(-1 30 9)"><text class="ch-tx ch-h" x="6" y="9">Calculus II</text></g>
-            <g transform="rotate(1 100 9)"><text class="ch-tx ch-h" x="82" y="9">Calculus III</text></g>
+            <g transform="rotate(-1 30 9)"><text class="ch-tx ch-h" x="6" y="9">{o.calc2}</text></g>
+            <g transform="rotate(1 100 9)"><text class="ch-tx ch-h" x="82" y="9">{o.calc3}</text></g>
             <path class="ch-line ch-div" d="M75 4 V84" />
 
             <!-- Calculus II: y = 3x² from 0 to 2, the area under it hatched -->

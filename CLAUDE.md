@@ -2,7 +2,7 @@
 
 Personal portfolio for Arthur Gabriel Pellegrini Heberle. Static site, Astro, deployed
 to GitHub Pages at `https://arthur-heberle.github.io`. English at `/`, Portuguese at `/pt/`
-(in progress).
+(the EN/PT switch is in the top-right corner).
 
 This file is loaded every session. Read it fully, then read only what the current task
 needs.

@@ -7,6 +7,7 @@ import type { Lang } from '../../shared/i18n/lang'
 // Product names and prices are catalogo_moveis.csv in the AGENT-H repo, translated as on the map
 // (R$ 2.190.00 is written R$ 2,190, the way the sofa's R$ 2,490 is).
 const TRY = 'Below the drawing, the visitor can try other questions.'
+const TRY_PT = 'Abaixo do desenho, o visitante pode experimentar outras perguntas.'
 
 // A string with {name} in it is a template, filled by fmt() (src/shared/i18n/runtime.ts).
 const en = {
@@ -114,7 +115,8 @@ const en = {
   },
 }
 
-// Portuguese. The drawing's words, the questions and the product names are stage 3 and stay English here.
+// Portuguese. Product names are catalogo_moveis.csv as it is (the size a product carries in the catalogue, like
+// "6 Portas", is dropped, as the English names drop it, so a name fits its chip in the prompt card).
 const pt: typeof en = {
   ...en,
   story: {
@@ -141,6 +143,59 @@ const pt: typeof en = {
     askedLead: '{button}. Resposta: {reply} Classificada como {cls}, então o dono recebe um lead.',
     askedNoLead: '{button}. Resposta: {reply} Classificada como {cls}, então não há lead.',
     classes: { QUALIFIED_LEAD: 'lead qualificado', GENERAL_QUESTION: 'pergunta geral', OUT_OF_SCOPE: 'fora do escopo' },
+    nums: '0,12  -0,48  0,07  ...  1.536 números',
+    silenceTimer: 'timer de silêncio',
+    catalogue: 'o catálogo, como um mapa',
+    closest: '8 mais próximos',
+    prompt: 'prompt',
+    products: 'produtos',
+    messages: 'mensagens',
+    model: 'modelo de linguagem',
+    leads: 'Leads',
+    columns: ['Novo', 'Contatado', 'Ganho'],
+    leadLines: ['Quer sofá de 3', 'lugares de couro.'],
+    typoWord: { rubi: 'Lugares' },
+  },
+  products: {
+    rubi: 'Sofá Rubi 3 Lugares',
+    dublin: 'Sofá 2 Lugares Dublin',
+    veneza: 'Sofá Canto Veneza',
+    amelie: 'Poltrona Amélie',
+    toscana: 'Mesa de Jantar Toscana',
+    oslo: 'Mesa de Centro Oslo',
+    round: 'Mesa Lateral Redonda',
+    milano: 'Cadeira Estofada Milano',
+    berlim: 'Cadeira Escritório Berlim',
+    serenno: 'Cama Queen Serenno',
+    lugano: 'Guarda-Roupa Lugano',
+    provencal: 'Penteadeira Provençal',
+  },
+  hulls: { sofas: 'sofás', tables: 'mesas', chairs: 'cadeiras', beds: 'camas' },
+  questions: {
+    sofa: {
+      button: 'um sofá de 3 lugares',
+      msgs: ['oi', 'vocês têm sofá', 'de 3 lugars?'],
+      typo: 'lugars',
+      reply: 'Sim! O Sofá Rubi 3 Lugares, de couro com pés em madeira maciça, R$ 2.490. Quer ver fotos?',
+      extra: '',
+      label: `Um cliente manda três mensagens curtas no WhatsApp. O agente espera até que parem de digitar, transforma a pergunta em um ponto em um mapa dos produtos da loja, encontra os mais próximos, escreve uma resposta com um modelo de linguagem e a envia de volta. Como o cliente está pronto para comprar, o dono recebe um lead. ${TRY_PT}`,
+    },
+    sleep: {
+      button: 'algo para dormir',
+      msgs: ['algo para dormir'],
+      typo: undefined as string | undefined,
+      reply: 'Temos a Cama Queen Serenno, R$ 2.190. Quer as medidas?',
+      extra: 'A pergunta nunca fala em cama, e mesmo assim cai bem ao lado de uma.',
+      label: `Um cliente pede algo para dormir, sem dizer cama. A pergunta vira um ponto no mapa dos produtos da loja e cai entre as camas: os mais próximos são a Cama Queen Serenno, o Guarda-Roupa Lugano e a Penteadeira Provençal. Um modelo de linguagem responde oferecendo a Cama Queen Serenno por R$ 2.190. A conversa é classificada como pergunta geral, então não há lead para o dono. ${TRY_PT}`,
+    },
+    cars: {
+      button: 'vocês vendem carros?',
+      msgs: ['vocês vendem carros?'],
+      typo: undefined as string | undefined,
+      reply: 'Desculpe, só vendemos móveis. Posso ajudar você a encontrar algo para a sua casa?',
+      extra: 'Nada no catálogo está perto, então o agente diz isso em vez de inventar algo.',
+      label: `Um cliente pergunta se a loja vende carros. A pergunta vira um ponto no mapa dos produtos da loja e cai longe de todos os grupos de produtos. Um modelo de linguagem responde que a loja só vende móveis e se oferece para ajudar a encontrar algo para a casa. A conversa é classificada como fora do escopo, então não há lead para o dono. ${TRY_PT}`,
+    },
   },
   numbers: {
     heading: 'Em números',

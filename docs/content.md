@@ -10,9 +10,11 @@ plausible-sounding substitute. Leave the marker in the file and ask.
 
 ## Language
 
-English for v1. Portuguese version deferred, but structure content so it can be added
-without a refactor. If bilingual is decided before step 01, say so: it changes the
-collection schemas.
+English at `/`, Portuguese at `/pt/` (2026-11, Arthur's brief). Every shown string lives in a `text.ts` next to its
+component, `{ en, pt }`; the collections have a Portuguese twin with the same ids: `src/content/pt/projects`,
+`pt/experience`, `pt/changelog.yaml`, and `src/content/roadmap.pt.md` (the Portuguese words *Feito*, *Fazendo,
+meta*, *Próximo*). **Change a text in both languages; the Portuguese is Arthur's to review.** Facts only Arthur knows
+stay his in both (`[FILL]` applies to both).
 
 ---
 

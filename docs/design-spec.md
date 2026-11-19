@@ -74,7 +74,9 @@ conventional. Adding a fourth novel element requires removing one.
   dark is wanted later it needs its own designed palette.
 - Video backgrounds. Explicitly rejected.
 - Blog. The archive absorbs anything short; long writing can become a section later.
-- Portuguese version. Structure the content so it can be added without a refactor.
+- ~~Portuguese version~~: built (2026-11, Arthur's brief). English at `/`, Portuguese at `/pt/`, one static page
+  each, switched by the EN/PT link in the top-right corner (§6). Every shown string is a `text.ts` entry
+  `{ en, pt }`; prose is in `src/content/` and `src/content/pt/`.
 
 ---
 
@@ -242,7 +244,11 @@ last. "What I'd do differently" is unusual and worth keeping. The way home, on e
 included), is **Arthur's name**, the SVG he drew, fixed in the top-left corner with no bar behind it
 (Arthur, 2026-11-16; it replaced the circle-and-crosshair "origin link" of 2026-09-30). From 1024px
 every page's content is a narrower centred column so the name keeps a lane of its own down the left
-(mirrored on the right); below 1024px the page starts under it and the name carries a ground-coloured halo. Every project
+(mirrored on the right); below 1024px the page starts under it and the name carries a ground-coloured halo.
+The **EN/PT switch** (Arthur, 2026-11-16; built 2026-11-19) is the right-hand twin of the name: two labels, "EN" and "PT", fixed
+in the top-right corner at the same distance from the edges, always on screen, no bar or fill, the current language underlined and the other a
+link to the same page in that language (`/` and `/pt/`). With JavaScript it carries the heading of the section on screen, so the page opens
+at the same place. It is the exception to the all-caps-labels rule in CLAUDE.md: two language codes, untracked. Every project
 page ends with a **title block** in the style
 of an engineering drawing (a thin-ruled box: "Arthur Heberle / index", then "<Project>, sheet NN of
 TT" in mono, NN being the project's place on the home bench and TT the number of projects; "sheet NN+1" links to the next project page when that entry has one). Arthur's decision,

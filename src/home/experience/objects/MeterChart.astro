@@ -2,7 +2,11 @@
 // ELETRON's chart, beside the meter: monthly consumption before (the baseline) and after, January to June,
 // from the same illustrative figures as the spreadsheet and the report, and the gap between them, the
 // savings, with the last month's saving bracketed. Measurement and verification, in the site's line style.
-const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']
+import { getLang } from '../../../shared/i18n/lang'
+import { text } from '../text'
+
+const o = text[getLang(Astro)].objects.chart
+const months = o.months
 const base = [1284, 1301, 1275, 1290, 1262, 1288]
 const after = [1190, 1112, 1085, 1043, 1008, 989]
 const X0 = 34 // the plot's left and right edges, top and bottom
@@ -25,7 +29,7 @@ const bx = x(last) + 7 // the bracket for June's saving
 ---
 
 <svg class="mt-chart" viewBox="0 0 232 126" width="232" height="126" focusable="false">
-  <text class="mc-t mc-title" x="4" y="10">Consumption, kWh</text>
+  <text class="mc-t mc-title" x="4" y="10">{o.title}</text>
   {ticks.map((v) => <path class="mc-grid" d={`M${X0} ${y(v).toFixed(1)} H${X1}`} />)}
   {ticks.map((v) => <text class="mc-t mc-tick" x={X0 - 4} y={(y(v) + 1.2).toFixed(1)} text-anchor="end">{v}</text>)}
   <path class="mc-axis" d={`M${X0} ${Y0 - 6} V${Y1} H${X1 + 4}`} />
@@ -38,7 +42,7 @@ const bx = x(last) + 7 // the bracket for June's saving
   {pa.map(([px, py]) => <circle class="mc-pt mc-pt-a" cx={px.toFixed(1)} cy={py.toFixed(1)} r="1.9" />)}
   <path class="mc-br" d={`M${bx} ${pb[last][1].toFixed(1)} H${bx + 2.6} V${pa[last][1].toFixed(1)} H${bx} M${bx + 2.6} ${((pb[last][1] + pa[last][1]) / 2).toFixed(1)} H${bx + 5}`} />
   <text class="mc-t mc-sav" x={bx + 7} y={(((pb[last][1] + pa[last][1]) / 2) + 1.2).toFixed(1)} data-l="delta">−299</text>
-  <text class="mc-t" x={X1 + 2} y={(pb[last][1] - 4).toFixed(1)} text-anchor="end" data-l="before">baseline</text>
-  <text class="mc-t" x={X1 + 2} y={(pa[last][1] + 10).toFixed(1)} text-anchor="end" data-l="after">after</text>
-  <text class="mc-t mc-sav" x={((x(1) + x(3)) / 2).toFixed(1)} y={(((y(1290) + y(1085)) / 2) + 1).toFixed(1)} text-anchor="middle" data-l="savings">savings</text>
+  <text class="mc-t" x={X1 + 2} y={(pb[last][1] - 4).toFixed(1)} text-anchor="end" data-l="before">{o.baseline}</text>
+  <text class="mc-t" x={X1 + 2} y={(pa[last][1] + 10).toFixed(1)} text-anchor="end" data-l="after">{o.after}</text>
+  <text class="mc-t mc-sav" x={((x(1) + x(3)) / 2).toFixed(1)} y={(((y(1290) + y(1085)) / 2) + 1).toFixed(1)} text-anchor="middle" data-l="savings">{o.savings}</text>
 </svg>

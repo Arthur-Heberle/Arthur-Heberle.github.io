@@ -19,6 +19,10 @@ import Cable from './Cable.astro'
 import MeterChart from './MeterChart.astro'
 import Clipboard from './Clipboard.astro'
 import Report from './Report.astro'
+import { getLang } from '../../../shared/i18n/lang'
+import { text } from '../text'
+
+const readings = text[getLang(Astro)].objects.readings
 
 const W = 210
 const H = 104
@@ -56,12 +60,6 @@ const CT = 16 // the transformer clamp: along the cable, across it, and each hal
 const CTD = 12
 const CTH = 7
 const PULSE = 8
-const readings = [
-  ['VOLTAGE', 'V1 220.4 V'],
-  ['CURRENT', 'I1 18.2 A'],
-  ['POWER', 'P 11.9 kW'],
-  ['ENERGY', 'E 1284 kWh'],
-]
 const screws = [
   [4, 4],
   [W - 4, 4],

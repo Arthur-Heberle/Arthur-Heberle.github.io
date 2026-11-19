@@ -3,6 +3,7 @@ import '../styles/global.css'
 import { HTML_LANG, getLang, localePath } from '../i18n/lang'
 import { text } from '../text'
 import HomeLink from '../components/HomeLink.astro'
+import LangSwitch from '../components/LangSwitch.astro'
 
 interface Props {
   title: string
@@ -94,6 +95,8 @@ const absolute = (p: string) => new URL(p, Astro.site).href
     <a class="skip" href="#main">{t.skip}</a>
     <!-- the name, fixed top left on every page (chrome.css): the first stop after "skip" -->
     <HomeLink />
+    <!-- the EN/PT switch, fixed top right (chrome.css): the next stop after the name -->
+    <LangSwitch />
     <slot />
     <!-- The single scroll authority (docs/motion-spec.md): one Lenis instance, one
          gsap.ticker hook, registered plugins, and the matchMedia scaffold steps 08-13

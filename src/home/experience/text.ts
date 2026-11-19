@@ -8,6 +8,45 @@ const en = {
   soFar: ' so far',
   // The one description that names each experience's object for assistive technology (the drawing itself is
   // aria-hidden). The RP3, laptop and analyzer descriptions say what is illustrative.
+  // The words drawn on the objects (aria-hidden: the figure's description above is what a screen reader gets).
+  // The UML names and the C++ on the laptop are code, so they are not here. Readings and figures are illustrative.
+  objects: {
+    chalk: { calc2: 'Calculus II', calc3: 'Calculus III' },
+    // the spreadsheet on the clipboard
+    sheet: {
+      months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+      month: 'Month',
+      base: 'Base',
+      after: 'After',
+      saved: 'Saved',
+      total: 'Total',
+      data: 'Data',
+      model: 'M&V',
+    },
+    chart: {
+      title: 'Consumption, kWh',
+      months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+      baseline: 'baseline',
+      after: 'after',
+      savings: 'savings',
+    },
+    report: {
+      title: 'M&V REPORT',
+      sub: 'Baseline and after, savings verified',
+      baseline: 'baseline',
+      after: 'after',
+      tBaseline: 'Baseline',
+      tAfter: 'After',
+      tSavings: 'Savings',
+    },
+    // the analyzer's display: a label over a reading
+    readings: [
+      ['VOLTAGE', 'V1 220.4 V'],
+      ['CURRENT', 'I1 18.2 A'],
+      ['POWER', 'P 11.9 kW'],
+      ['ENERGY', 'E 1284 kWh'],
+    ],
+  },
   desc: {
     rp3: "An illustration, not RP3's real interface: a monitor showing a part sliced into layers on a gridded build platform with X, Y and Z axes, the layer contours rising one layer at a time, and beside it a small generic 3D printer building the same part layer by layer.",
     'programming-techniques':
@@ -25,6 +64,41 @@ const pt: typeof en = {
   hard: 'A parte difícil:',
   months: (n: number) => `${n} ${n === 1 ? 'mês' : 'meses'}`,
   soFar: ' até agora',
+  objects: {
+    chalk: { calc2: 'Cálculo II', calc3: 'Cálculo III' },
+    sheet: {
+      months: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'],
+      month: 'Mês',
+      base: 'Base',
+      after: 'Depois',
+      saved: 'Econ.',
+      total: 'Total',
+      data: 'Dados',
+      model: 'M&V',
+    },
+    chart: {
+      title: 'Consumo, kWh',
+      months: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'],
+      baseline: 'base',
+      after: 'depois',
+      savings: 'economia',
+    },
+    report: {
+      title: 'RELATÓRIO DE M&V',
+      sub: 'Linha de base e depois, economia verificada',
+      baseline: 'base',
+      after: 'depois',
+      tBaseline: 'Linha de base',
+      tAfter: 'Depois',
+      tSavings: 'Economia',
+    },
+    readings: [
+      ['TENSÃO', 'V1 220,4 V'],
+      ['CORRENTE', 'I1 18,2 A'],
+      ['POTÊNCIA', 'P 11,9 kW'],
+      ['ENERGIA', 'E 1284 kWh'],
+    ],
+  },
   desc: {
     rp3: 'Uma ilustração, não a interface real do RP3: um monitor mostrando uma peça fatiada em camadas sobre uma plataforma de impressão quadriculada com eixos X, Y e Z, os contornos das camadas subindo uma camada de cada vez e, ao lado, uma pequena impressora 3D genérica construindo a mesma peça camada por camada.',
     'programming-techniques':

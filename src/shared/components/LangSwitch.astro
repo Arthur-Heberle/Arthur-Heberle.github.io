@@ -1,0 +1,52 @@
+---
+// The EN/PT switch, top right on every page (Arthur, 2026-11-16): two short labels floating in the corner, always
+// on screen, with no bar or strip behind them (chrome.css). The current language is the one underlined; the other is
+// a link to the same page in that language (altPath), so it works with no JavaScript. With JavaScript the link also
+// carries the heading of the section on screen (#projects-heading...), so the page opens at the same place.
+//
+// The names a screen reader gets are in full ("Português", "English"), in their own language (lang), and the current
+// one says so. Prefetch on hover (astro.config.mjs turns it on only for links that ask).
+import { altPath, getLang } from '../i18n/lang'
+import type { Lang } from '../i18n/lang'
+import { text } from '../text'
+
+const lang = getLang(Astro)
+const t = text[lang]
+const href = altPath(Astro.url.pathname)
+const items: { code: Lang; label: string; name: string; html: string }[] = [
+  { code: 'en', label: 'EN', name: 'English', html: 'en' },
+  { code: 'pt', label: 'PT', name: 'Português', html: 'pt-BR' },
+]
+---
+
+<nav class="lang-switch" aria-label={t.language}>
+  {
+    items.map((item) =>
+      item.code === lang ? (
+        <span class="lang-item lang-on" aria-current="true" lang={item.html}>
+          {item.label}<span class="sr-only">, {item.name}, {t.currentLanguage}</span>
+        </span>
+      ) : (
+        <a class="lang-item feedback" href={href} lang={item.html} hreflang={item.html} data-lang-link data-astro-prefetch="hover">
+          {item.label}<span class="sr-only">, {item.name}</span>
+        </a>
+      ),
+    )
+  }
+</nav>
+
+<script>
+  // Keep the reader's place: the link goes to the heading of the section whose heading was last above 40% of the
+  // screen (every section's <h2> has an id, in both languages). Above the first heading, the top of the page.
+  const link = document.querySelector<HTMLAnchorElement>('[data-lang-link]')
+  if (link) {
+    const here = () => {
+      let id = ''
+      document.querySelectorAll<HTMLElement>('main h2[id]').forEach((h) => {
+        if (h.getBoundingClientRect().top <= window.innerHeight * 0.4) id = h.id
+      })
+      link.hash = id ? `#${id}` : ''
+    }
+    ;['pointerenter', 'focus', 'click'].forEach((e) => link.addEventListener(e, here))
+  }
+</script>

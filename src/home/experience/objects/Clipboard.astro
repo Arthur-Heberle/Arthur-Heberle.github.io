@@ -4,17 +4,21 @@
 // between them, a totals row, one selected cell and the sheet tabs. The figures are illustrative, not
 // measured values (the figure's description says so); each savings cell is baseline minus after.
 import Cub from '../../../projects/edubra/Cub.astro'
+import { getLang } from '../../../shared/i18n/lang'
+import { text } from '../text'
+
+const o = text[getLang(Astro)].objects.sheet
 
 const W = 76
 const D = 98
 const X = [6, 15, 28.5, 43, 57.5, 70] // the grid: row-number column, then A to D, in screen x
 const rows = [
-  ['Jan', 1284, 1190],
-  ['Feb', 1301, 1112],
-  ['Mar', 1275, 1085],
-  ['Apr', 1290, 1043],
-  ['May', 1262, 1008],
-  ['Jun', 1288, 989],
+  [o.months[0], 1284, 1190],
+  [o.months[1], 1301, 1112],
+  [o.months[2], 1275, 1085],
+  [o.months[3], 1290, 1043],
+  [o.months[4], 1262, 1008],
+  [o.months[5], 1288, 989],
 ] as const
 const total = rows.reduce((t, r) => [t[0] + r[1], t[1] + r[2]], [0, 0])
 const T0 = 26 // the column letters' top
@@ -43,7 +47,7 @@ const cell = (c: number) => X[c + 1] - 1.2 // a right-aligned number's x
       <rect class="cb-band" x={X[0]} y={T0} width={X[1] - X[0]} height={bottom - T0}></rect>
       <!-- the header row -->
       <rect class="cb-head" x={X[1]} y={R0} width={X[5] - X[1]} height={RH}></rect>
-      {['Month', 'Base', 'After', 'Saved'].map((l, c) => <text class="cb-t cb-th" x={c ? cell(c + 1) : X[1] + 1.2} y={R0 + 3.9} text-anchor={c ? 'end' : 'start'}>{l}</text>)}
+      {[o.month, o.base, o.after, o.saved].map((l, c) => <text class="cb-t cb-th" x={c ? cell(c + 1) : X[1] + 1.2} y={R0 + 3.9} text-anchor={c ? 'end' : 'start'}>{l}</text>)}
       <!-- the selected cell -->
       <rect class="cb-sel" x={X[4]} y={R0 + RH * (rows.length + 1) - RH} width={X[5] - X[4]} height={RH}></rect>
       <!-- the data -->
@@ -60,7 +64,7 @@ const cell = (c: number) => X[c + 1] - 1.2 // a right-aligned number's x
           )
         })
       }
-      <text class="cb-t cb-tb" x={X[1] + 1.2} y={R0 + RH * (rows.length + 1) - 1.7}>Total</text>
+      <text class="cb-t cb-tb" x={X[1] + 1.2} y={R0 + RH * (rows.length + 1) - 1.7}>{o.total}</text>
       <text class="cb-t cb-tb" x={cell(2)} y={R0 + RH * (rows.length + 1) - 1.7} text-anchor="end">{total[0]}</text>
       <text class="cb-t cb-tb" x={cell(3)} y={R0 + RH * (rows.length + 1) - 1.7} text-anchor="end">{total[1]}</text>
       <text class="cb-t cb-tb" x={cell(4)} y={R0 + RH * (rows.length + 1) - 1.7} text-anchor="end">{total[0] - total[1]}</text>
@@ -70,8 +74,8 @@ const cell = (c: number) => X[c + 1] - 1.2 // a right-aligned number's x
       <!-- the sheet tabs -->
       <rect class="cb-band" x={X[0]} y={bottom + 2} width={X[5] - X[0]} height="4.6"></rect>
       <rect class="cb-tab" x="8" y={bottom + 2} width="14" height="4.6"></rect>
-      <text class="cb-t" x="9.4" y={bottom + 5.3}>Data</text>
-      <text class="cb-t cb-tg" x="25" y={bottom + 5.3}>M&amp;V</text>
+      <text class="cb-t" x="9.4" y={bottom + 5.3}>{o.data}</text>
+      <text class="cb-t cb-tg" x="25" y={bottom + 5.3}>{o.model}</text>
     </svg>
   </Cub>
 </div>

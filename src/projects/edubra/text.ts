@@ -78,7 +78,7 @@ const en = {
   },
 }
 
-// Portuguese. The text inside the drawing (the demo word, the words drawn on it) is stage 3 and stays English here.
+// Portuguese. The demo word stays "hello world" (Arthur's choice), so the drawing is the same as the English one.
 const pt: typeof en = {
   device: {
     label: 'Demonstração do dispositivo EduBra',
@@ -104,6 +104,16 @@ const pt: typeof en = {
       { title: 'Áudio primeiro', text: 'Antes de ler, a Pi prepara um arquivo de voz para cada palavra, para não travar no meio da frase.' },
       { title: 'Leitura', text: 'Ela diz a palavra, depois cada letra, levantando os pinos à medida que avança.' },
     ],
+    word: 'hello world',
+    file: 'hello.txt',
+    chipWidths: [68, 72],
+    drop: 'solte um arquivo',
+    run: 'Rodar',
+    interval: 'intervalo  0,5 s',
+    bank: 'a.mp3 … z.mp3  feitos antes',
+    servos: 'seis servos',
+    speaker: 'seu fone ou alto-falante',
+    reading: 'lendo',
     steps: 'Passos',
     goStep: 'Ir ao passo {n}: {title}',
     stepLive: 'Passo {n}, {title}. {text}',
@@ -130,6 +140,8 @@ const pt: typeof en = {
   numbers: {
     ...en.numbers,
     heading: 'Em números',
+    voice: 'voz',
+    pins: 'pinos',
     figures: [
       { n: '2,5', unit: ' mm', label: 'quanto cada pino sobe, medido com um paquímetro' },
       { n: '6', unit: '', label: 'servos sob a tampa, um por ponto' },

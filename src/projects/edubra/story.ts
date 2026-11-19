@@ -35,6 +35,12 @@ function readWords() {
   TEXT = tx.word
   ITEMS = buildItems(TEXT)
   READ_N = ITEMS.length
+  let from = 0
+  CHIP_START = TEXT.split(' ').map((word, k) => {
+    const x = RAW_X + (from + word.length / 2) * RAW_CH + CHIP_DX[k]
+    from += word.length + 1
+    return [+x.toFixed(1), 318]
+  })
 }
 
 const W = 1060
@@ -126,10 +132,12 @@ const CARD_C: [number, number][] = [
   [534, 78],
   [654, 78],
 ]
-const CHIP_START: [number, number][] = [
-  [98, 318],
-  [178, 318],
-]
+// Where each word's chip starts: over its word in the raw text (mono 18px, 10.8px a character, from x = 64),
+// a little to the right (7 and 22 px, as drawn), so the two chips are apart before they split. Set in readWords().
+let CHIP_START: [number, number][] = []
+const RAW_X = 64
+const RAW_CH = 10.8
+const CHIP_DX = [7, 22]
 
 type Drawn = [SVGGeometryElement, number]
 

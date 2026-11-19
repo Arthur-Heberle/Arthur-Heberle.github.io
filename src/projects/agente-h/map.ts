@@ -56,7 +56,7 @@ export const LANDINGS: Record<QKey, At> = {
   sleep: { x: 478, y: 324 },
   cars: { x: 748, y: 345 },
 }
-/** Where every label goes, per question, for the English names. Portuguese gets its own table in stage 3. */
+/** Where every label goes, per question, for the English names. Portuguese: LABELS_PT. */
 export const LABELS_EN: Record<QKey, Record<string, At>> = {
   sofa: {
     rubi: { x: 494.6, y: 174 },
@@ -114,6 +114,70 @@ export const LABELS_EN: Record<QKey, Record<string, At>> = {
     'hull-chairs': { x: 638, y: 228 },
     'hull-beds': { x: 398, y: 348 },
     tag: { x: 664, y: 359 },
+  },
+}
+
+/** Where every label goes for the Portuguese names, per question. Found like the English table (a search that keeps
+ *  every label clear of the lines to the eight nearest, the rings, the dots, the other labels, the map's caption, the
+ *  arrow in from the left and the frame), with each label's width measured in the page; the rule is checked again in
+ *  the page for every question (labels in the built page, getBBox). */
+export const LABELS_PT: Record<QKey, Record<string, At>> = {
+  sofa: {
+    rubi: { x: 557, y: 209 },
+    dublin: { x: 555.2, y: 232 },
+    veneza: { x: 407.9, y: 266 },
+    amelie: { x: 450, y: 134 },
+    toscana: { x: 496, y: 117 },
+    oslo: { x: 638.1, y: 121 },
+    round: { x: 539, y: 143 },
+    milano: { x: 622.5, y: 293 },
+    berlim: { x: 597.5, y: 267 },
+    serenno: { x: 457.1, y: 362 },
+    lugano: { x: 520.8, y: 340 },
+    provencal: { x: 549.4, y: 323 },
+    'hull-sofas': { x: 464, y: 112 },
+    'hull-tables': { x: 638, y: 93 },
+    'hull-chairs': { x: 634, y: 249 },
+    'hull-beds': { x: 479, y: 295 },
+    tag: { x: 409, y: 229 },
+  },
+  sleep: {
+    rubi: { x: 555, y: 196 },
+    dublin: { x: 551.2, y: 239 },
+    veneza: { x: 525.9, y: 276 },
+    amelie: { x: 450, y: 139 },
+    toscana: { x: 496, y: 120 },
+    oslo: { x: 562.1, y: 137 },
+    round: { x: 521, y: 156 },
+    milano: { x: 622.5, y: 293 },
+    berlim: { x: 559.5, y: 256 },
+    serenno: { x: 396.1, y: 366 },
+    lugano: { x: 523.8, y: 361 },
+    provencal: { x: 553.4, y: 327 },
+    'hull-sofas': { x: 464, y: 112 },
+    'hull-tables': { x: 638, y: 93 },
+    'hull-chairs': { x: 634, y: 222 },
+    'hull-beds': { x: 507, y: 302 },
+    tag: { x: 525, y: 344 },
+  },
+  cars: {
+    rubi: { x: 555, y: 198 },
+    dublin: { x: 422.2, y: 239 },
+    veneza: { x: 411.9, y: 266 },
+    amelie: { x: 450, y: 139 },
+    toscana: { x: 496, y: 120 },
+    oslo: { x: 562.1, y: 137 },
+    round: { x: 521, y: 156 },
+    milano: { x: 483.5, y: 310 },
+    berlim: { x: 543.5, y: 226 },
+    serenno: { x: 396.1, y: 362 },
+    lugano: { x: 520.8, y: 358 },
+    provencal: { x: 412.4, y: 327 },
+    'hull-sofas': { x: 464, y: 112 },
+    'hull-tables': { x: 638, y: 93 },
+    'hull-chairs': { x: 634, y: 265 },
+    'hull-beds': { x: 482, y: 293 },
+    tag: { x: 580, y: 248 },
   },
 }
 
