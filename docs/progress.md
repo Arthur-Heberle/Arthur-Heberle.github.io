@@ -2015,6 +2015,24 @@ focus ring, accessibility tree of the nav, JS off. design-spec §3 and §6, cont
 script is about 0.3 KB). `scripts/shots.mjs` has `pt-home`, `pt-edubra`, `pt-agente-h`. Not checked: Brave, Firefox, Safari, a real touch device.
 Stage 5 (the full check, Lighthouse, shots read by eye at 1024) is still to do.
 
+**Stage 5, the check (2026-11-19): done.** `pnpm build` passes (6 pages, `check-fill` clean); `grep "pt: en" src` finds nothing; `astro check`
+shows the same 6 errors as before this work (`node:fs` types, `worldMap.ts`). **Shots:** `scripts/shots.mjs` over all six pages at 1440, 1024
+and 390 (132 images, no horizontal overflow reported); read by eye: the Portuguese hero, bench, Experience (ELETRON, chart, report, LCD), the
+EduBra story and the Agente H story (390) match the English layouts, nothing clipped or overlapping; at 390 the name and the switch sit over
+a heading while it scrolls under them, as the name did before (below 1024px, halo, documented in stage 2 of the home refactor). **Accessibility
+tree** (`Accessibility.getFullAXTree`, headless Edge, 1280): the six pages have no drawing text, no duplicated lines, one description per
+drawing (home 8 images: map, 2 photos, 4 objects, the RP3 shot; EduBra 2; Agente H 4), `lang` right (`en`, `pt-BR`), and **no English prose in
+the Portuguese pages** (the screenshots' alt text says the dashboard's interface is in English). **Behaviour** in both languages: no console
+errors; the runtime strings (EduBra knob, live regions, ticks, Play again; Agente H announcements) in the page's language; the three Agente
+H questions have 0 label collisions and the prompt chips stay inside the card; JS off and reduced motion readable; hovering the switch
+prefetches the other page; round trips EN to PT to EN keep the language; every link inside a `/pt/` page stays in `/pt/`. **Lighthouse mobile**
+(13.6, Edge headless, this machine, two runs each): home 75 and 75 / EduBra 76 and 76 in **both languages** (so not from the Portuguese),
+Agente H 100; a11y 100 and best practices 100 everywhere; SEO 90-91 (no meta description, there never was one); CLS 0 to 0.0013. The two
+low scores are LCP 7.5 to 8.6 s under Lighthouse's slow-4G and 4x CPU simulation (the hero photo; EduBra's box), the same motion-bundle cost
+steps 09 to 11 and the 2026-10-02 notes document (79 to 86 on this machine); **not measured against the commit before the i18n work**, so
+whether it grew since is not known. JS 79.9 KB gzip in total (under 90). **Not checked:** Brave, Firefox, desktop and iOS Safari, a real touch
+device; `speechSynthesis` in `pt-BR` depends on the voices installed (EduBra's demo word stays "hello world").
+
 ### Home page refactor (2026-11-16, Arthur's brief)
 
 Brief in `TODO/` (README plus one file per stage). Commit message `home-refactor: <stage>`.
