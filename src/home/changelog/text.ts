@@ -5,4 +5,9 @@ const en = {
   showAll: 'show all',
 }
 
-export const text: Record<Lang, typeof en> = { en, pt: en }
+const pt: typeof en = {
+  heading: 'Changelog',
+  showAll: 'mostrar tudo',
+}
+
+export const text: Record<Lang, typeof en> = { en, pt }

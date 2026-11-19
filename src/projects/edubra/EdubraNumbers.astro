@@ -37,28 +37,7 @@ const six = [10, 40, 70].flatMap((y) => [16, 90].map((x) => servo(x, y)))
 // 8: four by two, small, each one crossed out
 const eight = [24, 62].flatMap((y) => [4, 44, 84, 124].map((x) => servo(x, y, 0.68)))
 
-const figures = [
-  {
-    n: '2.5',
-    unit: ' mm',
-    label: t.labels[0],
-  },
-  {
-    n: '6',
-    unit: '',
-    label: t.labels[1],
-  },
-  {
-    n: '~3',
-    unit: ' s',
-    label: t.labels[2],
-  },
-  {
-    n: '8',
-    unit: '',
-    label: t.labels[3],
-  },
-]
+const figures = t.figures
 ---
 
 <section class="flex flex-col gap-6" aria-labelledby="numbers-heading">
@@ -80,7 +59,7 @@ const figures = [
           <path d="M105 37L108 30L111 37"></path>
           <path d="M105 55L108 62L111 55"></path>
         </g>
-        <text x="114" y="50">2.5</text>
+        <text x="114" y="50">{figures[0].n}</text>
       </svg>
       <figcaption>
         <p class="num"><span class="n">{figures[0].n}</span><span class="u">{figures[0].unit}</span></p>

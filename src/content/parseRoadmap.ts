@@ -6,10 +6,35 @@
 //   - **Title** — about. *Done* | *Done, Oct 2026* | *Doing, target Nov 2026* | *Next, Dec 2026*
 // HTML comments are ignored. Any other line starting with "-", or an item outside a timeline and group, stops
 // the build with its line number, so a typo never reaches the site.
+//
+// Portuguese is the same format in roadmap.pt.md, with the words of the language: *Feito*, *Fazendo, meta Nov 2026*,
+// *Próximo, Dez 2026* and the months Jan Fev Mar Abr Mai Jun Jul Ago Set Out Nov Dez.
 
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-const ITEM =
-  /^- \*\*(.+?)\*\*\s*[—–-]\s*(.*?)\s*\*(Done|Doing|Next)(?:,\s*(?:target\s+)?([A-Z][a-z]{2})\s+(\d{4}))?\*\s*$/
+export type RoadmapLang = 'en' | 'pt'
+type Status = 'done' | 'doing' | 'next'
+
+// The words each language's file uses: the three statuses (as written), the "target" before a month while a
+// topic is in progress, and the month abbreviations.
+const WORDS: Record<RoadmapLang, { status: Record<string, Status>; target: string; months: string[] }> = {
+  en: {
+    status: { Done: 'done', Doing: 'doing', Next: 'next' },
+    target: 'target',
+    months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+  },
+  pt: {
+    status: { Feito: 'done', Fazendo: 'doing', 'Próximo': 'next' },
+    target: 'meta',
+    months: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
+  },
+}
+
+const itemPattern = (lang: RoadmapLang) => {
+  const { status, target } = WORDS[lang]
+  const statuses = Object.keys(status).join('|')
+  return new RegExp(
+    String.raw`^- \*\*(.+?)\*\*\s*[—–-]\s*(.*?)\s*\*(${statuses})(?:,\s*(?:${target}\s+)?([A-Z][a-z]{2})\s+(\d{4}))?\*\s*$`,
+  )
+}
 
 export type RoadmapItem = { title: string; about: string; status: 'done' | 'doing' | 'next'; month?: string }
 export type RoadmapGroup = { title: string; about?: string; items: RoadmapItem[] }
@@ -23,7 +48,9 @@ const slug = (text: string) =>
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '')
 
-export function parseRoadmap(source: string, file = 'src/content/roadmap.md'): RoadmapTimeline[] {
+export function parseRoadmap(source: string, file = 'src/content/roadmap.md', lang: RoadmapLang = 'en'): RoadmapTimeline[] {
+  const { status: STATUS, months: MONTHS } = WORDS[lang]
+  const ITEM = itemPattern(lang)
   // comments become blank lines, so the line numbers in errors stay right
   const text = source.replace(/<!--[\s\S]*?-->/g, (c) => c.replace(/[^\n]/g, ''))
   const timelines: RoadmapTimeline[] = []
@@ -52,7 +79,14 @@ export function parseRoadmap(source: string, file = 'src/content/roadmap.md'): R
       group!.about = line.slice(1).trim()
     } else if (line.startsWith('-')) {
       const m = ITEM.exec(line)
-      if (!m) fail(n, 'expected "- **Title** — text. *Done*", "*Doing, target Nov 2026*" or "*Next, Dec 2026*"', line)
+      if (!m)
+        fail(
+          n,
+          lang === 'pt'
+            ? 'expected "- **Título** — texto. *Feito*", "*Fazendo, meta Nov 2026*" or "*Próximo, Dez 2026*"'
+            : 'expected "- **Title** — text. *Done*", "*Doing, target Nov 2026*" or "*Next, Dec 2026*"',
+          line,
+        )
       if (!group) fail(n, 'an item before any "##" group', line)
       const [, title, about, status, mon, year] = m!
       let month: string | undefined
@@ -61,7 +95,7 @@ export function parseRoadmap(source: string, file = 'src/content/roadmap.md'): R
         if (index < 0) fail(n, `unknown month "${mon}" (use ${MONTHS.join(', ')})`, line)
         month = `${year}-${String(index + 1).padStart(2, '0')}`
       }
-      group!.items.push({ title, about, status: status.toLowerCase() as RoadmapItem['status'], month })
+      group!.items.push({ title, about, status: STATUS[status], month })
     }
     // any other line (a paragraph, a "Goal:" note) is not shown
   })

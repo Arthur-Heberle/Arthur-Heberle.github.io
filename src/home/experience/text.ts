@@ -19,4 +19,21 @@ const en = {
   } as Record<string, string>,
 }
 
-export const text: Record<Lang, typeof en> = { en, pt: en }
+const pt: typeof en = {
+  heading: 'Experiência',
+  now: 'agora',
+  hard: 'A parte difícil:',
+  months: (n: number) => `${n} ${n === 1 ? 'mês' : 'meses'}`,
+  soFar: ' até agora',
+  desc: {
+    rp3: 'Uma ilustração, não a interface real do RP3: um monitor mostrando uma peça fatiada em camadas sobre uma plataforma de impressão quadriculada com eixos X, Y e Z, os contornos das camadas subindo uma camada de cada vez e, ao lado, uma pequena impressora 3D genérica construindo a mesma peça camada por camada.',
+    'programming-techniques':
+      'Um notebook mostrando um diagrama de classes: Entity, com Player e Enemy herdando dela, e um Level que guarda um ponteiro para uma Entity, acima de algumas linhas de C++. Os nomes das classes e o código são ilustrativos do jogo em SFML da disciplina, não o código real.',
+    'eletron-energia':
+      'Uma ilustração de um analisador de energia no estilo do IMS PowerNET T-500, com blocos de terminais verdes saindo da frente, e três transformadores de corrente presos em volta dos cabos L1 a L3, com corrente pulsando por eles, ligados às suas entradas, e o visor alternando entre leituras ilustrativas; ao lado, uma prancheta com uma planilha, um relatório impresso de medição e verificação e um gráfico do consumo antes e depois, com a economia entre os dois. As leituras e os valores são ilustrativos, não medidos.',
+    'calculus-ii':
+      'Uma lousa em uma moldura de madeira, com uma bandeja ao longo da base com giz e um apagador. Está escrita a giz e mostra problemas resolvidos: Cálculo II em uma metade (a curva y igual a 3x ao quadrado de 0 a 2, com a área sob ela hachurada, e sua integral resolvida, com uma tentativa errada riscada, até 8) e Cálculo III na outra (a superfície z igual a x ao quadrado mais y ao quadrado, e uma integral dupla de x mais y resolvida até 3). Marcas fracas mostram onde foi apagada.',
+  },
+}
+
+export const text: Record<Lang, typeof en> = { en, pt }

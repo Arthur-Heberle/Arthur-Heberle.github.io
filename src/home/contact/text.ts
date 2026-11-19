@@ -5,4 +5,9 @@ const en = {
   invitation: "Tell me what you're building and I'll tell you honestly whether I'm useful to it.",
 }
 
-export const text: Record<Lang, typeof en> = { en, pt: en }
+const pt: typeof en = {
+  heading: 'Contato',
+  invitation: 'Me conte o que você está construindo e eu te digo com sinceridade se posso ser útil nisso.',
+}
+
+export const text: Record<Lang, typeof en> = { en, pt }

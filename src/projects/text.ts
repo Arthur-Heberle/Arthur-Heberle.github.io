@@ -19,4 +19,21 @@ const en = {
   pageTitle: (project: string) => `${project} — Arthur Gabriel Pellegrini Heberle`,
 }
 
-export const text: Record<Lang, typeof en> = { en, pt: en }
+const pt: typeof en = {
+  builtSolo: 'Como eu construí',
+  builtTeam: 'Como construímos',
+  next: 'O que vem a seguir',
+  part: 'Minha parte',
+  differently: 'O que eu faria diferente',
+  links: 'Links',
+  repo: 'Código no GitHub',
+  live: 'ao vivo',
+  sheetInfo: 'Informações da folha',
+  index: 'início',
+  sheetOf: (name: string, nn: string, total: string) => `${name}, folha ${nn} de ${total}`,
+  sheetLink: (nn: string) => `folha ${nn}`,
+  nextLabel: (name: string, nn: string) => `Próxima: ${name}, folha ${nn}`,
+  pageTitle: en.pageTitle,
+}
+
+export const text: Record<Lang, typeof en> = { en, pt }

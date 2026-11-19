@@ -1,6 +1,6 @@
 ---
 import '../styles/global.css'
-import { HTML_LANG, getLang } from '../i18n/lang'
+import { HTML_LANG, getLang, localePath } from '../i18n/lang'
 import { text } from '../text'
 import HomeLink from '../components/HomeLink.astro'
 
@@ -16,6 +16,10 @@ interface Props {
 const { title, noindex = false, preloadFonts = [] } = Astro.props
 const lang = getLang(Astro)
 const t = text[lang]
+// The page's address in each language, for <link rel="alternate">: the same page at / and at /pt/.
+const path = Astro.url.pathname
+const alternates = { en: localePath('en', path), pt: localePath('pt', path) }
+const absolute = (p: string) => new URL(p, Astro.site).href
 ---
 
 <html lang={HTML_LANG[lang]}>
@@ -24,6 +28,11 @@ const t = text[lang]
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     {noindex && <meta name="robots" content="noindex" />}
+    <link rel="alternate" hreflang="en" href={absolute(alternates.en)} />
+    <link rel="alternate" hreflang="pt-BR" href={absolute(alternates.pt)} />
+    <link rel="alternate" hreflang="x-default" href={absolute(alternates.en)} />
+    <meta property="og:locale" content={lang === 'pt' ? 'pt_BR' : 'en_US'} />
+    <meta property="og:locale:alternate" content={lang === 'pt' ? 'en_US' : 'pt_BR'} />
     <!-- Must run before first paint, or a CSS-revealed filter bar (step 05) would flash
          and vanish for a no-JS visitor — that's exactly the layout shift step 06 gates
          on. is:inline stops Astro from bundling/deferring it. Reused by steps 07-13. -->

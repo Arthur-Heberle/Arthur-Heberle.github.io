@@ -96,11 +96,11 @@ const en = {
   },
   numbers: {
     heading: 'By the numbers',
-    labels: [
-      'of silence before it answers',
-      'numbers that describe each product to the search',
-      'closest products it reads before every reply',
-      'automated tests',
+    figures: [
+      { n: '30', unit: ' s', label: 'of silence before it answers' },
+      { n: '1,536', unit: '', label: 'numbers that describe each product to the search' },
+      { n: '8', unit: '', label: 'closest products it reads before every reply' },
+      { n: '46', unit: '', label: 'automated tests' },
     ],
   },
   dashboard: {
@@ -114,4 +114,53 @@ const en = {
   },
 }
 
-export const text: Record<Lang, typeof en> = { en, pt: en }
+// Portuguese. The drawing's words, the questions and the product names are stage 3 and stay English here.
+const pt: typeof en = {
+  ...en,
+  story: {
+    ...en.story,
+    heading: 'Como funciona',
+    captions: [
+      { title: 'Espere', text: 'Os clientes mandam três mensagens curtas em vez de uma. O agente espera até que parem de digitar, para responder uma só vez.' },
+      { title: 'Busque', text: 'A pergunta vira um ponto em um mapa do catálogo. Os produtos mais próximos vencem, mesmo com erro de digitação.' },
+      { title: 'Responda', text: 'Um modelo de linguagem escreve a resposta com esses produtos à sua frente, e ela volta pelo WhatsApp.' },
+      { title: 'Passe adiante', text: 'Se o cliente está pronto para comprar, o dono recebe um lead com um resumo de uma linha.' },
+    ],
+    steps: 'Passos',
+    goStep: 'Ir ao passo {n}: {title}',
+    stepLive: 'Passo {n}, {title}. {text}',
+    pause: 'Pausar',
+    pauseLabel: 'Pausar o desenho',
+    again: 'Repetir',
+    againLabel: 'Repetir a história',
+    play: 'Reproduzir',
+    playLabel: 'Reproduzir a história',
+    frame: 'Desenho, rola para os lados',
+    tryLabel: 'Experimente outra pergunta',
+    tryNote: 'As posições e as respostas são preparadas com antecedência para esta demonstração. A busca de verdade roda no servidor.',
+    askedLead: '{button}. Resposta: {reply} Classificada como {cls}, então o dono recebe um lead.',
+    askedNoLead: '{button}. Resposta: {reply} Classificada como {cls}, então não há lead.',
+    classes: { QUALIFIED_LEAD: 'lead qualificado', GENERAL_QUESTION: 'pergunta geral', OUT_OF_SCOPE: 'fora do escopo' },
+  },
+  numbers: {
+    heading: 'Em números',
+    figures: [
+      { n: '30', unit: ' s', label: 'de silêncio antes de responder' },
+      { n: '1.536', unit: '', label: 'números que descrevem cada produto para a busca' },
+      { n: '8', unit: '', label: 'produtos mais próximos que ele lê antes de cada resposta' },
+      { n: '46', unit: '', label: 'testes automatizados' },
+    ],
+  },
+  dashboard: {
+    heading: 'O painel',
+    text: 'Os donos operam tudo por um painel: o catálogo, com importação de CSV que mapeia as colunas usando IA; as conversas; os leads; as instruções do agente; o horário de funcionamento. Em qualquer conversa, eles podem desligar o agente e responder por conta própria.',
+    // the screenshots are the dashboard's own interface, which is in English on these pages
+    shots: [
+      'A página de catálogo do painel (interface em inglês): uma tabela de vinte produtos de demonstração com nome, categoria, preço, estoque e status e, acima dela, uma caixa de busca, filtros e os botões de importar CSV e adicionar produto.',
+      'A página de conversas do painel (interface em inglês): uma lista de cinco clientes de demonstração à esquerda e, à direita, uma conversa em que um cliente pede um sofá de 3 lugares e o agente responde, com o interruptor que desliga o agente nessa conversa no topo.',
+      'A página de leads do painel (interface em inglês): uma tabela de quatro leads de demonstração, cada um com um resumo de uma linha, um menu de status (New, Contacted, Won) e um link para o WhatsApp, e um botão de exportar CSV.',
+    ],
+  },
+}
+
+export const text: Record<Lang, typeof en> = { en, pt }

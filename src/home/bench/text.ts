@@ -5,4 +5,9 @@ const en = {
   hint: 'Point at something on the desk.',
 }
 
-export const text: Record<Lang, typeof en> = { en, pt: en }
+const pt: typeof en = {
+  heading: 'Projetos',
+  hint: 'Aponte para algo na mesa.',
+}
+
+export const text: Record<Lang, typeof en> = { en, pt }

@@ -15,4 +15,15 @@ const en = {
   intro: ['Computer engineering at UTFPR, in Curitiba.', 'Embedded systems, C++, and AI automation.'],
 }
 
-export const text: Record<Lang, typeof en> = { en, pt: en }
+const pt: typeof en = {
+  greeting: 'Olá! Eu sou',
+  name: 'Arthur Heberle',
+  role: 'Estudante de Engenharia de Computação',
+  photoAlt: 'Arthur Heberle',
+  identity: ['Curitiba, Brasil', 'Cidadania europeia', 'aberto a trabalho remoto global'],
+  identityRegion: en.identityRegion,
+  mapLabel: 'Mapa das Américas e da Europa desenhado com pontos',
+  intro: ['Engenharia de Computação na UTFPR, em Curitiba.', 'Sistemas embarcados, C++ e automação com IA.'],
+}
+
+export const text: Record<Lang, typeof en> = { en, pt }

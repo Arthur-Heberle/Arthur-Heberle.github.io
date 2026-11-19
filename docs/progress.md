@@ -1973,6 +1973,21 @@ switch is one floating element in the **top-right** corner, the name SVG (`arthu
 stay **always visible while scrolling**, on a layer above the content, with **no bar or background strip**. Shared CSS and
 details in `TODO/02-corner-name.md`.
 
+**Stage 2, routes and Portuguese prose (2026-11-19): done.** Arthur's review: course names right; English About text corrected (his typos fixed); PT identity line "Cidadania europeia"; PT roadmap heading "Roadmap de estudos e afazeres" and the PT changelog heading stays "Changelog"; the rest accepted as written.
+`/pt/` and `/pt/projects/{edubra,agente-h}/` exist (`src/pages/pt/`), built from the same `HomePage`/`ProjectRoute`; `Base.astro` writes
+`hreflang` (en, pt-BR, x-default) and `og:locale`. One collection per language with one shared schema (`content.config.ts`):
+`projectsPt`, `experiencePt`, `changelogPt` and `roadmapPt` read `src/content/pt/projects`, `src/content/pt/experience`,
+`src/content/pt/changelog.yaml` (same ids and dates) and `src/content/roadmap.pt.md`; `src/shared/i18n/content.ts` picks by language.
+`parseRoadmap.ts` takes a language: the Portuguese file uses `*Feito*`, `*Fazendo, meta Nov 2026*`, `*Próximo, Dez 2026*` and the months
+Jan Fev Mar Abr Mai Jun Jul Ago Set Out Nov Dez (the English file is unchanged). **`roadmap.pt.md` and `roadmap.md` are two files: update
+both.** Every `text.ts` has its Portuguese except the words drawn inside the drawings, which stay English until stage 3 (EduBra story
+word and SVG labels, Agente H questions/products/SVG labels, the Experience objects). The by-the-numbers figures (`2.5`, `1,536`) moved
+into `text.ts` so the Portuguese can use the decimal comma and point (`2,5`, `1.536`). Checked in headless Edge (not Brave): 6 pages
+build, no console errors, no horizontal scroll at 1280, `html lang` right, every link on the `/pt/` pages stays under `/pt/`, no link to
+`/pt/` from the English pages yet (the switch is stage 4), runtime strings in Portuguese (EduBra knob, live regions, ticks, Play
+again; Agente H announcements). JS 79.9 KB gzip. `astro check` shows 6 errors that are not from this work (`node:fs` types in
+`content.config.ts`, `worldMap.ts`).
+
 ### Home page refactor (2026-11-16, Arthur's brief)
 
 Brief in `TODO/` (README plus one file per stage). Commit message `home-refactor: <stage>`.

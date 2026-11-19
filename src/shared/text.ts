@@ -6,6 +6,6 @@ const en = {
   home: 'Arthur Heberle, home',
 }
 
-const pt: typeof en = { ...en, home: 'Arthur Heberle, início' }
+const pt: typeof en = { skip: 'Pular para o conteúdo principal', home: 'Arthur Heberle, início' }
 
 export const text: Record<Lang, typeof en> = { en, pt }

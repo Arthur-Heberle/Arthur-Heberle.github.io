@@ -59,12 +59,7 @@ const rows = [24, 50, 76].map((y) => ({
   name: `M50 ${y}H${y === 50 ? 118 : y === 24 ? 132 : 104}`,
 }))
 
-const figures = [
-  { n: '30', unit: ' s', label: t.labels[0] },
-  { n: '1,536', unit: '', label: t.labels[1] },
-  { n: '8', unit: '', label: t.labels[2] },
-  { n: '46', unit: '', label: t.labels[3] },
-]
+const figures = t.figures
 ---
 
 <section class="flex flex-col gap-6" aria-labelledby="agente-numbers-heading">

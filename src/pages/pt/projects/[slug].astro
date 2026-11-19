@@ -1,0 +1,24 @@
+---
+// As páginas de projeto em português: as mesmas rotas de src/pages/projects/[slug].astro, sob /pt/, com as
+// entradas da coleção em português (src/content/pt/projects). A página em si é src/projects/ProjectRoute.astro.
+import type { CollectionEntry } from 'astro:content'
+import ProjectRoute from '../../../projects/ProjectRoute.astro'
+import { PROJECT_PAGES } from '../../../projects/projects'
+import { getProjects } from '../../../shared/i18n/content'
+
+export async function getStaticPaths() {
+  const projects = await getProjects('pt')
+  const pages = projects.filter((entry) => (PROJECT_PAGES as readonly string[]).includes(entry.id))
+  return pages.map((entry) => ({
+    params: { slug: entry.id },
+    props: { entry },
+  }))
+}
+
+interface Props {
+  entry: CollectionEntry<'projects'>
+}
+const { entry } = Astro.props
+---
+
+<ProjectRoute entry={entry} />

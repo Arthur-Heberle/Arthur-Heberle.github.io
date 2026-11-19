@@ -17,5 +17,19 @@ const en = {
   exitFullscreen: 'Exit full screen',
 }
 
-export const text: Record<Lang, typeof en> = { en, pt: en }
+const pt: typeof en = {
+  heading: 'Roadmap de estudos e afazeres',
+  of: 'de',
+  doneSuffix: ' concluídos',
+  status: { done: 'Feito', doing: 'Fazendo', next: 'Próximo' },
+  target: 'meta',
+  months: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
+  boxLabel: 'Roadmap, com rolagem',
+  expandAll: 'Expandir tudo',
+  collapseAll: 'Recolher tudo',
+  fullscreen: 'Mostrar o roadmap em tela cheia',
+  exitFullscreen: 'Sair da tela cheia',
+}
+
+export const text: Record<Lang, typeof en> = { en, pt }
 export type RoadmapText = typeof en

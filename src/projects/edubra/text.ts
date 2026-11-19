@@ -66,15 +66,77 @@ const en = {
   },
   numbers: {
     heading: 'By the numbers',
-    labels: [
-      'how far each pin rises, measured with a caliper',
-      'servos under the lid, one per dot',
-      'per letter at full speed. Each pin adds about 0.2 s; the voice takes the rest.',
-      'servos we burned on the way there',
+    // each figure: the number, its unit and what it counts (the number and unit follow the language's decimal mark)
+    figures: [
+      { n: '2.5', unit: ' mm', label: 'how far each pin rises, measured with a caliper' },
+      { n: '6', unit: '', label: 'servos under the lid, one per dot' },
+      { n: '~3', unit: ' s', label: 'per letter at full speed. Each pin adds about 0.2 s; the voice takes the rest.' },
+      { n: '8', unit: '', label: 'servos we burned on the way there' },
     ],
     voice: 'voice',
     pins: 'pins',
   },
 }
 
-export const text: Record<Lang, typeof en> = { en, pt: en }
+// Portuguese. The text inside the drawing (the demo word, the words drawn on it) is stage 3 and stays English here.
+const pt: typeof en = {
+  device: {
+    label: 'Demonstração do dispositivo EduBra',
+    hint: 'Aperte os botões, gire o botão de volume na lateral ou digite a sua própria palavra abaixo.',
+    word: 'A palavra {w} em Braille, mostrada uma letra por vez',
+    pause: 'Pausar',
+    play: 'Tocar',
+    back: 'Voltar ao início da palavra',
+    faster: 'Mais rápido',
+    slower: 'Mais devagar',
+    volumes: { off: 'desligado', low: 'baixo', high: 'alto' },
+    volume: 'Volume: {name}',
+    tryLabel: 'Experimente uma palavra',
+    tryHint: 'letras de A a Z, até 6',
+    letter: 'Letra {ch}: pontos {dots}',
+  },
+  story: {
+    ...en.story,
+    heading: 'Como funciona',
+    caps: [
+      { title: 'Envie um arquivo', text: 'Solte um .txt, .docx ou .pdf. Letra de música, um artigo, qualquer coisa.' },
+      { title: 'Por Wi-Fi', text: 'A página o divide em palavras e as envia para a Raspberry Pi dentro da caixa.' },
+      { title: 'Áudio primeiro', text: 'Antes de ler, a Pi prepara um arquivo de voz para cada palavra, para não travar no meio da frase.' },
+      { title: 'Leitura', text: 'Ela diz a palavra, depois cada letra, levantando os pinos à medida que avança.' },
+    ],
+    steps: 'Passos',
+    goStep: 'Ir ao passo {n}: {title}',
+    stepLive: 'Passo {n}, {title}. {text}',
+    pause: 'Pausar',
+    pauseLabel: 'Pausar o desenho',
+    again: 'Repetir',
+    againLabel: 'Repetir a história',
+    play: 'Reproduzir',
+    playLabel: 'Reproduzir a história',
+    sound: 'Som',
+    hint: 'Toque em uma parte do hardware para ver o que ela faz, ou ligue o som.',
+    frame: 'Desenho, rola para os lados',
+    canvas:
+      'Um arquivo é enviado para uma página web, dividido em palavras e enviado por Wi-Fi para uma Raspberry Pi. A Pi prepara um arquivo de voz para cada palavra e depois lê o texto: diz cada palavra, depois cada letra, enquanto seis pinos sobem para formar a letra em Braille.',
+    parts: [
+      { id: 'gpio', name: 'Conector GPIO', text: 'Aciona os seis servos' },
+      { id: 'jack', name: 'Saída de áudio', text: 'Para o seu fone de ouvido ou alto-falante' },
+      { id: 'led', name: 'LED verde', text: 'Pisca enquanto a Pi trabalha' },
+      { id: 'soc', name: 'Processador', text: 'Executa o laço de leitura' },
+      { id: 'cell', name: 'Célula Braille', text: 'Seis pinos, um por servo' },
+      { id: 'spk', name: 'Fone ou alto-falante', text: 'Diz cada palavra, depois cada letra' },
+    ],
+  },
+  numbers: {
+    ...en.numbers,
+    heading: 'Em números',
+    figures: [
+      { n: '2,5', unit: ' mm', label: 'quanto cada pino sobe, medido com um paquímetro' },
+      { n: '6', unit: '', label: 'servos sob a tampa, um por ponto' },
+      { n: '~3', unit: ' s', label: 'por letra na velocidade máxima. Cada pino acrescenta cerca de 0,2 s; a voz leva o resto.' },
+      { n: '8', unit: '', label: 'servos que queimamos no caminho' },
+    ],
+  },
+}
+
+export const text: Record<Lang, typeof en> = { en, pt }
