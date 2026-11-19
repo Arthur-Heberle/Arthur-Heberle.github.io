@@ -129,8 +129,9 @@
  * sits under the photo and the text. motion.ts moves the spotlight's mask and fades the region layers. */
 .hero-map {
   position: absolute;
-  /* the whole hero, edge to edge (Arthur, 2026-11-18: "100% of it"; was from 4rem below its top) */
-  inset: 0;
+  /* the hero's right half, full height (Arthur, 2026-11-18: the Americas and Europe, on the right; before, the
+   * whole world filled the whole hero: branch hero-map-full-hero). The photo keeps its size and place. */
+  inset: 0 0 0 50%;
   z-index: 0;
   display: flex;
   align-items: center;

@@ -226,7 +226,7 @@ no JS keep a flat photo. Transform only.
 
 ## Hero map
 
-Arthur, 2026-11-18. A world map in dots (NTag/dotted-map, run at build time in `src/home/hero/worldMap.ts`;
+Arthur, 2026-11-18. A map of the Americas and Europe in dots (NTag/dotted-map, run at build time in `src/home/hero/worldMap.ts`;
 `HeroMap.astro`) sits behind the hero on the page's own ground: dots only, no outline, no panel. `heroMap()` in
 `src/shared/motion.ts`, mouse only:
 - **Spotlight:** a darker copy of the dots is seen through a soft radial mask; the mask's circle follows the cursor
