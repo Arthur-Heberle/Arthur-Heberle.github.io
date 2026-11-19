@@ -129,8 +129,8 @@
  * sits under the photo and the text. motion.ts moves the spotlight's mask and fades the region layers. */
 .hero-map {
   position: absolute;
-  /* from just above the content (the hero's pt-30 is the space under the corner name), to its bottom */
-  inset: 4rem 0 0;
+  /* the whole hero, edge to edge (Arthur, 2026-11-18: "100% of it"; was from 4rem below its top) */
+  inset: 0;
   z-index: 0;
   display: flex;
   align-items: center;
@@ -139,9 +139,9 @@
 }
 .hero-map svg {
   display: block;
+  /* the box fills the hero; the viewBox fits inside it whole (meet), so the map touches two opposite edges */
+  width: 100%;
   height: 100%;
-  width: auto;
-  max-width: 100%;
   overflow: visible;
 }
 .hero-id,
