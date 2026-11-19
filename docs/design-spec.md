@@ -171,7 +171,7 @@ Google Fonts, woff2, latin subset, `font-display: swap`. Preload the display fac
 - Spine column 68ch max. Margin column 200px. Gutter 32px, and the gutter is where
   leader lines are drawn.
 - Home page grid (Arthur, 2026-10-24), 768px and up: 12 columns, content at most 1280px, sides
-  `clamp(24px, 5vw, 80px)`, 24px gap, everything left-aligned. Hero (Arthur, 2026-11-18, latest): from 768px the photo with its text centred under it on the left, the whole dotted map filling the rest after a `clamp(32px, 4vw, 64px)` gap, the identity lines and intro centred on top of the map (photo 4:5, at most 200px wide, 190px below 768px); before that, a content-width pair centred on the page; before that: identity and
+  `clamp(24px, 5vw, 80px)`, 24px gap, everything left-aligned. Hero (Arthur, 2026-11-18): photo and name, then identity and intro, as a content-width pair centred on the page with a `clamp(64px, 9vw, 144px)` gap, not on the 12 columns (photo 4:5, at most 240px wide, 220px below 768px); before that: identity and
   intro on 6 to 12 (since 2026-11-16; no spine, margin notes or datasheet); the bench and
   Experience use the full width. Below 768px it is the single column it was.
 - Radius (Arthur, 2026-10-24): panels and cards `--radius-panel` 10px; buttons and controls
@@ -188,10 +188,10 @@ Google Fonts, woff2, latin subset, `font-display: swap`. Preload the display fac
 
 ### Home page
 
-1. **Hero** (Arthur's brief, home refactor stage 3, 2026-11-16, after yudiganeko.com). A 4:5 photo (at most 200px wide, 190px on phones; 2026-11-18) on the left,
+1. **Hero** (Arthur's brief, home refactor stage 3, 2026-11-16, after yudiganeko.com). A 4:5 photo (at most 240px wide, 220px on phones; 2026-11-18),
    "Hi! I'm", his name (the page's `<h1>`, Archivo 400, 34px, 28px on phones, with a blinking text caret one space after it) and "Computer Engineering Student" under it; the
    identity list (Curitiba, EU citizen, open to global remote) and the intro line beside it, all centred.
-   From 768px (Arthur, 2026-11-18) a faint world map in dots fills the space right of the photo, whole, with the identity lines and intro on top (no outline, no panel);
+   Behind it, from 768px (Arthur, 2026-11-18): a faint world map in dots on the ground (no outline, no panel);
    dots near the mouse darken, and hovering an identity line lights its place (Curitiba, Italy, the whole world).
    The hero text gets a ground-coloured halo over it. Motion in motion-spec "Hero map".
    The old display line ("I make technical things make sense…"), the email link and the spine paragraph

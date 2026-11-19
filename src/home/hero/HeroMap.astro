@@ -11,7 +11,7 @@ import { worldMap, type Dot } from './worldMap'
 
 const t = text[getLang(Astro)]
 const { width, height, dots } = worldMap()
-const SPOT = 8 // spotlight radius in grid units (Arthur, 2026-11-18: smaller, was 14)
+const SPOT = 14 // spotlight radius in grid units
 const path = (ds: Dot[]) => ds.map((d) => `M${d.x} ${d.y}h0`).join('')
 const regions = (['cwb', 'eu'] as const).map((r) => ({ r, d: path(dots.filter((d) => d.region === r)) }))
 ---
