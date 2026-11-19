@@ -230,7 +230,7 @@ Arthur, 2026-11-18. A map of the Americas and Europe in dots (NTag/dotted-map, r
 `HeroMap.astro`) sits behind the hero on the page's own ground: dots only, no outline, no panel. `heroMap()` in
 `src/shared/motion.ts`, mouse only:
 - **Spotlight:** a darker copy of the dots is seen through a soft radial mask; the mask's circle follows the cursor
-  over the hero (its `transform` attribute, written from a `quickTo`'d point, 0.35s `power3.out`); the layer fades
+  over the hero (radius 7 grid units, was 14 until 2026-11-19; its `transform` attribute, written from a `quickTo`'d point, 0.35s `power3.out`); the layer fades
   in to 0.6 on the first move and out on leave (opacity). Not under reduced motion.
 - **Regions:** hovering an identity line (`data-map-line`) fades in its layer (`data-map-region`): "Curitiba,
   Brasil" a few dots around Curitiba, "EU citizen" Italy, both in `--color-signal`; "open to global remote" every
