@@ -440,7 +440,7 @@ function heroSequence(withDrawing: boolean) {
  *  (rotationX/Y with a perspective). Run only for a fine pointer that hovers and without reduced motion,
  *  so touch and reduced motion keep a flat photo. Returns the cleanup for gsap.matchMedia. */
 const TILT_MAX = 8 // degrees at the photo's edge
-const TILT_POP = 1.06 // scale while the mouse is over the photo
+const TILT_POP = 1.045 // scale while the mouse is over the photo (Arthur, 2026-11-18: a bit less, was 1.06)
 function photoTilt(): () => void {
   const offs: (() => void)[] = []
   for (const el of gsap.utils.toArray<HTMLElement>('[data-tilt]')) {

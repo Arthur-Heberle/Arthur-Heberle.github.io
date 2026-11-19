@@ -218,7 +218,7 @@ Arthur, 2026-11-18. A text caret blinks after the name in the hero: `.hero-name:
 Arthur, 2026-11-18. The hero photo and the About photo (`data-tilt`) tilt in 3D under the mouse: the corner
 under the cursor is **pressed in** (recedes), the opposite one comes forward; back to flat on leave.
 `rotationX`/`rotationY` up to 8 degrees with `transformPerspective: 700`, `gsap.quickTo` at 0.5s `power3.out`.
-On enter the photo also **pops toward the reader**: scale 1.06 (0.4s `power3.out`, `scaleX`/`scaleY` quickTos:
+On enter the photo also **pops toward the reader**: scale 1.045 (was 1.06, Arthur 2026-11-18) (0.4s `power3.out`, `scaleX`/`scaleY` quickTos:
 quickTo does not tween the `scale` shorthand), back to 1 on leave; the tilt keeps following the cursor meanwhile.
 `photoTilt()` in `src/shared/motion.ts`, run only under
 `(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)`: touch, reduced motion and
